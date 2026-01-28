@@ -6,9 +6,11 @@ edition = "2024_07"
 [lib]
 
 [executable]
+sierra = true
 
 [dependencies]
 cairo_execute = "2.11.4"
+corelib_imports = "0.1.2"
 
 [dev-dependencies]
 cairo_test = "2.11.4"

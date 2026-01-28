@@ -4,15 +4,18 @@
 
 //! Implementation of Number Theoretic Transform (NTT) for polynomials in Z_q[x]/(phi)
 //! Ported from https://github.com/tprest/falcon.py/blob/master/ntt.py
+//!
+//! Optimized with BoundedInt and lazy modular reduction:
+//! - Uses Zq = BoundedInt<0, 12288> throughout
+//! - Fuses arithmetic operations to minimize mod reductions
+//! - Downcasts only at deserialization boundaries
 
 use crate::ntt_constants::{get_even_roots, get_even_roots_inv};
-use crate::zq::{add_mod, mul3_mod, mul_mod, sub_mod};
-
-pub const I2: u16 = 6145; // Inverse of 2 mod q
-pub const I2_INV: u16 = 6145; // Inverse of 2 mod q
-pub const SQR1: u16 = 1479; // Square root of (-1) mod q
-pub const SQR1_INV: u16 = 10810; // Inverse of SQR1 mod q
-
+use crate::zq::{
+    from_u16, to_u16, add_mod, sub_mod, mul_mod, fused_i2_add_mod, fused_i2_sub_mul_mod,
+    fused_add_mul_mod, fused_sub_mul_mod, fused_sqr1_mul_mod, fused_i2_sum_mod,
+    fused_i2_diff_sqr1inv_mod,
+};
 
 /// Subtract coefficients of two polynomials modulo Q
 pub fn sub_zq(mut f: Span<u16>, mut g: Span<u16>) -> Span<u16> {
@@ -21,26 +24,30 @@ pub fn sub_zq(mut f: Span<u16>, mut g: Span<u16>) -> Span<u16> {
 
     while let Some(f_coeff) = f.pop_front() {
         let g_coeff = g.pop_front().unwrap();
-        res.append(sub_mod(*f_coeff, *g_coeff));
+        let f_zq = from_u16(*f_coeff);
+        let g_zq = from_u16(*g_coeff);
+        res.append(to_u16(sub_mod(f_zq, g_zq)));
     }
 
     res.span()
 }
 
-/// Multiply coefficients of two polynomials modulo Q
+/// Multiply coefficients of two polynomials modulo Q (pointwise in NTT domain)
 pub fn mul_ntt(mut f: Span<u16>, mut g: Span<u16>) -> Span<u16> {
     assert(f.len() == g.len(), 'f.len() != g.len()');
     let mut res = array![];
 
     while let Some(f_coeff) = f.pop_front() {
         let g_coeff = g.pop_front().unwrap();
-        res.append(mul_mod(*f_coeff, *g_coeff));
+        let f_zq = from_u16(*f_coeff);
+        let g_zq = from_u16(*g_coeff);
+        res.append(to_u16(mul_mod(f_zq, g_zq)));
     }
 
     res.span()
 }
 
-/// Multiply two polynomials using
+/// Multiply two polynomials using NTT
 pub fn mul_zq(f: Span<u16>, g: Span<u16>) -> Span<u16> {
     let f_ntt = ntt(f);
     let g_ntt = ntt(g);
@@ -48,7 +55,11 @@ pub fn mul_zq(f: Span<u16>, g: Span<u16>) -> Span<u16> {
     intt(res_ntt)
 }
 
-/// Split a polynomial f in two polynomials.
+/// Split a polynomial f in two polynomials in NTT representation.
+///
+/// Uses fused operations for lazy modular reduction:
+/// - even_ntt = I2 * (even + odd) mod Q        [1 reduction instead of 2]
+/// - odd_ntt = I2 * (even - odd) * root_inv mod Q  [1 reduction instead of 3]
 pub fn split_ntt(mut f_ntt: Span<u16>) -> (Span<u16>, Span<u16>) {
     let n = f_ntt.len();
     let mut roots_inv = get_even_roots_inv(n);
@@ -56,18 +67,28 @@ pub fn split_ntt(mut f_ntt: Span<u16>) -> (Span<u16>, Span<u16>) {
     let mut f1_ntt = array![];
 
     while let Some(root_inv) = roots_inv.pop_front() {
-        let even = *f_ntt.pop_front().unwrap();
-        let odd = *f_ntt.pop_front().unwrap();
-        let even_ntt = mul_mod(I2, add_mod(even, odd));
-        let odd_ntt = mul3_mod(I2, sub_mod(even, odd), *root_inv);
-        f0_ntt.append(even_ntt);
-        f1_ntt.append(odd_ntt);
+        let even = from_u16(*f_ntt.pop_front().unwrap());
+        let odd = from_u16(*f_ntt.pop_front().unwrap());
+        let root_inv_zq = from_u16(*root_inv);
+
+        // Fused: I2 * (even + odd) mod Q - single reduction
+        let even_ntt = fused_i2_add_mod(even, odd);
+
+        // Fused: I2 * (even - odd + Q) * root_inv mod Q - single reduction
+        let odd_ntt = fused_i2_sub_mul_mod(even, odd, root_inv_zq);
+
+        f0_ntt.append(to_u16(even_ntt));
+        f1_ntt.append(to_u16(odd_ntt));
     }
 
     (f0_ntt.span(), f1_ntt.span())
 }
 
 /// Merge two polynomials in NTT representation.
+///
+/// Uses fused operations for lazy modular reduction:
+/// - even = f0 + root * f1 mod Q   [1 reduction instead of 2]
+/// - odd = f0 - root * f1 mod Q    [1 reduction instead of 2]
 pub fn merge_ntt(mut f0_ntt: Span<u16>, mut f1_ntt: Span<u16>) -> Span<u16> {
     assert(f0_ntt.len() == f1_ntt.len(), 'f0_ntt.len() != f1_ntt.len()');
     let n = 2 * f0_ntt.len();
@@ -75,18 +96,24 @@ pub fn merge_ntt(mut f0_ntt: Span<u16>, mut f1_ntt: Span<u16>) -> Span<u16> {
     let mut f_ntt = array![];
 
     while let Some(root) = roots.pop_front() {
-        let f0 = *f0_ntt.pop_front().unwrap();
-        let f1 = *f1_ntt.pop_front().unwrap();
-        let even = add_mod(f0, mul_mod(*root, f1));
-        let odd = sub_mod(f0, mul_mod(*root, f1));
-        f_ntt.append(even);
-        f_ntt.append(odd);
+        let f0 = from_u16(*f0_ntt.pop_front().unwrap());
+        let f1 = from_u16(*f1_ntt.pop_front().unwrap());
+        let root_zq = from_u16(*root);
+
+        // Fused: f0 + (root * f1) mod Q - single reduction
+        let even = fused_add_mul_mod(f0, root_zq, f1);
+
+        // Fused: f0 - (root * f1) mod Q - single reduction
+        let odd = fused_sub_mul_mod(f0, root_zq, f1);
+
+        f_ntt.append(to_u16(even));
+        f_ntt.append(to_u16(odd));
     }
 
     f_ntt.span()
 }
 
-/// Split a polynomial f in two polynomials.
+/// Split a polynomial f in two polynomials (coefficient domain, not NTT).
 pub fn split(mut f: Span<u16>) -> (Span<u16>, Span<u16>) {
     let mut f0 = array![];
     let mut f1 = array![];
@@ -100,7 +127,7 @@ pub fn split(mut f: Span<u16>) -> (Span<u16>, Span<u16>) {
     (f0.span(), f1.span())
 }
 
-/// Merge two polynomials into a single polynomial f.
+/// Merge two polynomials into a single polynomial f (coefficient domain).
 pub fn merge(mut f0: Span<u16>, mut f1: Span<u16>) -> Span<u16> {
     let mut f = array![];
 
@@ -113,7 +140,9 @@ pub fn merge(mut f0: Span<u16>, mut f1: Span<u16>) -> Span<u16> {
     f.span()
 }
 
-// Compute the NTT of a polynomial
+/// Compute the NTT of a polynomial.
+///
+/// Base case (n=2) uses fused operations for lazy reduction.
 pub fn ntt(mut f: Span<u16>) -> Span<u16> {
     let n = f.len();
     if n > 2 {
@@ -122,17 +151,30 @@ pub fn ntt(mut f: Span<u16>) -> Span<u16> {
         let f1_ntt = ntt(f1);
         merge_ntt(f0_ntt, f1_ntt)
     } else if n == 2 {
-        let f1_j = mul_mod(SQR1, *f[1]);
-        let even = add_mod(*f[0], f1_j);
-        let odd = sub_mod(*f[0], f1_j);
-        array![even, odd].span()
+        let f0 = from_u16(*f[0]);
+        let f1 = from_u16(*f[1]);
+
+        // f1_j = SQR1 * f[1] mod Q
+        let f1_j = fused_sqr1_mul_mod(f1);
+
+        // even = f[0] + f1_j mod Q
+        let even = add_mod(f0, f1_j);
+
+        // odd = f[0] - f1_j mod Q
+        let odd = sub_mod(f0, f1_j);
+
+        array![to_u16(even), to_u16(odd)].span()
     } else {
         assert(false, 'n is not a power of 2');
         array![].span()
     }
 }
 
-// Compute the inverse NTT of a polynomial
+/// Compute the inverse NTT of a polynomial.
+///
+/// Base case (n=2) uses fused operations for lazy reduction:
+/// - even = I2 * (f_ntt[0] + f_ntt[1]) mod Q      [1 reduction]
+/// - odd = I2 * (f_ntt[0] - f_ntt[1]) * SQR1_INV mod Q  [1 reduction]
 pub fn intt(mut f_ntt: Span<u16>) -> Span<u16> {
     let n = f_ntt.len();
     if n > 2 {
@@ -141,9 +183,16 @@ pub fn intt(mut f_ntt: Span<u16>) -> Span<u16> {
         let f1 = intt(f1_ntt);
         merge(f0, f1)
     } else if n == 2 {
-        let even = mul_mod(I2, add_mod(*f_ntt[0], *f_ntt[1]));
-        let odd = mul3_mod(I2, sub_mod(*f_ntt[0], *f_ntt[1]), SQR1_INV);
-        array![even, odd].span()
+        let a = from_u16(*f_ntt[0]);
+        let b = from_u16(*f_ntt[1]);
+
+        // Fused: I2 * (a + b) mod Q
+        let even = fused_i2_sum_mod(a, b);
+
+        // Fused: I2 * (a - b + Q) * SQR1_INV mod Q
+        let odd = fused_i2_diff_sqr1inv_mod(a, b);
+
+        array![to_u16(even), to_u16(odd)].span()
     } else {
         assert(false, 'n is not a power of 2');
         array![].span()
