@@ -2,9 +2,14 @@
 version = 1
 
 [[package]]
-name = "falcon"
-version = "0.1.0"
+name = "corelib_imports"
+version = "0.1.2"
+source = "registry+https://scarbs.xyz/"
+checksum = "sha256:feeb2b7091634356871a9f9e1c9a2e5095a5fdbd2fbab92bc4b47ff2f8744b04"
 
 [[package]]
-name = "sphincs_plus"
+name = "falcon"
 version = "0.1.0"
+dependencies = [
+ "corelib_imports",
+]

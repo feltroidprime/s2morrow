@@ -10,7 +10,7 @@ install-stwo-run-and-prove:
 falcon-execute:
 	rm -rf $(TARGET_DIR)/execute/falcon \
 		&& cd packages/falcon \
-		&& scarb execute --arguments-file tests/data/args_512_1.json --print-resource-usage
+		&& scarb execute --arguments-file tests/data/args_512_1.json --print-resource-usage --save-profiler-trace-data
 
 falcon-args:
 	python packages/falcon/scripts/generate_args.py --n 512 --num_signatures 1 > packages/falcon/tests/data/args_512_1.json
@@ -33,33 +33,3 @@ falcon-burn:
 		--arguments-file packages/falcon/tests/data/args_512_1.json \
 		--output-file target/falcon.svg \
 		--open-in-browser
-
-sphincs-build:
-	scarb --profile release build --package sphincs_plus --features blake_hash,sparse_addr
-
-sphincs-build-sha2:
-	scarb --profile release build --package sphincs_plus
-
-sphincs-execute:
-	rm -rf $(TARGET_DIR)/execute/sphincs_plus
-	scarb --profile release execute \
-		--no-build \
-		--package sphincs_plus \
-		--print-resource-usage \
-		--arguments-file packages/sphincs-plus/tests/data/sha2_simple_128s.json
-
-sphincs-burn: sphincs-build
-	scarb burn --package sphincs_plus \
-		--no-build \
-		--output-file target/sphincs-plus.svg \
-		--arguments-file packages/sphincs-plus/tests/data/sha2_simple_128s.json \
-		--open-in-browser
-
-sphincs-prove:
-	stwo_run_and_prove \
-		--program resources/simple_bootloader_compiled.json \
-		--program_input packages/sphincs-plus/proving_task.json \
-		--prover_params_json prover_params.json \
-		--proofs_dir $(TARGET_DIR) \
-		--proof-format cairo-serde \
-		--verify
