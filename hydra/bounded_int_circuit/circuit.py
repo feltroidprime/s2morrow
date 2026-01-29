@@ -231,3 +231,23 @@ class BoundedIntCircuit:
             self.variables[name] = var
 
         self.outputs.append(var)
+
+    def _type_name(self, min_b: int, max_b: int) -> str:
+        """Generate readable type name for bounds."""
+        from .codegen import type_name
+        return type_name(min_b, max_b, self.modulus, self.constants)
+
+    def _generate_types(self) -> str:
+        """Generate all BoundedInt type aliases."""
+        lines = []
+
+        # Sort for deterministic output
+        for min_b, max_b in sorted(self.bound_types):
+            tname = self._type_name(min_b, max_b)
+            lines.append(f"type {tname} = BoundedInt<{min_b}, {max_b}>;")
+
+        # Constant types
+        for value, name in sorted(self.constants.items()):
+            lines.append(f"type {name}Const = UnitInt<{value}>;")
+
+        return "\n".join(lines)
