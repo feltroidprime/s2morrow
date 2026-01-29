@@ -260,3 +260,45 @@ class TestReduceBounds:
         # Quotient bounds for large range
         q_min, q_max = b.source.extra["q_bounds"]
         assert q_min < 0  # Negative quotient needed for negative dividend
+
+
+class TestAutoReduce:
+    """Test automatic reduction when bounds exceed threshold."""
+
+    def test_auto_reduce_on_mul_exceeding_threshold(self):
+        circuit = BoundedIntCircuit("test", modulus=12289, max_bound=2**20)
+        a = circuit.input("a", 0, 12288)
+        b = circuit.input("b", 0, 12288)
+
+        # 12288 * 12288 = 150994944 > 2**20 = 1048576
+        c = a * b
+
+        # Should auto-reduce
+        assert c.bounds == (0, 12288)
+        assert c.source.op_type == "REDUCE"
+
+    def test_no_auto_reduce_below_threshold(self):
+        circuit = BoundedIntCircuit("test", modulus=12289, max_bound=2**64)
+        a = circuit.input("a", 0, 12288)
+        b = circuit.input("b", 0, 12288)
+
+        c = a * b  # 150994944 < 2**64
+
+        assert c.bounds == (0, 150994944)
+        assert c.source.op_type == "MUL"
+
+    def test_auto_reduce_negative_threshold(self):
+        circuit = BoundedIntCircuit("test", modulus=12289, max_bound=2**16)
+        a = circuit.input("a", -1000, 1000)
+        b = circuit.input("b", -1000, 1000)
+
+        # -1000 * 1000 = -1000000 < -2**16
+        c = a * b
+
+        assert c.bounds == (0, 12288)
+
+    def test_hard_max_bound_limit(self):
+        """max_bound is capped at 2**128."""
+        circuit = BoundedIntCircuit("test", modulus=12289, max_bound=2**200)
+
+        assert circuit.max_bound == 2**128
