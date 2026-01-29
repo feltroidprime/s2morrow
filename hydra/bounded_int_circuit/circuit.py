@@ -58,3 +58,49 @@ class BoundedIntCircuit:
         self.bound_types.add((min_val, max_val))
 
         return var
+
+    def _create_op(
+        self,
+        op_type: str,
+        operands: list[BoundedIntVar],
+        min_val: int,
+        max_val: int,
+        **extra,
+    ) -> BoundedIntVar:
+        """Create an operation and its result variable."""
+        name = self._next_var_name()
+
+        result = BoundedIntVar(
+            circuit=self,
+            name=name,
+            min_bound=min_val,
+            max_bound=max_val,
+            source=None,  # Will be set below
+        )
+
+        op = Operation(
+            op_type=op_type,
+            operands=operands,
+            result=result,
+            extra=extra if extra else {},
+        )
+
+        result.source = op
+        self.variables[name] = result
+        self.operations.append(op)
+        self.bound_types.add((min_val, max_val))
+
+        return result
+
+    def _maybe_auto_reduce(self, var: BoundedIntVar) -> BoundedIntVar:
+        """Auto-reduce if bounds exceed threshold."""
+        if var.max_bound > self.max_bound or var.min_bound < -self.max_bound:
+            return self.reduce(var)
+        return var
+
+    def add(self, a: BoundedIntVar, b: BoundedIntVar) -> BoundedIntVar:
+        """Add two bounded integers."""
+        min_val = a.min_bound + b.min_bound
+        max_val = a.max_bound + b.max_bound
+        result = self._create_op("ADD", [a, b], min_val, max_val)
+        return self._maybe_auto_reduce(result)
