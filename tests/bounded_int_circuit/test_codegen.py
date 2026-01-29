@@ -106,3 +106,73 @@ class TestHelperImplGeneration:
 
         # Should only appear once
         assert impls_code.count("impl Add_Zq_Zq") == 1
+
+
+class TestFunctionGeneration:
+    def test_generates_function_signature(self):
+        circuit = BoundedIntCircuit("add_mod", modulus=12289)
+        a = circuit.input("a", 0, 12288)
+        b = circuit.input("b", 0, 12288)
+        c = a + b
+        circuit.output(c.reduce(), "result")
+
+        func_code = circuit._generate_function()
+
+        assert "pub fn add_mod(a: Zq, b: Zq)" in func_code
+        assert "-> Zq" in func_code or "-> (Zq)" in func_code
+
+    def test_generates_add_operation(self):
+        circuit = BoundedIntCircuit("test", modulus=12289)
+        a = circuit.input("a", 0, 12288)
+        b = circuit.input("b", 0, 12288)
+        c = a + b
+        circuit.output(c, "sum")
+
+        func_code = circuit._generate_function()
+
+        assert "add(a, b)" in func_code
+
+    def test_generates_sub_operation(self):
+        circuit = BoundedIntCircuit("test", modulus=12289)
+        a = circuit.input("a", 0, 12288)
+        b = circuit.input("b", 0, 12288)
+        c = a - b
+        circuit.output(c, "diff")
+
+        func_code = circuit._generate_function()
+
+        assert "sub(a, b)" in func_code
+
+    def test_generates_mul_operation(self):
+        circuit = BoundedIntCircuit("test", modulus=12289)
+        a = circuit.input("a", 0, 12288)
+        b = circuit.input("b", 0, 12288)
+        c = a * b
+        circuit.output(c, "prod")
+
+        func_code = circuit._generate_function()
+
+        assert "mul(a, b)" in func_code
+
+    def test_generates_reduce_operation(self):
+        circuit = BoundedIntCircuit("test", modulus=12289)
+        circuit.register_constant(12289, "Q")
+        a = circuit.input("a", 0, 24576)
+        b = a.reduce()
+        circuit.output(b, "reduced")
+
+        func_code = circuit._generate_function()
+
+        assert "bounded_int_div_rem" in func_code
+        assert "nz_q" in func_code
+
+    def test_generates_return_statement(self):
+        circuit = BoundedIntCircuit("test", modulus=12289)
+        a = circuit.input("a", 0, 12288)
+        b = circuit.input("b", 0, 12288)
+        circuit.output(a + b, "sum")
+        circuit.output(a - b, "diff")
+
+        func_code = circuit._generate_function()
+
+        assert "(sum, diff)" in func_code

@@ -348,3 +348,86 @@ class BoundedIntCircuit:
             # REM is linked to DIV, skip
 
         return "\n\n".join(lines)
+
+    def _generate_op(self, op: Operation) -> str:
+        """Generate Cairo code for a single operation."""
+        r = op.result.name
+        r_type = self._type_name(*op.result.bounds)
+
+        if op.op_type == "ADD":
+            a, b = op.operands
+            return f"let {r}: {r_type} = add({a.name}, {b.name});"
+
+        elif op.op_type == "SUB":
+            a, b = op.operands
+            return f"let {r}: {r_type} = sub({a.name}, {b.name});"
+
+        elif op.op_type == "MUL":
+            a, b = op.operands
+            return f"let {r}: {r_type} = mul({a.name}, {b.name});"
+
+        elif op.op_type == "REDUCE":
+            a = op.operands[0]
+            modulus = op.extra.get("modulus", self.modulus)
+            if modulus in self.constants:
+                nz_name = f"nz_{self.constants[modulus].lower()}"
+            else:
+                nz_name = f"nz_{modulus}"
+            q_name = f"_{r}_q"
+            return f"let ({q_name}, {r}): (_, {r_type}) = bounded_int_div_rem({a.name}, {nz_name});"
+
+        elif op.op_type == "DIV":
+            a, b = op.operands
+            nz_name = f"nz_{b.name}"
+            r_name = f"_{r}_rem"
+            return f"let ({r}, {r_name}): ({r_type}, _) = bounded_int_div_rem({a.name}, {nz_name});"
+
+        elif op.op_type == "REM":
+            # REM is generated together with DIV, skip if linked
+            if "linked_to" in op.extra:
+                return ""  # Already generated with DIV
+            a, b = op.operands
+            nz_name = f"nz_{b.name}"
+            q_name = f"_{r}_q"
+            return f"let ({q_name}, {r}): (_, {r_type}) = bounded_int_div_rem({a.name}, {nz_name});"
+
+        return f"// Unknown op: {op.op_type}"
+
+    def _generate_function(self) -> str:
+        """Generate the main circuit function."""
+        # Parameters
+        params = ", ".join(
+            f"{inp.name}: {self._type_name(*inp.bounds)}"
+            for inp in self.inputs
+        )
+
+        # Return type
+        if len(self.outputs) == 1:
+            returns = self._type_name(*self.outputs[0].bounds)
+        else:
+            returns = "(" + ", ".join(
+                self._type_name(*out.bounds)
+                for out in self.outputs
+            ) + ")"
+
+        # Body
+        body_lines = []
+        for op in self.operations:
+            line = self._generate_op(op)
+            if line:  # Skip empty lines (e.g., linked REM)
+                if op.comment:
+                    line += f"  // {op.comment}"
+                body_lines.append(line)
+
+        # Return statement
+        if len(self.outputs) == 1:
+            body_lines.append(self.outputs[0].name)
+        else:
+            output_names = ", ".join(out.name for out in self.outputs)
+            body_lines.append(f"({output_names})")
+
+        body = "\n    ".join(body_lines)
+
+        return f"""pub fn {self.name}({params}) -> {returns} {{
+    {body}
+}}"""
