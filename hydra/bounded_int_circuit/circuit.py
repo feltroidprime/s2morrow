@@ -104,3 +104,10 @@ class BoundedIntCircuit:
         max_val = a.max_bound + b.max_bound
         result = self._create_op("ADD", [a, b], min_val, max_val)
         return self._maybe_auto_reduce(result)
+
+    def sub(self, a: BoundedIntVar, b: BoundedIntVar) -> BoundedIntVar:
+        """Subtract two bounded integers."""
+        min_val = a.min_bound - b.max_bound
+        max_val = a.max_bound - b.min_bound
+        result = self._create_op("SUB", [a, b], min_val, max_val)
+        return self._maybe_auto_reduce(result)
