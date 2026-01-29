@@ -155,3 +155,62 @@ class TestMulBounds:
 
         op = circuit.operations[0]
         assert op.op_type == "MUL"
+
+
+class TestDivRemBounds:
+    """Test bound propagation for division. Based on corelib DivRemHelper tests."""
+
+    def test_divrem_basic(self):
+        """Division of [128, 255] by [3, 8]."""
+        circuit = BoundedIntCircuit("test", modulus=256)
+        a = circuit.input("a", 128, 255)
+        b = circuit.input("b", 3, 8)
+
+        q, r = a.div_rem(b)
+
+        # Quotient: 128/8=16 to 255/3=85
+        assert q.min_bound == 16
+        assert q.max_bound == 85
+        # Remainder: [0, 7] (max divisor - 1)
+        assert r.min_bound == 0
+        assert r.max_bound == 7
+
+    def test_divrem_by_constant(self):
+        """Division by integer constant."""
+        circuit = BoundedIntCircuit("test", modulus=256)
+        a = circuit.input("a", 0, 510)
+
+        q, r = a.div_rem(256)
+
+        # 0/256=0, 510/256=1
+        assert q.bounds == (0, 1)
+        assert r.bounds == (0, 255)
+
+    def test_div_operator(self):
+        """Test // operator returns quotient only."""
+        circuit = BoundedIntCircuit("test", modulus=256)
+        a = circuit.input("a", 0, 510)
+
+        q = a // 256
+
+        assert q.bounds == (0, 1)
+
+    def test_mod_operator(self):
+        """Test % operator returns remainder only."""
+        circuit = BoundedIntCircuit("test", modulus=256)
+        a = circuit.input("a", 0, 510)
+
+        r = a % 256
+
+        assert r.bounds == (0, 255)
+
+    def test_divrem_creates_linked_operations(self):
+        """div_rem should create linked DIV and REM operations."""
+        circuit = BoundedIntCircuit("test", modulus=256)
+        a = circuit.input("a", 0, 510)
+
+        q, r = a.div_rem(256)
+
+        # Should have 2 operations (or 1 combined - implementation detail)
+        assert q.source is not None
+        assert r.source is not None

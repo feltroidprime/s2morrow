@@ -125,3 +125,72 @@ class BoundedIntCircuit:
         max_val = max(corners)
         result = self._create_op("MUL", [a, b], min_val, max_val)
         return self._maybe_auto_reduce(result)
+
+    def constant(self, value: int, name: str | None = None) -> BoundedIntVar:
+        """Create a constant (singleton) variable."""
+        if name is None:
+            name = f"const_{value}"
+
+        if name in self.variables:
+            return self.variables[name]
+
+        var = BoundedIntVar(
+            circuit=self,
+            name=name,
+            min_bound=value,
+            max_bound=value,
+            source=None,
+        )
+
+        self.variables[name] = var
+        self.bound_types.add((value, value))
+
+        return var
+
+    def register_constant(self, value: int, name: str) -> None:
+        """Register a named constant for code generation."""
+        self.constants[value] = name
+
+    def div_rem(
+        self, a: BoundedIntVar, b: BoundedIntVar | int
+    ) -> tuple[BoundedIntVar, BoundedIntVar]:
+        """Division with remainder. Returns (quotient, remainder)."""
+        if isinstance(b, int):
+            b = self.constant(b)
+
+        # Quotient bounds - consider all corners, avoiding division by zero
+        corners = []
+        for a_val in [a.min_bound, a.max_bound]:
+            for b_val in [b.min_bound, b.max_bound]:
+                if b_val != 0:
+                    corners.append(a_val // b_val)
+
+        if not corners:
+            raise ValueError("Divisor range includes only zero")
+
+        q_min, q_max = min(corners), max(corners)
+
+        # Remainder bounds: [0, max(|b|) - 1]
+        r_max = max(abs(b.min_bound), abs(b.max_bound)) - 1
+
+        quotient = self._create_op(
+            "DIV", [a, b], q_min, q_max,
+            q_bounds=(q_min, q_max),
+        )
+        remainder = self._create_op(
+            "REM", [a, b], 0, r_max,
+            q_bounds=(q_min, q_max),
+            linked_to=quotient.name,
+        )
+
+        return quotient, remainder
+
+    def div(self, a: BoundedIntVar, b: BoundedIntVar | int) -> BoundedIntVar:
+        """Division - returns quotient only."""
+        q, _ = self.div_rem(a, b)
+        return q
+
+    def mod(self, a: BoundedIntVar, b: BoundedIntVar | int) -> BoundedIntVar:
+        """Modulo - returns remainder only."""
+        _, r = self.div_rem(a, b)
+        return r
