@@ -176,3 +176,37 @@ class TestFunctionGeneration:
         func_code = circuit._generate_function()
 
         assert "(sum, diff)" in func_code
+
+
+class TestCompile:
+    def test_compile_produces_complete_cairo(self):
+        circuit = BoundedIntCircuit("add_mod", modulus=12289)
+        circuit.register_constant(12289, "Q")
+        a = circuit.input("a", 0, 12288)
+        b = circuit.input("b", 0, 12288)
+        c = (a + b).reduce()
+        circuit.output(c, "result")
+
+        code = circuit.compile()
+
+        # Check all sections present
+        assert "use corelib_imports::bounded_int::" in code
+        assert "type Zq = BoundedInt<0, 12288>;" in code
+        assert "impl Add_Zq_Zq of AddHelper" in code
+        assert "const nz_q: NonZero<QConst>" in code
+        assert "pub fn add_mod" in code
+
+    def test_compile_imports_are_correct(self):
+        circuit = BoundedIntCircuit("test", modulus=12289)
+        a = circuit.input("a", 0, 12288)
+        circuit.output(a, "out")
+
+        code = circuit.compile()
+
+        assert "BoundedInt" in code
+        assert "AddHelper" in code
+        assert "SubHelper" in code
+        assert "MulHelper" in code
+        assert "DivRemHelper" in code
+        assert "bounded_int_div_rem" in code
+        assert "add, sub, mul" in code

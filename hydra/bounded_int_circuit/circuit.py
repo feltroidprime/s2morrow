@@ -431,3 +431,68 @@ class BoundedIntCircuit:
         return f"""pub fn {self.name}({params}) -> {returns} {{
     {body}
 }}"""
+
+    def _generate_imports(self) -> str:
+        """Generate Cairo imports."""
+        return """use corelib_imports::bounded_int::{
+    BoundedInt, upcast, downcast, bounded_int_div_rem,
+    AddHelper, MulHelper, DivRemHelper, UnitInt,
+};
+use corelib_imports::bounded_int::bounded_int::{SubHelper, add, sub, mul};"""
+
+    def _generate_constants(self) -> str:
+        """Generate NonZero constant definitions."""
+        lines = []
+        for value, name in sorted(self.constants.items()):
+            lines.append(f"const nz_{name.lower()}: NonZero<{name}Const> = {value};")
+        return "\n".join(lines)
+
+    def compile(self) -> str:
+        """Generate complete Cairo source file."""
+        parts = [
+            self._generate_imports(),
+            self._generate_types(),
+            self._generate_helper_impls(),
+            self._generate_constants(),
+            self._generate_function(),
+        ]
+
+        # Filter out empty parts
+        parts = [p for p in parts if p.strip()]
+
+        return "\n\n".join(parts)
+
+    def write(self, path: str) -> None:
+        """Compile and write to file."""
+        code = self.compile()
+        with open(path, "w") as f:
+            f.write(code)
+
+        stats = self.stats()
+        print(f"Written {stats['num_operations']} operations to {path}")
+        print(f"Stats: {stats}")
+
+    def stats(self) -> dict:
+        """Return circuit statistics."""
+        return {
+            "num_variables": len(self.variables),
+            "num_operations": len(self.operations),
+            "num_reductions": sum(1 for op in self.operations if op.op_type == "REDUCE"),
+            "num_types": len(self.bound_types),
+            "max_bits": self.max_bits(),
+        }
+
+    def max_bits(self) -> int:
+        """Return maximum bit-width across all variables."""
+        if not self.variables:
+            return 0
+        return max(v.bit_width for v in self.variables.values())
+
+    def print_bounds(self) -> None:
+        """Print all current variable bounds."""
+        print(f"=== Circuit '{self.name}' Bounds ===")
+        print(f"Modulus: {self.modulus}, Auto-reduce threshold: {self.max_bound}")
+        print()
+        for var in self.variables.values():
+            source = var.source.op_type if var.source else "INPUT"
+            print(f"  {var.inspect()}  [{source}]")
