@@ -143,7 +143,7 @@ class BoundedIntCircuit:
         )
 
         self.variables[name] = var
-        self.bound_types.add((value, value))
+        # Don't add to bound_types - constants get UnitInt type via register_constant
 
         return var
 
@@ -173,6 +173,9 @@ class BoundedIntCircuit:
         # Remainder bounds: [0, max(|b|) - 1]
         r_max = max(abs(b.min_bound), abs(b.max_bound)) - 1
 
+        # Register quotient bounds type
+        self.bound_types.add((q_min, q_max))
+
         quotient = self._create_op(
             "DIV", [a, b], q_min, q_max,
             q_bounds=(q_min, q_max),
@@ -199,15 +202,32 @@ class BoundedIntCircuit:
         """Explicit modular reduction. Resets bounds to [0, modulus-1]."""
         modulus = modulus or self.modulus
 
+        # For negative inputs, we need to shift to non-negative first
+        # Cairo's bounded_int_div_rem doesn't support negative dividends
+        if var.min_bound < 0:
+            if modulus not in self.constants:
+                self.register_constant(modulus, "Q")
+
+            # Calculate how many copies of modulus needed to shift to non-negative
+            # ceil(|min_bound| / modulus) copies
+            copies_needed = (-var.min_bound + modulus - 1) // modulus
+            shift_amount = copies_needed * modulus
+
+            # Create constant for the shift amount
+            shift_const = self.constant(shift_amount)
+            if shift_amount not in self.constants:
+                self.register_constant(shift_amount, f"SHIFT_{copies_needed}Q")
+
+            # Add shift to make non-negative
+            shifted = self.add(var, shift_const)
+            var = shifted
+
         # Compute quotient bounds
         q_max = var.max_bound // modulus
+        q_min = var.min_bound // modulus
 
-        if var.min_bound >= 0:
-            q_min = var.min_bound // modulus
-        else:
-            # For negative dividends, quotient is negative
-            # -150994944 // 12289 in Python gives -12289 (floor division)
-            q_min = var.min_bound // modulus
+        # Register quotient bounds type
+        self.bound_types.add((q_min, q_max))
 
         result = self._create_op(
             "REDUCE",
@@ -311,12 +331,27 @@ class BoundedIntCircuit:
                 b_type = f"{self.constants[modulus]}Const"
             else:
                 b_type = f"UnitInt<{modulus}>"
+            q_min, q_max = op.extra["q_bounds"]
+            q_type = self._type_name(q_min, q_max)
+            r_type = self._type_name(*op.result.bounds)
         else:
-            b_type = self._type_name(*b.bounds)
+            # DIV operation - need to find linked REM for its result bounds
+            if b.min_bound == b.max_bound and b.min_bound in self.constants:
+                b_type = f"{self.constants[b.min_bound]}Const"
+            else:
+                b_type = self._type_name(*b.bounds)
 
-        q_min, q_max = op.extra["q_bounds"]
-        q_type = self._type_name(q_min, q_max)
-        r_type = self._type_name(*op.result.bounds)
+            q_min, q_max = op.extra["q_bounds"]
+            q_type = self._type_name(q_min, q_max)
+
+            # Find linked REM operation (same operands) for remainder type
+            r_type = q_type  # default fallback
+            for other_op in self.operations:
+                if (other_op.op_type == "REM" and
+                    other_op.operands == [a, b] and
+                    "linked_to" in other_op.extra):
+                    r_type = self._type_name(*other_op.result.bounds)
+                    break
 
         return f"""impl DivRem_{a_type}_{b_type} of DivRemHelper<{a_type}, {b_type}> {{
     type DivT = {q_type};
@@ -356,15 +391,34 @@ class BoundedIntCircuit:
 
         if op.op_type == "ADD":
             a, b = op.operands
-            return f"let {r}: {r_type} = add({a.name}, {b.name});"
+            # Use Cairo constant name if operand is a registered constant
+            a_name = a.name
+            b_name = b.name
+            if a.min_bound == a.max_bound and a.min_bound in self.constants:
+                a_name = f"{self.constants[a.min_bound].lower()}_const"
+            if b.min_bound == b.max_bound and b.min_bound in self.constants:
+                b_name = f"{self.constants[b.min_bound].lower()}_const"
+            return f"let {r}: {r_type} = add({a_name}, {b_name});"
 
         elif op.op_type == "SUB":
             a, b = op.operands
-            return f"let {r}: {r_type} = sub({a.name}, {b.name});"
+            a_name = a.name
+            b_name = b.name
+            if a.min_bound == a.max_bound and a.min_bound in self.constants:
+                a_name = f"{self.constants[a.min_bound].lower()}_const"
+            if b.min_bound == b.max_bound and b.min_bound in self.constants:
+                b_name = f"{self.constants[b.min_bound].lower()}_const"
+            return f"let {r}: {r_type} = sub({a_name}, {b_name});"
 
         elif op.op_type == "MUL":
             a, b = op.operands
-            return f"let {r}: {r_type} = mul({a.name}, {b.name});"
+            a_name = a.name
+            b_name = b.name
+            if a.min_bound == a.max_bound and a.min_bound in self.constants:
+                a_name = f"{self.constants[a.min_bound].lower()}_const"
+            if b.min_bound == b.max_bound and b.min_bound in self.constants:
+                b_name = f"{self.constants[b.min_bound].lower()}_const"
+            return f"let {r}: {r_type} = mul({a_name}, {b_name});"
 
         elif op.op_type == "REDUCE":
             a = op.operands[0]
@@ -378,16 +432,33 @@ class BoundedIntCircuit:
 
         elif op.op_type == "DIV":
             a, b = op.operands
-            nz_name = f"nz_{b.name}"
-            r_name = f"_{r}_rem"
-            return f"let ({r}, {r_name}): ({r_type}, _) = bounded_int_div_rem({a.name}, {nz_name});"
+            # Check if divisor is a registered constant
+            if b.min_bound == b.max_bound and b.min_bound in self.constants:
+                nz_name = f"nz_{self.constants[b.min_bound].lower()}"
+            else:
+                nz_name = f"nz_{b.name}"
+            # Find the linked REM operation (same operands, created right after DIV)
+            rem_name = f"_{r}_rem"  # default
+            rem_result_type = "_"
+            for other_op in self.operations:
+                if (other_op.op_type == "REM" and
+                    other_op.operands == [a, b] and
+                    "linked_to" in other_op.extra):
+                    rem_name = other_op.result.name
+                    rem_result_type = self._type_name(*other_op.result.bounds)
+                    break
+            return f"let ({r}, {rem_name}): ({r_type}, {rem_result_type}) = bounded_int_div_rem({a.name}, {nz_name});"
 
         elif op.op_type == "REM":
             # REM is generated together with DIV, skip if linked
             if "linked_to" in op.extra:
                 return ""  # Already generated with DIV
             a, b = op.operands
-            nz_name = f"nz_{b.name}"
+            # Check if divisor is a registered constant
+            if b.min_bound == b.max_bound and b.min_bound in self.constants:
+                nz_name = f"nz_{self.constants[b.min_bound].lower()}"
+            else:
+                nz_name = f"nz_{b.name}"
             q_name = f"_{r}_q"
             return f"let ({q_name}, {r}): (_, {r_type}) = bounded_int_div_rem({a.name}, {nz_name});"
 
@@ -441,9 +512,12 @@ class BoundedIntCircuit:
 use corelib_imports::bounded_int::bounded_int::{SubHelper, add, sub, mul};"""
 
     def _generate_constants(self) -> str:
-        """Generate NonZero constant definitions."""
+        """Generate constant definitions (both NonZero and regular)."""
         lines = []
         for value, name in sorted(self.constants.items()):
+            # Regular constant for addition operations
+            lines.append(f"const {name.lower()}_const: {name}Const = {value};")
+            # NonZero variant for div_rem operations
             lines.append(f"const nz_{name.lower()}: NonZero<{name}Const> = {value};")
         return "\n".join(lines)
 

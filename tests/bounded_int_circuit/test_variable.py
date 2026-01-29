@@ -91,3 +91,40 @@ class TestOutputRegistration:
         circuit.output(a - b, "diff")
 
         assert len(circuit.outputs) == 2
+
+
+class TestDebugging:
+    def test_print_bounds(self, capsys):
+        circuit = BoundedIntCircuit("test", modulus=12289)
+        a = circuit.input("a", 0, 12288)
+        b = circuit.input("b", 0, 12288)
+        _ = a + b
+
+        circuit.print_bounds()
+
+        captured = capsys.readouterr()
+        assert "Circuit 'test'" in captured.out
+        assert "a: BoundedInt<0, 12288>" in captured.out
+        assert "b: BoundedInt<0, 12288>" in captured.out
+
+    def test_stats(self):
+        circuit = BoundedIntCircuit("test", modulus=12289)
+        circuit.register_constant(12289, "Q")
+        a = circuit.input("a", 0, 12288)
+        b = circuit.input("b", 0, 12288)
+        c = a + b
+        d = c.reduce()
+        circuit.output(d, "result")
+
+        stats = circuit.stats()
+
+        assert stats["num_operations"] == 2  # ADD + REDUCE
+        assert stats["num_reductions"] == 1
+        assert stats["num_variables"] >= 3  # a, b, c, d (some may share)
+
+    def test_max_bits(self):
+        circuit = BoundedIntCircuit("test", modulus=12289)
+        a = circuit.input("a", 0, 255)  # 8 bits
+        b = circuit.input("b", 0, 65535)  # 16 bits
+
+        assert circuit.max_bits() == 16

@@ -257,9 +257,9 @@ class TestReduceBounds:
         b = a.reduce()
 
         assert b.bounds == (0, 12288)
-        # Quotient bounds for large range
+        # For negative inputs, reduce() shifts to positive first, so quotient is non-negative
         q_min, q_max = b.source.extra["q_bounds"]
-        assert q_min < 0  # Negative quotient needed for negative dividend
+        assert q_min >= 0  # After shifting, quotient is non-negative
 
 
 class TestAutoReduce:

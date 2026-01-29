@@ -12,8 +12,16 @@ def type_name(min_b: int, max_b: int, modulus: int, constants: dict[int, str]) -
     if min_b == 0 and max_b == modulus - 1:
         return "Zq"
 
-    # Negative bounds
+    # Format min bound (use 'n' prefix for negative)
     if min_b < 0:
-        return f"BInt_n{abs(min_b)}_{max_b}"
+        min_str = f"n{abs(min_b)}"
+    else:
+        min_str = str(min_b)
 
-    return f"BInt_{min_b}_{max_b}"
+    # Format max bound (use 'n' prefix for negative)
+    if max_b < 0:
+        max_str = f"n{abs(max_b)}"
+    else:
+        max_str = str(max_b)
+
+    return f"BInt_{min_str}_{max_str}"
