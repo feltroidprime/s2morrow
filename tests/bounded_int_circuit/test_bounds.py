@@ -214,3 +214,49 @@ class TestDivRemBounds:
         # Should have 2 operations (or 1 combined - implementation detail)
         assert q.source is not None
         assert r.source is not None
+
+
+class TestReduceBounds:
+    """Test modular reduction."""
+
+    def test_reduce_resets_to_modulus_range(self):
+        circuit = BoundedIntCircuit("test", modulus=12289)
+        a = circuit.input("a", 0, 12288)
+        b = circuit.input("b", 0, 12288)
+
+        c = a + b  # [0, 24576]
+        d = c.reduce()
+
+        assert d.bounds == (0, 12288)
+
+    def test_reduce_negative_input(self):
+        circuit = BoundedIntCircuit("test", modulus=12289)
+        a = circuit.input("a", 0, 12288)
+        b = circuit.input("b", 0, 12288)
+
+        c = a - b  # [-12288, 12288]
+        d = c.reduce()
+
+        assert d.bounds == (0, 12288)
+
+    def test_reduce_tracks_quotient_bounds(self):
+        circuit = BoundedIntCircuit("test", modulus=12289)
+        a = circuit.input("a", 0, 24576)
+
+        b = a.reduce()
+
+        op = b.source
+        assert op.op_type == "REDUCE"
+        # Quotient should be [0, 1] for this range
+        assert op.extra["q_bounds"] == (0, 1)
+
+    def test_reduce_large_negative(self):
+        circuit = BoundedIntCircuit("test", modulus=12289)
+        a = circuit.input("a", -150994944, 150994944)
+
+        b = a.reduce()
+
+        assert b.bounds == (0, 12288)
+        # Quotient bounds for large range
+        q_min, q_max = b.source.extra["q_bounds"]
+        assert q_min < 0  # Negative quotient needed for negative dividend

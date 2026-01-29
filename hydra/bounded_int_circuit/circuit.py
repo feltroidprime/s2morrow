@@ -194,3 +194,28 @@ class BoundedIntCircuit:
         """Modulo - returns remainder only."""
         _, r = self.div_rem(a, b)
         return r
+
+    def reduce(self, var: BoundedIntVar, modulus: int | None = None) -> BoundedIntVar:
+        """Explicit modular reduction. Resets bounds to [0, modulus-1]."""
+        modulus = modulus or self.modulus
+
+        # Compute quotient bounds
+        q_max = var.max_bound // modulus
+
+        if var.min_bound >= 0:
+            q_min = var.min_bound // modulus
+        else:
+            # For negative dividends, quotient is negative
+            # -150994944 // 12289 in Python gives -12289 (floor division)
+            q_min = var.min_bound // modulus
+
+        result = self._create_op(
+            "REDUCE",
+            [var],
+            min_val=0,
+            max_val=modulus - 1,
+            q_bounds=(q_min, q_max),
+            modulus=modulus,
+        )
+
+        return result
