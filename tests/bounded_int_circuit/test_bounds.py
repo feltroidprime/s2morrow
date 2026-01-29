@@ -106,3 +106,52 @@ class TestSubBounds:
         assert len(circuit.operations) == 1
         op = circuit.operations[0]
         assert op.op_type == "SUB"
+
+
+class TestMulBounds:
+    """Test bound propagation for multiplication. Based on corelib tests."""
+
+    def test_mul_unsigned_bounds(self):
+        """u8 * u8 -> [0, 65025]. From corelib: MulHelper<u8, u8> Result = BoundedInt<0, 65025>"""
+        circuit = BoundedIntCircuit("test", modulus=256)
+        a = circuit.input("a", 0, 255)
+        b = circuit.input("b", 0, 255)
+
+        c = a * b
+
+        assert c.min_bound == 0
+        assert c.max_bound == 65025  # 255 * 255
+
+    def test_mul_signed_bounds(self):
+        """i8 * i8 -> [-16256, 16384]. From corelib: MulHelper<i8, i8>"""
+        circuit = BoundedIntCircuit("test", modulus=256)
+        a = circuit.input("a", -128, 127)
+        b = circuit.input("b", -128, 127)
+
+        c = a * b
+
+        # Corners: -128*-128=16384, -128*127=-16256, 127*-128=-16256, 127*127=16129
+        assert c.min_bound == -16256
+        assert c.max_bound == 16384
+
+    def test_mul_mixed_signs(self):
+        """Test multiplication with one positive, one negative range."""
+        circuit = BoundedIntCircuit("test", modulus=256)
+        a = circuit.input("a", -10, 10)
+        b = circuit.input("b", 5, 15)
+
+        c = a * b
+
+        # Corners: -10*5=-50, -10*15=-150, 10*5=50, 10*15=150
+        assert c.min_bound == -150
+        assert c.max_bound == 150
+
+    def test_mul_creates_operation(self):
+        circuit = BoundedIntCircuit("test", modulus=256)
+        a = circuit.input("a", 0, 255)
+        b = circuit.input("b", 0, 255)
+
+        c = a * b
+
+        op = circuit.operations[0]
+        assert op.op_type == "MUL"

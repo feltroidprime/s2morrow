@@ -111,3 +111,17 @@ class BoundedIntCircuit:
         max_val = a.max_bound - b.min_bound
         result = self._create_op("SUB", [a, b], min_val, max_val)
         return self._maybe_auto_reduce(result)
+
+    def mul(self, a: BoundedIntVar, b: BoundedIntVar) -> BoundedIntVar:
+        """Multiply two bounded integers."""
+        # For signed multiplication, consider all corner combinations
+        corners = [
+            a.min_bound * b.min_bound,
+            a.min_bound * b.max_bound,
+            a.max_bound * b.min_bound,
+            a.max_bound * b.max_bound,
+        ]
+        min_val = min(corners)
+        max_val = max(corners)
+        result = self._create_op("MUL", [a, b], min_val, max_val)
+        return self._maybe_auto_reduce(result)
