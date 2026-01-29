@@ -58,3 +58,36 @@ class TestInputCreation:
         assert a.bit_width == 8
         assert b.bit_width == 8
         assert c.bit_width == 16
+
+
+class TestOutputRegistration:
+    def test_output_registration(self):
+        circuit = BoundedIntCircuit("test", modulus=12289)
+        a = circuit.input("a", 0, 12288)
+        b = circuit.input("b", 0, 12288)
+        c = a + b
+
+        circuit.output(c, "sum")
+
+        assert len(circuit.outputs) == 1
+        assert circuit.outputs[0] is c
+
+    def test_output_rename(self):
+        circuit = BoundedIntCircuit("test", modulus=12289)
+        a = circuit.input("a", 0, 12288)
+        b = a + a
+
+        circuit.output(b, "doubled")
+
+        # The variable should be renamed for output
+        assert circuit.outputs[0].name == "doubled" or "doubled" in str(circuit.outputs)
+
+    def test_multiple_outputs(self):
+        circuit = BoundedIntCircuit("test", modulus=12289)
+        a = circuit.input("a", 0, 12288)
+        b = circuit.input("b", 0, 12288)
+
+        circuit.output(a + b, "sum")
+        circuit.output(a - b, "diff")
+
+        assert len(circuit.outputs) == 2

@@ -219,3 +219,15 @@ class BoundedIntCircuit:
         )
 
         return result
+
+    def output(self, var: BoundedIntVar, name: str | None = None) -> None:
+        """Mark a variable as circuit output."""
+        if name is not None and name != var.name:
+            # Rename variable for output
+            old_name = var.name
+            if old_name in self.variables:
+                del self.variables[old_name]
+            var.name = name
+            self.variables[name] = var
+
+        self.outputs.append(var)
