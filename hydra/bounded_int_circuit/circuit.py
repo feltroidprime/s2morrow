@@ -251,3 +251,100 @@ class BoundedIntCircuit:
             lines.append(f"type {name}Const = UnitInt<{value}>;")
 
         return "\n".join(lines)
+
+    def _impl_key(self, op: Operation) -> str:
+        """Generate a unique key for an impl to avoid duplicates."""
+        if op.op_type in ("ADD", "SUB", "MUL"):
+            a, b = op.operands
+            return f"{op.op_type}_{a.bounds}_{b.bounds}"
+        elif op.op_type == "REDUCE":
+            a = op.operands[0]
+            mod = op.extra.get("modulus", self.modulus)
+            return f"REDUCE_{a.bounds}_{mod}"
+        elif op.op_type in ("DIV", "REM"):
+            a, b = op.operands
+            return f"DIVREM_{a.bounds}_{b.bounds}"
+        return f"{op.op_type}_{id(op)}"
+
+    def _gen_add_helper(self, op: Operation) -> str:
+        a, b = op.operands
+        result = op.result
+        a_type = self._type_name(*a.bounds)
+        b_type = self._type_name(*b.bounds)
+        r_type = self._type_name(*result.bounds)
+
+        return f"""impl Add_{a_type}_{b_type} of AddHelper<{a_type}, {b_type}> {{
+    type Result = {r_type};
+}}"""
+
+    def _gen_sub_helper(self, op: Operation) -> str:
+        a, b = op.operands
+        result = op.result
+        a_type = self._type_name(*a.bounds)
+        b_type = self._type_name(*b.bounds)
+        r_type = self._type_name(*result.bounds)
+
+        return f"""impl Sub_{a_type}_{b_type} of SubHelper<{a_type}, {b_type}> {{
+    type Result = {r_type};
+}}"""
+
+    def _gen_mul_helper(self, op: Operation) -> str:
+        a, b = op.operands
+        result = op.result
+        a_type = self._type_name(*a.bounds)
+        b_type = self._type_name(*b.bounds)
+        r_type = self._type_name(*result.bounds)
+
+        return f"""impl Mul_{a_type}_{b_type} of MulHelper<{a_type}, {b_type}> {{
+    type Result = {r_type};
+}}"""
+
+    def _gen_divrem_helper(self, op: Operation) -> str:
+        a = op.operands[0]
+        b = op.operands[1] if len(op.operands) > 1 else None
+
+        a_type = self._type_name(*a.bounds)
+
+        if op.op_type == "REDUCE":
+            modulus = op.extra.get("modulus", self.modulus)
+            if modulus in self.constants:
+                b_type = f"{self.constants[modulus]}Const"
+            else:
+                b_type = f"UnitInt<{modulus}>"
+        else:
+            b_type = self._type_name(*b.bounds)
+
+        q_min, q_max = op.extra["q_bounds"]
+        q_type = self._type_name(q_min, q_max)
+        r_type = self._type_name(*op.result.bounds)
+
+        return f"""impl DivRem_{a_type}_{b_type} of DivRemHelper<{a_type}, {b_type}> {{
+    type DivT = {q_type};
+    type RemT = {r_type};
+}}"""
+
+    def _generate_helper_impls(self) -> str:
+        """Generate AddHelper, SubHelper, MulHelper, DivRemHelper impls."""
+        lines = []
+        seen = set()
+
+        for op in self.operations:
+            impl_key = self._impl_key(op)
+            if impl_key in seen:
+                continue
+            seen.add(impl_key)
+
+            if op.op_type == "ADD":
+                lines.append(self._gen_add_helper(op))
+            elif op.op_type == "SUB":
+                lines.append(self._gen_sub_helper(op))
+            elif op.op_type == "MUL":
+                lines.append(self._gen_mul_helper(op))
+            elif op.op_type == "REDUCE":
+                lines.append(self._gen_divrem_helper(op))
+            elif op.op_type == "DIV":
+                # Generate once for div_rem pair
+                lines.append(self._gen_divrem_helper(op))
+            # REM is linked to DIV, skip
+
+        return "\n\n".join(lines)

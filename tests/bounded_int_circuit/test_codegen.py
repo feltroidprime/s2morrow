@@ -48,3 +48,61 @@ class TestTypeGeneration:
         name = circuit._type_name(-12288, 12288)
 
         assert name == "BInt_n12288_12288"
+
+
+class TestHelperImplGeneration:
+    def test_generates_add_helper(self):
+        circuit = BoundedIntCircuit("test", modulus=12289)
+        a = circuit.input("a", 0, 12288)
+        b = circuit.input("b", 0, 12288)
+        _ = a + b
+
+        impls_code = circuit._generate_helper_impls()
+
+        assert "impl Add_Zq_Zq of AddHelper<Zq, Zq>" in impls_code
+        assert "type Result = BInt_0_24576;" in impls_code
+
+    def test_generates_sub_helper(self):
+        circuit = BoundedIntCircuit("test", modulus=12289)
+        a = circuit.input("a", 0, 12288)
+        b = circuit.input("b", 0, 12288)
+        _ = a - b
+
+        impls_code = circuit._generate_helper_impls()
+
+        assert "SubHelper<Zq, Zq>" in impls_code
+        assert "BInt_n12288_12288" in impls_code
+
+    def test_generates_mul_helper(self):
+        circuit = BoundedIntCircuit("test", modulus=12289)
+        a = circuit.input("a", 0, 12288)
+        b = circuit.input("b", 0, 12288)
+        _ = a * b
+
+        impls_code = circuit._generate_helper_impls()
+
+        assert "MulHelper<Zq, Zq>" in impls_code
+
+    def test_generates_divrem_helper(self):
+        circuit = BoundedIntCircuit("test", modulus=12289)
+        circuit.register_constant(12289, "Q")
+        a = circuit.input("a", 0, 24576)
+        _ = a.reduce()
+
+        impls_code = circuit._generate_helper_impls()
+
+        assert "DivRemHelper<BInt_0_24576, QConst>" in impls_code
+        assert "type DivT" in impls_code
+        assert "type RemT" in impls_code
+
+    def test_deduplicates_impls(self):
+        circuit = BoundedIntCircuit("test", modulus=12289)
+        a = circuit.input("a", 0, 12288)
+        b = circuit.input("b", 0, 12288)
+        _ = a + b
+        _ = a + b  # Same operation again
+
+        impls_code = circuit._generate_helper_impls()
+
+        # Should only appear once
+        assert impls_code.count("impl Add_Zq_Zq") == 1
