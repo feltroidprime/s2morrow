@@ -165,3 +165,46 @@ class TestSplitMerge:
         # Operations should include multiplications by twiddle factors
         mul_ops = [op for op in gen.circuit.operations if op.op_type == "MUL"]
         assert len(mul_ops) >= 2  # At least 2 twiddle multiplications
+
+
+class TestRecursiveNtt:
+    """Test full recursive NTT."""
+
+    def test_ntt_4_matches_reference(self):
+        """n=4 NTT matches reference algorithm."""
+        gen = NttCircuitGenerator(n=4)
+        gen._register_constants()
+
+        # Create inputs
+        inputs = [gen.circuit.input(f"f{i}", 0, gen.Q - 1) for i in range(4)]
+
+        # Run NTT
+        result = gen._ntt(inputs)
+
+        # Mark outputs with reduction
+        for i, out in enumerate(result):
+            gen.circuit.output(out.reduce(), f"r{i}")
+
+        # Test with values
+        test_input = [100, 200, 300, 400]
+        expected = reference_ntt(test_input[:])
+        actual = gen.simulate(test_input[:])
+
+        assert actual == expected, f"n=4: Expected {expected}, got {actual}"
+
+    def test_ntt_8_matches_reference(self):
+        """n=8 NTT matches reference algorithm."""
+        gen = NttCircuitGenerator(n=8)
+        gen._register_constants()
+
+        inputs = [gen.circuit.input(f"f{i}", 0, gen.Q - 1) for i in range(8)]
+        result = gen._ntt(inputs)
+
+        for i, out in enumerate(result):
+            gen.circuit.output(out.reduce(), f"r{i}")
+
+        test_input = list(range(1, 9))
+        expected = reference_ntt(test_input[:])
+        actual = gen.simulate(test_input[:])
+
+        assert actual == expected, f"n=8: Expected {expected}, got {actual}"

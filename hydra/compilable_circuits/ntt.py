@@ -119,6 +119,30 @@ class NttCircuitGenerator:
 
         return result
 
+    def _ntt(self, f: list[BoundedIntVar]) -> list[BoundedIntVar]:
+        """
+        Recursive NTT - operations are traced into circuit.
+
+        For n=2: base case with SQR1
+        For n>2: split -> recurse on halves -> merge
+
+        Returns unreduced results.
+        """
+        n = len(f)
+
+        if n == 2:
+            return self._ntt_base_case(f[0], f[1])
+        else:
+            # Split into even/odd indices
+            f0, f1 = self._split(f)
+
+            # Recursive NTT on each half
+            f0_ntt = self._ntt(f0)
+            f1_ntt = self._ntt(f1)
+
+            # Merge using butterflies with twiddle factors
+            return self._merge_ntt(f0_ntt, f1_ntt, n)
+
     def simulate(self, values: list[int]) -> list[int]:
         """
         Execute the traced operations on actual values.
