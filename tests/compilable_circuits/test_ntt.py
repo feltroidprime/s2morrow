@@ -208,3 +208,73 @@ class TestRecursiveNtt:
         actual = gen.simulate(test_input[:])
 
         assert actual == expected, f"n=8: Expected {expected}, got {actual}"
+
+
+import random
+
+
+class TestLargerSizes:
+    """Test NTT at larger sizes up to 512."""
+
+    @pytest.mark.parametrize("n", [16, 32, 64])
+    def test_ntt_matches_reference_sequential(self, n):
+        """NTT matches reference for sequential input."""
+        gen = NttCircuitGenerator(n=n)
+        gen._register_constants()
+
+        inputs = [gen.circuit.input(f"f{i}", 0, gen.Q - 1) for i in range(n)]
+        result = gen._ntt(inputs)
+
+        for i, out in enumerate(result):
+            gen.circuit.output(out.reduce(), f"r{i}")
+
+        test_input = list(range(1, n + 1))
+        expected = reference_ntt(test_input[:])
+        actual = gen.simulate(test_input[:])
+
+        assert actual == expected, f"n={n} sequential: mismatch"
+
+    @pytest.mark.parametrize("n", [16, 32, 64])
+    def test_ntt_matches_reference_random(self, n):
+        """NTT matches reference for random input."""
+        random.seed(42)
+
+        gen = NttCircuitGenerator(n=n)
+        gen._register_constants()
+
+        inputs = [gen.circuit.input(f"f{i}", 0, gen.Q - 1) for i in range(n)]
+        result = gen._ntt(inputs)
+
+        for i, out in enumerate(result):
+            gen.circuit.output(out.reduce(), f"r{i}")
+
+        test_input = [random.randint(0, gen.Q - 1) for _ in range(n)]
+        expected = reference_ntt(test_input[:])
+        actual = gen.simulate(test_input[:])
+
+        assert actual == expected, f"n={n} random: mismatch"
+
+    def test_ntt_512_matches_reference(self):
+        """n=512 NTT matches reference algorithm."""
+        random.seed(42)
+
+        gen = NttCircuitGenerator(n=512)
+        gen._register_constants()
+
+        inputs = [gen.circuit.input(f"f{i}", 0, gen.Q - 1) for i in range(512)]
+        result = gen._ntt(inputs)
+
+        for i, out in enumerate(result):
+            gen.circuit.output(out.reduce(), f"r{i}")
+
+        # Test with random values
+        test_input = [random.randint(0, gen.Q - 1) for _ in range(512)]
+        expected = reference_ntt(test_input[:])
+        actual = gen.simulate(test_input[:])
+
+        assert actual == expected, "n=512: NTT mismatch"
+
+        # Check statistics
+        stats = gen.circuit.stats()
+        print(f"\nn=512 stats: {stats}")
+        assert stats["num_operations"] > 5000, "Expected >5000 operations for n=512"
