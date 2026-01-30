@@ -48,3 +48,30 @@ fn test_ntt_512_all_zeros() {
         i += 1;
     };
 }
+
+#[test]
+fn test_ntt_512_boundary_values() {
+    // All elements at Q-1 = 12288
+    let mut f: Array<Zq> = array![];
+    let mut f_u16: Array<u16> = array![];
+
+    let mut i: usize = 0;
+    while i < 512 {
+        f.append(from_u16(12288));
+        f_u16.append(12288);
+        i += 1;
+    };
+
+    // Reference
+    let expected = ntt(f_u16.span());
+
+    // Generated
+    let actual = ntt_512(f);
+
+    // Compare
+    let mut i: usize = 0;
+    while i < 512 {
+        assert_eq!(to_u16(*actual[i]), *expected[i]);
+        i += 1;
+    };
+}

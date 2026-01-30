@@ -366,3 +366,61 @@ class TestRegenerateCli:
         content = output_file.read_text()
         assert "pub fn ntt_8(" in content
         assert "ntt_8_inner" in content
+
+
+class TestEdgeCases:
+    """Test edge cases for NTT generation."""
+
+    def test_all_zeros(self):
+        """NTT of all zeros should be all zeros."""
+        for n in [2, 4, 8, 16]:
+            gen = NttCircuitGenerator(n=n)
+            gen._register_constants()
+
+            inputs = [gen.circuit.input(f"f{i}", 0, gen.Q - 1) for i in range(n)]
+            result = gen._ntt(inputs)
+
+            for i, out in enumerate(result):
+                gen.circuit.output(out.reduce(), f"r{i}")
+
+            test_input = [0] * n
+            expected = reference_ntt(test_input[:])
+            actual = gen.simulate(test_input[:])
+
+            assert actual == expected == [0] * n
+
+    def test_all_max_values(self):
+        """NTT handles all inputs at Q-1."""
+        for n in [2, 4, 8]:
+            gen = NttCircuitGenerator(n=n)
+            gen._register_constants()
+
+            inputs = [gen.circuit.input(f"f{i}", 0, gen.Q - 1) for i in range(n)]
+            result = gen._ntt(inputs)
+
+            for i, out in enumerate(result):
+                gen.circuit.output(out.reduce(), f"r{i}")
+
+            test_input = [gen.Q - 1] * n
+            expected = reference_ntt(test_input[:])
+            actual = gen.simulate(test_input[:])
+
+            assert actual == expected
+
+    def test_alternating_pattern(self):
+        """NTT handles alternating 0, Q-1 pattern."""
+        n = 8
+        gen = NttCircuitGenerator(n=n)
+        gen._register_constants()
+
+        inputs = [gen.circuit.input(f"f{i}", 0, gen.Q - 1) for i in range(n)]
+        result = gen._ntt(inputs)
+
+        for i, out in enumerate(result):
+            gen.circuit.output(out.reduce(), f"r{i}")
+
+        test_input = [0 if i % 2 == 0 else gen.Q - 1 for i in range(n)]
+        expected = reference_ntt(test_input[:])
+        actual = gen.simulate(test_input[:])
+
+        assert actual == expected
