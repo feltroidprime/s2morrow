@@ -5,6 +5,44 @@ from hydra.compilable_circuits.ntt import NttCircuitGenerator
 from hydra.falcon_py.ntt_constants import roots_dict_Zq
 
 
+# Reference NTT implementation for testing
+# (Avoiding import issues with hydra.falcon_py.ntt)
+Q = 12289
+SQR1 = roots_dict_Zq[2][0]  # = 1479
+
+
+def split(f):
+    """Split list into even and odd indices."""
+    return f[::2], f[1::2]
+
+
+def merge_ntt(f_list_ntt):
+    """Merge two NTT halves."""
+    f0_ntt, f1_ntt = f_list_ntt
+    n = 2 * len(f0_ntt)
+    w = roots_dict_Zq[n]
+    f_ntt = [0] * n
+    for i in range(n // 2):
+        f_ntt[2 * i + 0] = (f0_ntt[i] + w[2 * i] * f1_ntt[i]) % Q
+        f_ntt[2 * i + 1] = (f0_ntt[i] - w[2 * i] * f1_ntt[i]) % Q
+    return f_ntt
+
+
+def reference_ntt(f):
+    """Reference NTT implementation for testing."""
+    n = len(f)
+    if n > 2:
+        f0, f1 = split(f)
+        f0_ntt = reference_ntt(f0)
+        f1_ntt = reference_ntt(f1)
+        f_ntt = merge_ntt([f0_ntt, f1_ntt])
+    elif n == 2:
+        f_ntt = [0] * n
+        f_ntt[0] = (f[0] + SQR1 * f[1]) % Q
+        f_ntt[1] = (f[0] - SQR1 * f[1]) % Q
+    return f_ntt
+
+
 class TestConstantRegistration:
     """Test twiddle factor constant registration."""
 
@@ -39,3 +77,48 @@ class TestConstantRegistration:
         roots_8 = roots_dict_Zq[8]
         assert roots_8[0] in gen.circuit.constants  # W8_0 = 5736
         assert roots_8[2] in gen.circuit.constants  # W8_1 = 4134
+
+
+class TestBaseCase:
+    """Test n=2 base case NTT."""
+
+    def test_ntt_2_creates_circuit(self):
+        """n=2 NTT creates a circuit with correct structure."""
+        gen = NttCircuitGenerator(n=2)
+        gen._register_constants()
+
+        # Create inputs
+        f0 = gen.circuit.input("f0", 0, gen.Q - 1)
+        f1 = gen.circuit.input("f1", 0, gen.Q - 1)
+
+        # Run base case
+        result = gen._ntt_base_case(f0, f1)
+
+        # Should return 2 outputs
+        assert len(result) == 2
+
+        # Check operations were recorded (mul, add, sub)
+        assert len(gen.circuit.operations) >= 3
+
+    def test_ntt_2_matches_reference(self):
+        """n=2 NTT matches reference algorithm values."""
+        gen = NttCircuitGenerator(n=2)
+        gen._register_constants()
+
+        # Create inputs
+        f0 = gen.circuit.input("f0", 0, gen.Q - 1)
+        f1 = gen.circuit.input("f1", 0, gen.Q - 1)
+
+        # Run base case
+        result = gen._ntt_base_case(f0, f1)
+
+        # Mark outputs
+        for i, out in enumerate(result):
+            gen.circuit.output(out.reduce(), f"r{i}")
+
+        # Simulate with test values
+        test_input = [100, 200]
+        expected = reference_ntt(test_input[:])
+        actual = gen.simulate(test_input[:])
+
+        assert actual == expected, f"Expected {expected}, got {actual}"

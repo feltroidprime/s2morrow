@@ -5,6 +5,7 @@ NTT circuit generator for Falcon-512.
 Generates fully-unrolled Cairo ntt_512 function using BoundedIntCircuit.
 """
 from hydra.bounded_int_circuit import BoundedIntCircuit
+from hydra.bounded_int_circuit.variable import BoundedIntVar
 from hydra.falcon_py.ntt_constants import roots_dict_Zq
 
 
@@ -48,3 +49,79 @@ class NttCircuitGenerator:
                 if root_value not in self.circuit.constants:
                     self.circuit.register_constant(root_value, root_name)
             size *= 2
+
+    def _ntt_base_case(self, f0: BoundedIntVar, f1: BoundedIntVar) -> list[BoundedIntVar]:
+        """
+        NTT base case for n=2.
+
+        Computes:
+            r0 = (f0 + sqr1 * f1) mod Q
+            r1 = (f0 - sqr1 * f1) mod Q
+
+        Returns unreduced results (caller should reduce).
+        """
+        sqr1 = self.circuit.constant(self.SQR1, "sqr1")
+
+        # f1 * sqr1
+        f1_j = f1 * sqr1
+
+        # f0 + f1_j, f0 - f1_j
+        even = f0 + f1_j
+        odd = f0 - f1_j
+
+        return [even, odd]
+
+    def simulate(self, values: list[int]) -> list[int]:
+        """
+        Execute the traced operations on actual values.
+
+        This replays the circuit operations on concrete integers
+        to verify correctness without generating Cairo code.
+        """
+        if len(values) != len(self.circuit.inputs):
+            raise ValueError(
+                f"Expected {len(self.circuit.inputs)} values, got {len(values)}"
+            )
+
+        # Map variable names to their current values
+        env: dict[str, int] = {}
+
+        # Initialize inputs
+        for i, inp in enumerate(self.circuit.inputs):
+            env[inp.name] = values[i]
+
+        # Initialize constants
+        for val, name in self.circuit.constants.items():
+            const_name = name.lower() + "_const" if name != "Q" else "q_const"
+            # Find the constant variable in circuit
+            for var_name, var in self.circuit.variables.items():
+                if var.min_bound == var.max_bound == val:
+                    env[var_name] = val
+
+        # Execute operations
+        for op in self.circuit.operations:
+            if op.op_type == "ADD":
+                a, b = op.operands
+                env[op.result.name] = env[a.name] + env[b.name]
+            elif op.op_type == "SUB":
+                a, b = op.operands
+                env[op.result.name] = env[a.name] - env[b.name]
+            elif op.op_type == "MUL":
+                a, b = op.operands
+                env[op.result.name] = env[a.name] * env[b.name]
+            elif op.op_type == "REDUCE":
+                a = op.operands[0]
+                modulus = op.extra.get("modulus", self.Q)
+                env[op.result.name] = env[a.name] % modulus
+            elif op.op_type in ("DIV", "REM"):
+                # Handle div_rem pairs
+                a = op.operands[0]
+                b = op.operands[1] if len(op.operands) > 1 else None
+                divisor = env[b.name] if b else op.extra.get("modulus", self.Q)
+                if op.op_type == "DIV":
+                    env[op.result.name] = env[a.name] // divisor
+                else:
+                    env[op.result.name] = env[a.name] % divisor
+
+        # Collect outputs
+        return [env[out.name] for out in self.circuit.outputs]
