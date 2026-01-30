@@ -10,6 +10,16 @@ name = "main"
 function = "falcon::main"
 sierra = true
 
+[[target.executable]]
+name = "bench_ntt_recursive"
+function = "falcon::programs::bench_ntt_recursive::main"
+sierra = true
+
+[[target.executable]]
+name = "bench_ntt_bounded_int"
+function = "falcon::programs::bench_ntt_bounded_int::main"
+sierra = true
+
 [dependencies]
 cairo_execute = "2.15.1"
 corelib_imports = "0.1.2"

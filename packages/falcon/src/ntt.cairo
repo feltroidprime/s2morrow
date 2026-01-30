@@ -12,9 +12,9 @@
 
 use crate::ntt_constants::{get_even_roots, get_even_roots_inv};
 use crate::zq::{
-    from_u16, to_u16, add_mod, sub_mod, mul_mod, fused_i2_add_mod, fused_i2_sub_mul_mod,
-    fused_add_mul_mod, fused_sub_mul_mod, fused_sqr1_mul_mod, fused_i2_sum_mod,
-    fused_i2_diff_sqr1inv_mod,
+    add_mod, from_u16, fused_add_mul_mod, fused_i2_add_mod, fused_i2_diff_sqr1inv_mod,
+    fused_i2_sub_mul_mod, fused_i2_sum_mod, fused_sqr1_mul_mod, fused_sub_mul_mod, mul_mod, sub_mod,
+    to_u16,
 };
 
 /// Subtract coefficients of two polynomials modulo Q

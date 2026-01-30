@@ -8,10 +8,10 @@
 //! 1. BoundedInt throughout - Zq = BoundedInt<0, 12288> as native type
 //! 2. Lazy reduction - Fuse arithmetic operations and reduce mod Q only once
 
+use corelib_imports::bounded_int::bounded_int::{SubHelper, add, mul, sub};
 use corelib_imports::bounded_int::{
-    BoundedInt, upcast, downcast, bounded_int_div_rem, AddHelper, MulHelper, DivRemHelper, UnitInt,
+    AddHelper, BoundedInt, DivRemHelper, MulHelper, UnitInt, bounded_int_div_rem, downcast, upcast,
 };
-use corelib_imports::bounded_int::bounded_int::{SubHelper, add, sub, mul};
 
 /// The ring modulus Q = 12289
 pub const Q: u16 = 12289;

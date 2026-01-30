@@ -357,4 +357,3 @@ For n=512:
 
 - `intt_512`: Inverse NTT with same approach
 - `mul_ntt_512`: Pointwise multiplication in NTT domain
-- Smaller sizes: `ntt_256`, `ntt_128` for Falcon-256

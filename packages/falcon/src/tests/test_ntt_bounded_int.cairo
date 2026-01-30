@@ -14,7 +14,7 @@ fn test_ntt_512_matches_recursive() {
         f_array.append(from_u16(i));
         f_u16.append(i);
         i += 1;
-    };
+    }
 
     // Reference: existing recursive ntt
     let expected = ntt(f_u16.span());
@@ -37,7 +37,7 @@ fn test_ntt_512_all_zeros() {
     while i < 512 {
         f.append(from_u16(0));
         i += 1;
-    };
+    }
 
     let result = ntt_512(f);
 
@@ -60,7 +60,7 @@ fn test_ntt_512_boundary_values() {
         f.append(from_u16(12288));
         f_u16.append(12288);
         i += 1;
-    };
+    }
 
     // Reference
     let expected = ntt(f_u16.span());
