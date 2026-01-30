@@ -122,3 +122,46 @@ class TestBaseCase:
         actual = gen.simulate(test_input[:])
 
         assert actual == expected, f"Expected {expected}, got {actual}"
+
+
+class TestSplitMerge:
+    """Test split and merge operations."""
+
+    def test_split_even_odd(self):
+        """Split separates even and odd indices."""
+        gen = NttCircuitGenerator(n=4)
+
+        # Create mock inputs as list
+        coeffs = ["f0", "f1", "f2", "f3"]
+
+        f0, f1 = gen._split(coeffs)
+
+        # Even indices: f0, f2
+        assert f0 == ["f0", "f2"]
+        # Odd indices: f1, f3
+        assert f1 == ["f1", "f3"]
+
+    def test_merge_ntt_n4(self):
+        """Merge combines two n=2 NTTs into n=4."""
+        gen = NttCircuitGenerator(n=4)
+        gen._register_constants()
+
+        # Create inputs for two base NTTs
+        f0_ntt = [
+            gen.circuit.input("a0", 0, gen.Q - 1),
+            gen.circuit.input("a1", 0, gen.Q - 1),
+        ]
+        f1_ntt = [
+            gen.circuit.input("b0", 0, gen.Q - 1),
+            gen.circuit.input("b1", 0, gen.Q - 1),
+        ]
+
+        # Merge
+        result = gen._merge_ntt(f0_ntt, f1_ntt, size=4)
+
+        # Result should have 4 elements
+        assert len(result) == 4
+
+        # Operations should include multiplications by twiddle factors
+        mul_ops = [op for op in gen.circuit.operations if op.op_type == "MUL"]
+        assert len(mul_ops) >= 2  # At least 2 twiddle multiplications

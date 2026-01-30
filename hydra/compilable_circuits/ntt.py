@@ -71,6 +71,54 @@ class NttCircuitGenerator:
 
         return [even, odd]
 
+    def _split(self, coeffs: list) -> tuple[list, list]:
+        """
+        Split list into even and odd indices.
+
+        This is a compile-time operation on the coefficient list,
+        not a circuit operation.
+        """
+        return coeffs[::2], coeffs[1::2]
+
+    def _merge_ntt(
+        self,
+        f0_ntt: list[BoundedIntVar],
+        f1_ntt: list[BoundedIntVar],
+        size: int
+    ) -> list[BoundedIntVar]:
+        """
+        Merge two NTT halves using butterflies with twiddle factors.
+
+        For i in [0, size/2):
+            result[2*i]   = f0_ntt[i] + w[2*i] * f1_ntt[i]
+            result[2*i+1] = f0_ntt[i] - w[2*i] * f1_ntt[i]
+
+        where w = roots_dict_Zq[size].
+
+        Returns unreduced results.
+        """
+        roots = roots_dict_Zq[size]
+        result = []
+
+        for i in range(len(f0_ntt)):
+            # Get twiddle factor w[2*i]
+            twiddle_value = roots[2 * i]
+            twiddle = self.circuit.constant(twiddle_value, f"w{size}_{i}")
+
+            # prod = f1_ntt[i] * twiddle
+            prod = f1_ntt[i] * twiddle
+
+            # even = f0_ntt[i] + prod
+            even = f0_ntt[i] + prod
+
+            # odd = f0_ntt[i] - prod
+            odd = f0_ntt[i] - prod
+
+            result.append(even)
+            result.append(odd)
+
+        return result
+
     def simulate(self, values: list[int]) -> list[int]:
         """
         Execute the traced operations on actual values.
