@@ -278,3 +278,32 @@ class TestLargerSizes:
         stats = gen.circuit.stats()
         print(f"\nn=512 stats: {stats}")
         assert stats["num_operations"] > 5000, "Expected >5000 operations for n=512"
+
+
+class TestCodeGeneration:
+    """Test Cairo code generation."""
+
+    def test_generate_ntt_2(self):
+        """Generate Cairo code for n=2 NTT."""
+        gen = NttCircuitGenerator(n=2)
+        code = gen.generate()
+
+        # Check structure
+        assert "pub fn ntt_2_inner(f0: Zq, f1: Zq)" in code
+        assert "use corelib_imports::bounded_int::" in code
+        assert "type Zq = BoundedInt<0, 12288>;" in code
+
+    def test_generate_ntt_4_compiles(self, assert_compiles):
+        """Generate Cairo code for n=4 NTT that compiles."""
+        gen = NttCircuitGenerator(n=4)
+        code = gen.generate()
+
+        # Should compile
+        assert_compiles(code, "test_ntt_4")
+
+    def test_generate_ntt_8_compiles(self, assert_compiles):
+        """Generate Cairo code for n=8 NTT that compiles."""
+        gen = NttCircuitGenerator(n=8)
+        code = gen.generate()
+
+        assert_compiles(code, "test_ntt_8")

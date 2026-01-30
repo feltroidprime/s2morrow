@@ -197,3 +197,30 @@ class NttCircuitGenerator:
 
         # Collect outputs
         return [env[out.name] for out in self.circuit.outputs]
+
+    def generate(self) -> str:
+        """
+        Build circuit and compile to Cairo.
+
+        Returns:
+            Complete Cairo source file as string.
+        """
+        # Reset circuit for fresh generation
+        self.circuit = BoundedIntCircuit(f"ntt_{self.n}_inner", modulus=self.Q)
+        self._register_constants()
+
+        # Create inputs
+        inputs = [
+            self.circuit.input(f"f{i}", 0, self.Q - 1)
+            for i in range(self.n)
+        ]
+
+        # Run NTT (traces all operations)
+        outputs = self._ntt(inputs)
+
+        # Mark outputs with reduction
+        for i, out in enumerate(outputs):
+            self.circuit.output(out.reduce(), f"r{i}")
+
+        # Generate Cairo code
+        return self.circuit.compile()
