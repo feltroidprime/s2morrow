@@ -265,10 +265,9 @@ class NttCircuitGenerator:
         wrapper = f"""
 /// NTT of size {n} using Array<Zq> interface.
 pub fn ntt_{n}(mut f: Array<Zq>) -> Array<Zq> {{
-    let f_span = f.span();
-    let [{param_names}] = *f_span
-        .multi_pop_front::<{n}>()
-        .expect('expected {n} elements');
+    let mut f_span = f.span();
+    let boxed = f_span.multi_pop_front::<{n}>().expect('expected {n} elements');
+    let [{param_names}] = boxed.unbox();
 
     let ({output_names}) = ntt_{n}_inner({inner_args});
 

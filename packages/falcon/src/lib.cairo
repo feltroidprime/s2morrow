@@ -4,8 +4,14 @@
 
 pub mod falcon;
 pub mod ntt;
+pub mod ntt_bounded_int;
 pub mod ntt_constants;
 pub mod zq;
+
+#[cfg(test)]
+mod tests {
+    mod test_ntt_bounded_int;
+}
 
 #[derive(Drop, Serde)]
 struct Args {

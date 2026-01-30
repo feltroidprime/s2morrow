@@ -323,6 +323,7 @@ class TestPublicApiWrapper:
         # Public wrapper
         assert "pub fn ntt_4(mut f: Array<Zq>) -> Array<Zq>" in code
         assert "multi_pop_front::<4>()" in code
+        assert "boxed.unbox()" in code
         assert "array![r0, r1, r2, r3]" in code
 
     def test_generate_full_header(self):
