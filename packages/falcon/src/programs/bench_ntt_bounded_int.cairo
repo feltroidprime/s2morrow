@@ -1,5 +1,6 @@
 use corelib_imports::bounded_int::downcast;
-use falcon::ntt_bounded_int::{Zq, ntt_512};
+use falcon::ntt_bounded_int::ntt_512;
+use falcon::zq::Zq;
 
 #[executable]
 fn main(input: Array<felt252>) -> Array<felt252> {
