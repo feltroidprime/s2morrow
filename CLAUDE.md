@@ -14,11 +14,7 @@ assert_macros = "2.15.1"
 
 **Profiling:** Use `/benchmarking-cairo` skill. Note: snforge may hit "cycle during cost computation" errors with large BoundedInt code—use `scarb execute` instead.
 
-**Profiling artifacts:** All profiles (`.pb.gz`), PNG call graphs, and logs go in `profiles/` at the project root. Name files with git commit suffix:
-- `profiles/<package>_<function>_<metric>_<commit>.pb.gz` (e.g., `falcon_ntt512_steps_abc1234.pb.gz`)
-- `profiles/<package>_<function>_<metric>_<commit>.png` (e.g., `falcon_ntt512_steps_abc1234.png`)
-
-Generate filenames with: `echo "profiles/${NAME}_$(git rev-parse --short HEAD).pb.gz"`
+**Profiling artifacts:** Store in `profiles/` with git commit suffix. See `/benchmarking-cairo` skill for naming convention and helper script.
 
 **BoundedInt optimization:** Use `/using-bounded-int` skill. Regenerate NTT with:
 ```bash
