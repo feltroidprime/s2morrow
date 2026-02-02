@@ -27,6 +27,8 @@ class BoundedIntCircuit:
         self.inputs: list[BoundedIntVar] = []
         self.outputs: list[BoundedIntVar] = []
         self.constants: dict[int, str] = {}  # value -> name
+        self.used_regular_constants: set[int] = set()  # needs {name}_const
+        self.used_nz_constants: set[int] = set()  # needs nz_{name}
 
         # Type registry for code generation
         self.bound_types: set[tuple[int, int]] = set()
@@ -97,6 +99,12 @@ class BoundedIntCircuit:
         if var.max_bound > self.max_bound or var.min_bound < -self.max_bound:
             return self.reduce(var)
         return var
+
+    def _add_raw(self, a: BoundedIntVar, b: BoundedIntVar) -> BoundedIntVar:
+        """Add without auto-reduce. Used internally by reduce() to avoid double reduction."""
+        min_val = a.min_bound + b.min_bound
+        max_val = a.max_bound + b.max_bound
+        return self._create_op("ADD", [a, b], min_val, max_val)
 
     def add(self, a: BoundedIntVar, b: BoundedIntVar) -> BoundedIntVar:
         """Add two bounded integers."""
@@ -218,8 +226,8 @@ class BoundedIntCircuit:
             if shift_amount not in self.constants:
                 self.register_constant(shift_amount, f"SHIFT_{copies_needed}Q")
 
-            # Add shift to make non-negative
-            shifted = self.add(var, shift_const)
+            # Add shift to make non-negative (use _add_raw to avoid double reduction)
+            shifted = self._add_raw(var, shift_const)
             var = shifted
 
         # Compute quotient bounds
@@ -395,8 +403,10 @@ class BoundedIntCircuit:
             a_name = a.name
             b_name = b.name
             if a.min_bound == a.max_bound and a.min_bound in self.constants:
+                self.used_regular_constants.add(a.min_bound)
                 a_name = f"{self.constants[a.min_bound].lower()}_const"
             if b.min_bound == b.max_bound and b.min_bound in self.constants:
+                self.used_regular_constants.add(b.min_bound)
                 b_name = f"{self.constants[b.min_bound].lower()}_const"
             return f"let {r}: {r_type} = add({a_name}, {b_name});"
 
@@ -405,8 +415,10 @@ class BoundedIntCircuit:
             a_name = a.name
             b_name = b.name
             if a.min_bound == a.max_bound and a.min_bound in self.constants:
+                self.used_regular_constants.add(a.min_bound)
                 a_name = f"{self.constants[a.min_bound].lower()}_const"
             if b.min_bound == b.max_bound and b.min_bound in self.constants:
+                self.used_regular_constants.add(b.min_bound)
                 b_name = f"{self.constants[b.min_bound].lower()}_const"
             return f"let {r}: {r_type} = sub({a_name}, {b_name});"
 
@@ -415,8 +427,10 @@ class BoundedIntCircuit:
             a_name = a.name
             b_name = b.name
             if a.min_bound == a.max_bound and a.min_bound in self.constants:
+                self.used_regular_constants.add(a.min_bound)
                 a_name = f"{self.constants[a.min_bound].lower()}_const"
             if b.min_bound == b.max_bound and b.min_bound in self.constants:
+                self.used_regular_constants.add(b.min_bound)
                 b_name = f"{self.constants[b.min_bound].lower()}_const"
             return f"let {r}: {r_type} = mul({a_name}, {b_name});"
 
@@ -424,6 +438,7 @@ class BoundedIntCircuit:
             a = op.operands[0]
             modulus = op.extra.get("modulus", self.modulus)
             if modulus in self.constants:
+                self.used_nz_constants.add(modulus)
                 nz_name = f"nz_{self.constants[modulus].lower()}"
             else:
                 nz_name = f"nz_{modulus}"
@@ -434,6 +449,7 @@ class BoundedIntCircuit:
             a, b = op.operands
             # Check if divisor is a registered constant
             if b.min_bound == b.max_bound and b.min_bound in self.constants:
+                self.used_nz_constants.add(b.min_bound)
                 nz_name = f"nz_{self.constants[b.min_bound].lower()}"
             else:
                 nz_name = f"nz_{b.name}"
@@ -456,6 +472,7 @@ class BoundedIntCircuit:
             a, b = op.operands
             # Check if divisor is a registered constant
             if b.min_bound == b.max_bound and b.min_bound in self.constants:
+                self.used_nz_constants.add(b.min_bound)
                 nz_name = f"nz_{self.constants[b.min_bound].lower()}"
             else:
                 nz_name = f"nz_{b.name}"
@@ -512,23 +529,25 @@ class BoundedIntCircuit:
 use corelib_imports::bounded_int::bounded_int::{SubHelper, add, sub, mul};"""
 
     def _generate_constants(self) -> str:
-        """Generate constant definitions (both NonZero and regular)."""
+        """Generate constant definitions (only forms that are actually used)."""
         lines = []
         for value, name in sorted(self.constants.items()):
-            # Regular constant for addition operations
-            lines.append(f"const {name.lower()}_const: {name}Const = {value};")
-            # NonZero variant for div_rem operations
-            lines.append(f"const nz_{name.lower()}: NonZero<{name}Const> = {value};")
+            if value in self.used_regular_constants:
+                lines.append(f"const {name.lower()}_const: {name}Const = {value};")
+            if value in self.used_nz_constants:
+                lines.append(f"const nz_{name.lower()}: NonZero<{name}Const> = {value};")
         return "\n".join(lines)
 
     def compile(self) -> str:
         """Generate complete Cairo source file."""
+        # Generate function first to populate used_regular_constants and used_nz_constants
+        function_code = self._generate_function()
         parts = [
             self._generate_imports(),
             self._generate_types(),
             self._generate_helper_impls(),
             self._generate_constants(),
-            self._generate_function(),
+            function_code,
         ]
 
         # Filter out empty parts
