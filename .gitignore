@@ -44,5 +44,9 @@ htmlcov/
 .nox/
 
 # Profiling
+profiles/*.pb.gz
+profiles/*.png
+profiles/*.log
+# Keep legacy ignores for any stragglers
 *.pb.gz
 *.png
