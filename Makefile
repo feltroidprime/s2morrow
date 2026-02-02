@@ -33,3 +33,6 @@ falcon-burn:
 		--arguments-file packages/falcon/tests/data/args_512_1.json \
 		--output-file target/falcon.svg \
 		--open-in-browser
+
+regenerate-ntt:
+	python3 -m hydra.compilable_circuits.regenerate ntt --n 512

@@ -7,6 +7,7 @@ Usage:
     python -m hydra.compilable_circuits.regenerate ntt --n 512 --output-dir packages/falcon/src
 """
 import argparse
+import subprocess
 from pathlib import Path
 
 
@@ -51,6 +52,8 @@ Examples:
 
         output_file = output_dir / "ntt_bounded_int.cairo"
         output_file.write_text(code)
+
+        subprocess.run(["scarb", "fmt", str(output_file)], check=True)
 
         stats = gen.circuit.stats()
         print(f"Generated {output_file}")

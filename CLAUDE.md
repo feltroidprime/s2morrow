@@ -14,7 +14,7 @@ assert_macros = "2.15.1"
 
 **Profiling:** Use `/benchmarking-cairo` skill. Note: snforge may hit "cycle during cost computation" errors with large BoundedInt code—use `scarb execute` instead.
 
-**Profiling artifacts:** Store in `profiles/` with git commit suffix. See `/benchmarking-cairo` skill for naming convention and helper script.
+**Profiling artifacts:** Store in `profiles/` with `YY-MM-DD-HH:MM_` prefix and git commit suffix for date sorting. See `/benchmarking-cairo` skill for naming convention and helper script.
 
 **BoundedInt optimization:** Use `/using-bounded-int` skill. Regenerate NTT with:
 ```bash
