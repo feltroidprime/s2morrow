@@ -91,3 +91,41 @@ def test_generate_felt252_imports():
     assert "upcast" in imports
     assert "bounded_int_div_rem" in imports
     assert "DivRemHelper" in imports
+
+
+def test_generate_felt252_constants_basic():
+    """Constants should be plain felt252 values."""
+    circuit = BoundedIntCircuit("test", modulus=12289)
+    circuit.register_constant(1479, "SQR1")
+    circuit.register_constant(5765, "W4_0")
+    x = circuit.input("x", 0, 12288)
+    circuit.output(x, "out")
+
+    constants = circuit._generate_felt252_constants()
+
+    assert "const SQR1: felt252 = 1479;" in constants
+    assert "const W4_0: felt252 = 5765;" in constants
+
+
+def test_generate_felt252_constants_reduction_machinery():
+    """Should include SHIFT, Q types, and DivRemHelper."""
+    circuit = BoundedIntCircuit("test", modulus=12289)
+    x = circuit.input("x", 0, 12288)
+    y = circuit.input("y", 0, 12288)
+    z = x - y  # Creates negative bounds, so SHIFT > 0
+    circuit.output(z, "out")
+
+    constants = circuit._generate_felt252_constants()
+
+    # SHIFT constant
+    assert "const SHIFT: felt252 = 12289;" in constants
+    # Q constant type
+    assert "type QConst = UnitInt<12289>;" in constants
+    # NonZero Q
+    assert "const nz_q: NonZero<QConst> = 12289;" in constants
+    # ShiftedT type (shift + max_bound)
+    assert "type ShiftedT = BoundedInt<0," in constants
+    # RemT type
+    assert "type RemT = BoundedInt<0, 12288>;" in constants
+    # DivRemHelper impl
+    assert "impl DivRem_ShiftedT_QConst of DivRemHelper<ShiftedT, QConst>" in constants

@@ -602,6 +602,39 @@ use corelib_imports::bounded_int::{
 };
 """
 
+    def _generate_felt252_constants(self) -> str:
+        """Generate Cairo constants and reduction types for felt252 mode."""
+        lines = []
+
+        # Generate plain felt252 constants (self.constants is value -> name)
+        for value, name in sorted(self.constants.items()):
+            lines.append(f"const {name}: felt252 = {value};")
+
+        if lines:
+            lines.append("")
+
+        # Compute shift and max bounds for reduction types
+        shift = self._compute_shift()
+        max_bound = max(var.max_bound for var in self.variables.values())
+        shifted_max = shift + max_bound
+
+        # Reduction machinery
+        lines.append(f"const SHIFT: felt252 = {shift};")
+        lines.append(f"type QConst = UnitInt<{self.modulus}>;")
+        lines.append(f"const nz_q: NonZero<QConst> = {self.modulus};")
+        lines.append(f"type ShiftedT = BoundedInt<0, {shifted_max}>;")
+        lines.append(f"type RemT = BoundedInt<0, {self.modulus - 1}>;")
+
+        # DivRemHelper impl
+        div_max = shifted_max // self.modulus
+        lines.append("")
+        lines.append("impl DivRem_ShiftedT_QConst of DivRemHelper<ShiftedT, QConst> {")
+        lines.append(f"    type DivT = BoundedInt<0, {div_max}>;")
+        lines.append("    type RemT = RemT;")
+        lines.append("}")
+
+        return "\n".join(lines)
+
     def write(self, path: str) -> None:
         """Compile and write to file."""
         code = self.compile()
