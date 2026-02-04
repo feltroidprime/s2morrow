@@ -13,6 +13,7 @@ pub mod zq;
 #[cfg(test)]
 mod tests {
     mod test_ntt_bounded_int;
+    mod test_ntt_modes;
 }
 
 #[derive(Drop, Serde)]
