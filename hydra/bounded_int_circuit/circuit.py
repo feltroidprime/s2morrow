@@ -9,18 +9,18 @@ class BoundedIntCircuit:
     A circuit that records bounded integer operations and compiles to Cairo.
     """
 
-    MAX_BOUND_LIMIT = 2**128
+    MAX_BOUND_LIMIT = 2**251
 
     def __init__(
         self,
         name: str,
         modulus: int,
-        max_bound: int = 2**64,
+        max_bound: int = 2**251,
     ):
         self.name = name
         self.modulus = modulus
         self.max_bound = min(max_bound, self.MAX_BOUND_LIMIT)
-
+        self.auto_reduced_count = 0
         # Tracking
         self.variables: dict[str, BoundedIntVar] = {}
         self.operations: list[Operation] = []
@@ -97,6 +97,8 @@ class BoundedIntCircuit:
     def _maybe_auto_reduce(self, var: BoundedIntVar) -> BoundedIntVar:
         """Auto-reduce if bounds exceed threshold."""
         if var.max_bound > self.max_bound or var.min_bound < -self.max_bound:
+            self.auto_reduced_count += 1
+            print(f"Auto-reducing {var.name} from {var.bounds} {var.bit_width} bits to {var.reduce().bounds} {var.reduce().bit_width} bits")
             return self.reduce(var)
         return var
 
@@ -591,6 +593,15 @@ use corelib_imports::bounded_int::bounded_int::{SubHelper, add, sub, mul};"""
         abs_min = abs(min_bound)
         return math.ceil(abs_min / self.modulus) * self.modulus
 
+    def _generate_felt252_imports(self) -> str:
+        """Generate Cairo imports for felt252 mode."""
+        return """// Auto-generated felt252 mode - DO NOT EDIT
+use core::num::traits::Zero;
+use corelib_imports::bounded_int::{
+    BoundedInt, upcast, bounded_int_div_rem, DivRemHelper, UnitInt,
+};
+"""
+
     def write(self, path: str) -> None:
         """Compile and write to file."""
         code = self.compile()
@@ -611,11 +622,103 @@ use corelib_imports::bounded_int::bounded_int::{SubHelper, add, sub, mul};"""
             "max_bits": self.max_bits(),
         }
 
+    def bounds_summary(self) -> dict:
+        """Return summary details about current variable bounds."""
+        variables = list(self.variables.values())
+        if not variables:
+            return {
+                "num_variables": 0,
+                "num_inputs": len(self.inputs),
+                "num_outputs": len(self.outputs),
+                "num_operations": len(self.operations),
+                "max_abs": None,
+                "max_range": None,
+                "max_bits": 0,
+                "max_abs_unreduced": None,
+                "max_bits_unreduced": 0,
+            }
+
+        def abs_bound(var: BoundedIntVar) -> int:
+            return max(abs(var.min_bound), abs(var.max_bound))
+
+        def range_bound(var: BoundedIntVar) -> int:
+            return var.max_bound - var.min_bound
+
+        max_abs_var = max(variables, key=abs_bound)
+        max_range_var = max(variables, key=range_bound)
+        max_bits_var = max(variables, key=lambda v: v.bit_width)
+
+        unreduced = [
+            v for v in variables
+            if not (v.source and v.source.op_type == "REDUCE")
+        ]
+        if unreduced:
+            max_abs_unreduced_var = max(unreduced, key=abs_bound)
+            max_bits_unreduced_var = max(unreduced, key=lambda v: v.bit_width)
+        else:
+            max_abs_unreduced_var = None
+            max_bits_unreduced_var = None
+
+        def var_info(var: BoundedIntVar | None) -> dict | None:
+            if var is None:
+                return None
+            source = var.source.op_type if var.source else "INPUT"
+            return {
+                "name": var.name,
+                "bounds": var.bounds,
+                "bit_width": var.bit_width,
+                "source": source,
+            }
+
+        return {
+            "num_variables": len(variables),
+            "num_inputs": len(self.inputs),
+            "num_outputs": len(self.outputs),
+            "num_operations": len(self.operations),
+            "max_abs": var_info(max_abs_var),
+            "max_range": var_info(max_range_var),
+            "max_bits": var_info(max_bits_var),
+            "max_abs_unreduced": var_info(max_abs_unreduced_var),
+            "max_bits_unreduced": var_info(max_bits_unreduced_var),
+        }
+
     def max_bits(self) -> int:
         """Return maximum bit-width across all variables."""
         if not self.variables:
             return 0
         return max(v.bit_width for v in self.variables.values())
+
+    def print_summary(self) -> None:
+        """Print a concise summary of bounds and extrema."""
+        summary = self.bounds_summary()
+        print(f"=== Circuit '{self.name}' Summary ===")
+        print(
+            f"Modulus: {self.modulus}, Auto-reduce threshold: {self.max_bound}"
+        )
+        print(
+            "Counts:"
+            f" vars={summary['num_variables']},"
+            f" inputs={summary['num_inputs']},"
+            f" outputs={summary['num_outputs']},"
+            f" ops={summary['num_operations']}"
+        )
+
+        def format_var(label: str, info: dict | None) -> None:
+            if info is None:
+                print(f"{label}: (none)")
+                return
+            bounds = info["bounds"]
+            print(
+                f"{label}: {info['name']} {bounds} "
+                f"({info['bit_width']} bits, {info['source']})"
+            )
+
+        format_var("Max abs bound", summary["max_abs"])
+        format_var("Max range", summary["max_range"])
+        format_var("Max bit width", summary["max_bits"])
+        format_var("Max abs (unreduced)", summary["max_abs_unreduced"])
+        format_var("Max bits (unreduced)", summary["max_bits_unreduced"])
+        print()
 
     def print_bounds(self) -> None:
         """Print all current variable bounds."""

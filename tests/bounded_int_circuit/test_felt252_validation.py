@@ -76,3 +76,18 @@ def test_compute_shift_larger_negative():
     # ceil(100000 / 12289) * 12289 = 9 * 12289 = 110601
     expected = math.ceil(100000 / 12289) * 12289
     assert circuit._compute_shift() == expected
+
+
+def test_generate_felt252_imports():
+    """Imports should include BoundedInt machinery for output reduction."""
+    circuit = BoundedIntCircuit("test", modulus=12289)
+    x = circuit.input("x", 0, 12288)
+    circuit.output(x, "out")
+
+    imports = circuit._generate_felt252_imports()
+
+    assert "use core::num::traits::Zero;" in imports
+    assert "BoundedInt" in imports
+    assert "upcast" in imports
+    assert "bounded_int_div_rem" in imports
+    assert "DivRemHelper" in imports
