@@ -37,3 +37,42 @@ def test_validate_felt252_mode_negative_bounds():
 
     with pytest.raises(ValueError, match="Bounds exceed 2\\^128"):
         circuit._validate_felt252_mode()
+
+
+import math
+
+
+def test_compute_shift_no_negatives():
+    """No negatives means shift is 0."""
+    circuit = BoundedIntCircuit("test", modulus=12289)
+    x = circuit.input("x", 0, 12288)
+    y = circuit.input("y", 0, 12288)
+    z = x + y  # bounds: [0, 24576]
+    circuit.output(z, "z")
+
+    assert circuit._compute_shift() == 0
+
+
+def test_compute_shift_with_negatives():
+    """Shift should be ceil(|min_bound| / Q) * Q."""
+    circuit = BoundedIntCircuit("test", modulus=12289)
+    x = circuit.input("x", 0, 12288)
+    y = circuit.input("y", 0, 12288)
+    z = x - y  # bounds: [-12288, 12288]
+    circuit.output(z, "z")
+
+    # ceil(12288 / 12289) * 12289 = 1 * 12289 = 12289
+    assert circuit._compute_shift() == 12289
+
+
+def test_compute_shift_larger_negative():
+    """Larger negatives need larger shift."""
+    circuit = BoundedIntCircuit("test", modulus=12289)
+    x = circuit.input("x", -100000, 12288)
+    y = circuit.input("y", 0, 12288)
+    z = x + y
+    circuit.output(z, "z")
+
+    # ceil(100000 / 12289) * 12289 = 9 * 12289 = 110601
+    expected = math.ceil(100000 / 12289) * 12289
+    assert circuit._compute_shift() == expected

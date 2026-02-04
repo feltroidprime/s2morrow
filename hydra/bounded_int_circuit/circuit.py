@@ -570,6 +570,27 @@ use corelib_imports::bounded_int::bounded_int::{SubHelper, add, sub, mul};"""
                     f"Variable '{var.name}' has bounds [{var.min_bound}, {var.max_bound}]"
                 )
 
+    def _compute_shift(self) -> int:
+        """Compute the shift constant for felt252 mode output reduction.
+
+        Returns the smallest multiple of modulus that makes all outputs non-negative
+        when added before reduction.
+
+        Returns:
+            SHIFT = ceil(|min_bound| / modulus) * modulus, or 0 if no negatives.
+        """
+        import math
+
+        # Find worst-case negative bound across all variables
+        min_bound = min(var.min_bound for var in self.variables.values())
+
+        if min_bound >= 0:
+            return 0
+
+        # Compute ceil(|min_bound| / modulus) * modulus
+        abs_min = abs(min_bound)
+        return math.ceil(abs_min / self.modulus) * self.modulus
+
     def write(self, path: str) -> None:
         """Compile and write to file."""
         code = self.compile()
