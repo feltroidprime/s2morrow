@@ -555,6 +555,21 @@ use corelib_imports::bounded_int::bounded_int::{SubHelper, add, sub, mul};"""
 
         return "\n\n".join(parts)
 
+    def _validate_felt252_mode(self) -> None:
+        """Validate that all bounds stay within felt252-safe range.
+
+        Raises:
+            ValueError: If any variable's bounds exceed 2^128.
+        """
+        limit = 2**128
+        for var in self.variables.values():
+            max_abs = max(abs(var.min_bound), abs(var.max_bound))
+            if max_abs >= limit:
+                raise ValueError(
+                    f"Bounds exceed 2^128, cannot use felt252 mode. "
+                    f"Variable '{var.name}' has bounds [{var.min_bound}, {var.max_bound}]"
+                )
+
     def write(self, path: str) -> None:
         """Compile and write to file."""
         code = self.compile()
