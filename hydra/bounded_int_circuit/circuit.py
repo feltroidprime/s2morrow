@@ -661,6 +661,59 @@ use corelib_imports::bounded_int::{
         else:
             raise ValueError(f"Unsupported operation type for felt252 mode: {op.op_type}")
 
+    def _generate_felt252_function(self, func_name: str) -> str:
+        """Generate the main Cairo function for felt252 mode.
+
+        Args:
+            func_name: Name of the generated function.
+
+        Returns:
+            Complete Cairo function as a string.
+        """
+        lines = []
+
+        # Function signature
+        input_params = ", ".join(f"{inp.name}: felt252" for inp in self.inputs)
+        if len(self.outputs) == 1:
+            return_type = "felt252"
+        else:
+            return_type = "(" + ", ".join("felt252" for _ in self.outputs) + ")"
+
+        lines.append(f"pub fn {func_name}({input_params}) -> {return_type} {{")
+
+        # Generate operations (skip REDUCE operations in felt252 mode)
+        for op in self.operations:
+            if op.op_type == "REDUCE":
+                continue
+            lines.append(f"    {self._generate_felt252_op(op)}")
+
+        lines.append("")
+
+        # Generate output reductions
+        for out_var in self.outputs:
+            out_name = out_var.name
+            # Find the source variable name (could be input or operation result)
+            if out_var.source is not None:
+                src_name = out_var.name  # The variable was renamed via output()
+            else:
+                src_name = out_var.name  # Input variable used directly as output
+            lines.append(f"    let {out_name}: ShiftedT = ({src_name} + SHIFT).try_into().unwrap();")
+            lines.append(f"    let (_, {out_name}_rem) = bounded_int_div_rem({out_name}, nz_q);")
+            lines.append(f"    let {out_name}: felt252 = upcast({out_name}_rem);")
+
+        lines.append("")
+
+        # Return statement
+        if len(self.outputs) == 1:
+            lines.append(f"    {self.outputs[0].name}")
+        else:
+            out_names = ", ".join(out.name for out in self.outputs)
+            lines.append(f"    ({out_names})")
+
+        lines.append("}")
+
+        return "\n".join(lines)
+
     def write(self, path: str) -> None:
         """Compile and write to file."""
         code = self.compile()

@@ -183,3 +183,50 @@ def test_generate_felt252_op_mul_constant():
 
     result = circuit._generate_felt252_op(mul_op)
     assert result == "let tmp_0 = x * SQR1;"
+
+
+def test_generate_felt252_function_signature():
+    """Function should use felt252 for all inputs and outputs."""
+    circuit = BoundedIntCircuit("test", modulus=12289)
+    x = circuit.input("x", 0, 12288)
+    y = circuit.input("y", 0, 12288)
+    z = x + y
+    circuit.output(z, "out")
+
+    func = circuit._generate_felt252_function("test_func")
+
+    assert "pub fn test_func(x: felt252, y: felt252) -> felt252" in func
+
+
+def test_generate_felt252_function_body():
+    """Function body should have operations and output reduction."""
+    circuit = BoundedIntCircuit("test", modulus=12289)
+    x = circuit.input("x", 0, 12288)
+    y = circuit.input("y", 0, 12288)
+    z = x + y
+    circuit.output(z, "out")
+
+    func = circuit._generate_felt252_function("test_func")
+
+    # Operation (variable renamed to 'out' by output())
+    assert "let out = x + y;" in func
+    # Output reduction
+    assert "let out: ShiftedT = (out + SHIFT).try_into().unwrap();" in func
+    assert "let (_, out_rem) = bounded_int_div_rem(out, nz_q);" in func
+    assert "let out: felt252 = upcast(out_rem);" in func
+    # Return
+    assert "out" in func
+
+
+def test_generate_felt252_function_multiple_outputs():
+    """Multiple outputs should all be reduced and returned as tuple."""
+    circuit = BoundedIntCircuit("test", modulus=12289)
+    x = circuit.input("x", 0, 12288)
+    y = circuit.input("y", 0, 12288)
+    circuit.output(x + y, "r0")
+    circuit.output(x - y, "r1")
+
+    func = circuit._generate_felt252_function("test_func")
+
+    assert "-> (felt252, felt252)" in func
+    assert "(r0, r1)" in func
