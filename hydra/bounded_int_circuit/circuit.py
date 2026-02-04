@@ -714,6 +714,23 @@ use corelib_imports::bounded_int::{
 
         return "\n".join(lines)
 
+    def _compile_felt252(self, func_name: str) -> str:
+        """Compile circuit to Cairo code using felt252 mode.
+
+        Args:
+            func_name: Name of the generated function.
+
+        Returns:
+            Complete Cairo source code.
+        """
+        parts = [
+            self._generate_felt252_imports(),
+            self._generate_felt252_constants(),
+            "",
+            self._generate_felt252_function(func_name),
+        ]
+        return "\n".join(parts)
+
     def write(self, path: str) -> None:
         """Compile and write to file."""
         code = self.compile()

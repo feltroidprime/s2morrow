@@ -230,3 +230,23 @@ def test_generate_felt252_function_multiple_outputs():
 
     assert "-> (felt252, felt252)" in func
     assert "(r0, r1)" in func
+
+
+def test_compile_felt252_combines_all_parts():
+    """_compile_felt252 should combine imports, constants, and function."""
+    circuit = BoundedIntCircuit("test", modulus=12289)
+    circuit.register_constant(1479, "SQR1")
+    sqr1 = circuit.constant(1479, "SQR1")
+    x = circuit.input("x", 0, 12288)
+    z = x * sqr1
+    circuit.output(z, "out")
+
+    code = circuit._compile_felt252("test_func")
+
+    # Imports
+    assert "use corelib_imports::bounded_int" in code
+    # Constants
+    assert "const SQR1: felt252 = 1479;" in code
+    assert "const SHIFT: felt252 =" in code
+    # Function
+    assert "pub fn test_func(" in code
