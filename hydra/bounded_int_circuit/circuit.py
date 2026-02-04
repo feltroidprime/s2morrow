@@ -655,6 +655,20 @@ use corelib_imports::bounded_int::{
 
         return "\n".join(lines)
 
+    def _get_felt252_operand_name(self, var: "BoundedIntVar") -> str:
+        """Get the Cairo name for an operand in felt252 mode.
+
+        For constants, returns the uppercase constant name (e.g., SQR1).
+        For other variables, returns the variable name.
+        """
+        # Check if this variable is a constant (singleton bounds)
+        if var.min_bound == var.max_bound:
+            value = var.min_bound
+            # Look up the uppercase constant name
+            if value in self.constants:
+                return self.constants[value]
+        return var.name
+
     def _generate_felt252_op(self, op: "Operation") -> str:
         """Generate a single felt252 operation line.
 
@@ -667,16 +681,16 @@ use corelib_imports::bounded_int::{
         result_name = op.result.name
 
         if op.op_type == "ADD":
-            left = op.operands[0].name
-            right = op.operands[1].name
+            left = self._get_felt252_operand_name(op.operands[0])
+            right = self._get_felt252_operand_name(op.operands[1])
             return f"let {result_name} = {left} + {right};"
         elif op.op_type == "SUB":
-            left = op.operands[0].name
-            right = op.operands[1].name
+            left = self._get_felt252_operand_name(op.operands[0])
+            right = self._get_felt252_operand_name(op.operands[1])
             return f"let {result_name} = {left} - {right};"
         elif op.op_type == "MUL":
-            left = op.operands[0].name
-            right = op.operands[1].name
+            left = self._get_felt252_operand_name(op.operands[0])
+            right = self._get_felt252_operand_name(op.operands[1])
             return f"let {result_name} = {left} * {right};"
         else:
             raise ValueError(f"Unsupported operation type for felt252 mode: {op.op_type}")
@@ -701,22 +715,45 @@ use corelib_imports::bounded_int::{
 
         lines.append(f"pub fn {func_name}({input_params}) -> {return_type} {{")
 
-        # Generate operations (skip REDUCE operations in felt252 mode)
+        # Generate operations (skip REDUCE and related shift-ADD operations in felt252 mode)
         for op in self.operations:
             if op.op_type == "REDUCE":
+                continue
+            # Skip ADD operations that add a SHIFT constant (part of bounded mode reduction)
+            if op.op_type == "ADD":
+                for operand in op.operands:
+                    if operand.min_bound == operand.max_bound:
+                        value = operand.min_bound
+                        if value in self.constants and self.constants[value].startswith("SHIFT_"):
+                            break
+                else:
+                    # No SHIFT_ constant found, emit the operation
+                    lines.append(f"    {self._generate_felt252_op(op)}")
                 continue
             lines.append(f"    {self._generate_felt252_op(op)}")
 
         lines.append("")
 
         # Generate output reductions
+        # In felt252 mode, outputs may come from REDUCE ops which we skipped.
+        # We need to trace back to the unreduced source variable.
         for out_var in self.outputs:
             out_name = out_var.name
-            # Find the source variable name (could be input or operation result)
+            src_name = out_name
+
+            # Trace back through reduction chain to find unreduced source
             if out_var.source is not None:
-                src_name = out_var.name  # The variable was renamed via output()
-            else:
-                src_name = out_var.name  # Input variable used directly as output
+                op = out_var.source
+                if op.op_type == "REDUCE":
+                    # REDUCE's operand is the shifted variable from ADD
+                    shifted_var = op.operands[0]
+                    if shifted_var.source is not None and shifted_var.source.op_type == "ADD":
+                        # ADD's first operand is the original unreduced variable
+                        src_name = shifted_var.source.operands[0].name
+                    else:
+                        # No shift, REDUCE directly on the variable
+                        src_name = shifted_var.name
+
             lines.append(f"    let {out_name}: ShiftedT = ({src_name} + SHIFT).try_into().unwrap();")
             lines.append(f"    let (_, {out_name}_rem) = bounded_int_div_rem({out_name}, nz_q);")
             lines.append(f"    let {out_name}: felt252 = upcast({out_name}_rem);")
