@@ -250,3 +250,40 @@ def test_compile_felt252_combines_all_parts():
     assert "const SHIFT: felt252 =" in code
     # Function
     assert "pub fn test_func(" in code
+
+
+def test_compile_mode_bounded_default():
+    """Default mode should be 'bounded' (existing behavior)."""
+    circuit = BoundedIntCircuit("test_func", modulus=12289)
+    x = circuit.input("x", 0, 12288)
+    circuit.output(x, "out")
+
+    # Default should produce bounded int code
+    code = circuit.compile()
+
+    assert "AddHelper" in code or "type Zq" in code  # Bounded mode markers
+
+
+def test_compile_mode_felt252():
+    """mode='felt252' should produce felt252 arithmetic."""
+    circuit = BoundedIntCircuit("test_func", modulus=12289)
+    x = circuit.input("x", 0, 12288)
+    y = circuit.input("y", 0, 12288)
+    z = x + y
+    circuit.output(z, "out")
+
+    code = circuit.compile(mode="felt252")
+
+    # Should have native operations, not bounded
+    assert "let out = x + y;" in code
+    assert "AddHelper" not in code
+
+
+def test_compile_mode_invalid():
+    """Invalid mode should raise ValueError."""
+    circuit = BoundedIntCircuit("test_func", modulus=12289)
+    x = circuit.input("x", 0, 12288)
+    circuit.output(x, "out")
+
+    with pytest.raises(ValueError, match="Unknown compilation mode"):
+        circuit.compile(mode="invalid")

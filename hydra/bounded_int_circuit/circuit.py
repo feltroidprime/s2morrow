@@ -540,8 +540,28 @@ use corelib_imports::bounded_int::bounded_int::{SubHelper, add, sub, mul};"""
                 lines.append(f"const nz_{name.lower()}: NonZero<{name}Const> = {value};")
         return "\n".join(lines)
 
-    def compile(self) -> str:
-        """Generate complete Cairo source file."""
+    def compile(self, mode: str = "bounded") -> str:
+        """Compile the circuit to Cairo code.
+
+        Args:
+            mode: Compilation mode - "bounded" (default) or "felt252".
+
+        Returns:
+            Complete Cairo source code.
+
+        Raises:
+            ValueError: If mode is unknown or felt252 mode validation fails.
+        """
+        if mode == "felt252":
+            self._validate_felt252_mode()
+            return self._compile_felt252(self.name)
+        elif mode == "bounded":
+            return self._compile_bounded()
+        else:
+            raise ValueError(f"Unknown compilation mode: {mode}. Use 'bounded' or 'felt252'.")
+
+    def _compile_bounded(self) -> str:
+        """Generate complete Cairo source file using bounded int mode."""
         # Generate function first to populate used_regular_constants and used_nz_constants
         function_code = self._generate_function()
         parts = [
