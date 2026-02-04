@@ -129,3 +129,57 @@ def test_generate_felt252_constants_reduction_machinery():
     assert "type RemT = BoundedInt<0, 12288>;" in constants
     # DivRemHelper impl
     assert "impl DivRem_ShiftedT_QConst of DivRemHelper<ShiftedT, QConst>" in constants
+
+
+def test_generate_felt252_op_add():
+    """ADD should generate native + operator."""
+    circuit = BoundedIntCircuit("test", modulus=12289)
+    x = circuit.input("x", 0, 12288)
+    y = circuit.input("y", 0, 12288)
+    z = x + y
+
+    # Find the ADD operation
+    add_op = next(op for op in circuit.operations if op.op_type == "ADD")
+
+    result = circuit._generate_felt252_op(add_op)
+    assert result == "let tmp_0 = x + y;"
+
+
+def test_generate_felt252_op_sub():
+    """SUB should generate native - operator."""
+    circuit = BoundedIntCircuit("test", modulus=12289)
+    x = circuit.input("x", 0, 12288)
+    y = circuit.input("y", 0, 12288)
+    z = x - y
+
+    sub_op = next(op for op in circuit.operations if op.op_type == "SUB")
+
+    result = circuit._generate_felt252_op(sub_op)
+    assert result == "let tmp_0 = x - y;"
+
+
+def test_generate_felt252_op_mul():
+    """MUL should generate native * operator."""
+    circuit = BoundedIntCircuit("test", modulus=12289)
+    x = circuit.input("x", 0, 12288)
+    y = circuit.input("y", 0, 12288)
+    z = x * y
+
+    mul_op = next(op for op in circuit.operations if op.op_type == "MUL")
+
+    result = circuit._generate_felt252_op(mul_op)
+    assert result == "let tmp_0 = x * y;"
+
+
+def test_generate_felt252_op_mul_constant():
+    """MUL with constant should use constant name."""
+    circuit = BoundedIntCircuit("test", modulus=12289)
+    circuit.register_constant(1479, "SQR1")
+    sqr1 = circuit.constant(1479, "SQR1")
+    x = circuit.input("x", 0, 12288)
+    z = x * sqr1
+
+    mul_op = next(op for op in circuit.operations if op.op_type == "MUL")
+
+    result = circuit._generate_felt252_op(mul_op)
+    assert result == "let tmp_0 = x * SQR1;"

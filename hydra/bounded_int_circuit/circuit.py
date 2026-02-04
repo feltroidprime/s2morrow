@@ -635,6 +635,32 @@ use corelib_imports::bounded_int::{
 
         return "\n".join(lines)
 
+    def _generate_felt252_op(self, op: "Operation") -> str:
+        """Generate a single felt252 operation line.
+
+        Args:
+            op: The operation to generate.
+
+        Returns:
+            Cairo code line for this operation.
+        """
+        result_name = op.result.name
+
+        if op.op_type == "ADD":
+            left = op.operands[0].name
+            right = op.operands[1].name
+            return f"let {result_name} = {left} + {right};"
+        elif op.op_type == "SUB":
+            left = op.operands[0].name
+            right = op.operands[1].name
+            return f"let {result_name} = {left} - {right};"
+        elif op.op_type == "MUL":
+            left = op.operands[0].name
+            right = op.operands[1].name
+            return f"let {result_name} = {left} * {right};"
+        else:
+            raise ValueError(f"Unsupported operation type for felt252 mode: {op.op_type}")
+
     def write(self, path: str) -> None:
         """Compile and write to file."""
         code = self.compile()
