@@ -39,6 +39,12 @@ Examples:
         default="packages/falcon/src",
         help="Output directory (default: packages/falcon/src)",
     )
+    parser.add_argument(
+        "--mode",
+        choices=["bounded", "felt252"],
+        default="bounded",
+        help="Compilation mode: 'bounded' for BoundedInt types, 'felt252' for native arithmetic",
+    )
     args = parser.parse_args()
 
     output_dir = Path(args.output_dir)
@@ -48,18 +54,21 @@ Examples:
         from .ntt import NttCircuitGenerator
 
         gen = NttCircuitGenerator(args.n)
-        code = gen.generate_full()
+        code = gen.generate_full(mode=args.mode)
 
-        output_file = output_dir / "ntt_bounded_int.cairo"
+        if args.mode == "felt252":
+            output_file = output_dir / "ntt_felt252.cairo"
+        else:
+            output_file = output_dir / "ntt_bounded_int.cairo"
         output_file.write_text(code)
 
         subprocess.run(["scarb", "fmt", str(output_file)], check=True)
 
         stats = gen.circuit.stats()
         print(f"Generated {output_file}")
-        print(f"  Size: n={args.n}")
-        print(f"  Operations: {stats['num_operations']}")
-        print(f"  Types: {stats['num_types']}")
+        print(f"\tStats: {stats}")
+
+
 
     # Future: intt
     if args.circuit == "intt":
