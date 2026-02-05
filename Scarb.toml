@@ -1,5 +1,2 @@
 [workspace]
 members = ["packages/falcon"]
-
-[cairo]
-enable-gas = false

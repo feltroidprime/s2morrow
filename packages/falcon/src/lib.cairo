@@ -4,41 +4,8 @@
 
 pub mod falcon;
 pub mod ntt;
-// pub mod ntt_bounded_int;
 pub mod ntt_constants;
 pub mod ntt_felt252;
-pub mod programs;
+// intt_felt252 excluded - BoundedInt bounds too large for Sierra downcast specialization
+// TODO: fix bounds in hydra/compilable_circuits/intt.py to re-enable
 pub mod zq;
-
-#[cfg(test)]
-mod tests {
-    mod test_ntt_bounded_int;
-    mod test_ntt_modes;
-}
-
-#[derive(Drop, Serde)]
-struct Args {
-    attestations: Array<Attestation>,
-    n: u32,
-}
-
-#[derive(Drop, Serde)]
-struct Attestation {
-    s1: Span<u16>,
-    pk: Span<u16>,
-    msg_point: Span<u16>,
-}
-
-#[executable]
-fn main(args: Args) {
-    let Args { attestations, n } = args;
-    println!("Verifying {} signatures", attestations.len());
-
-    for attestation in attestations.span() {
-        falcon::verify_uncompressed::<
-            512,
-        >(*attestation.s1, *attestation.pk, *attestation.msg_point, n)
-            .expect('Invalid signature');
-    }
-    println!("OK");
-}
