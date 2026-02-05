@@ -4,7 +4,7 @@
 
 pub mod falcon;
 pub mod ntt;
-pub mod ntt_bounded_int;
+// pub mod ntt_bounded_int;
 pub mod ntt_constants;
 pub mod ntt_felt252;
 pub mod programs;
