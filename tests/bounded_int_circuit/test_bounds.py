@@ -1,6 +1,6 @@
 # tests/bounded_int_circuit/test_bounds.py
 import pytest
-from hydra.bounded_int_circuit import BoundedIntCircuit
+from cairo_gen import BoundedIntCircuit
 
 
 class TestAddBounds:
@@ -298,7 +298,7 @@ class TestAutoReduce:
         assert c.bounds == (0, 12288)
 
     def test_hard_max_bound_limit(self):
-        """max_bound is capped at 2**128."""
-        circuit = BoundedIntCircuit("test", modulus=12289, max_bound=2**200)
+        """max_bound is capped at 2**251."""
+        circuit = BoundedIntCircuit("test", modulus=12289, max_bound=2**260)
 
-        assert circuit.max_bound == 2**128
+        assert circuit.max_bound == 2**251

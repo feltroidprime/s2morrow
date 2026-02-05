@@ -1,6 +1,6 @@
 """Tests for NTT felt252 mode generation."""
 import pytest
-from hydra.compilable_circuits.ntt import NttCircuitGenerator
+from cairo_gen.circuits.ntt import NttCircuitGenerator
 
 
 def test_ntt_generate_felt252_mode():

@@ -1,10 +1,10 @@
 """Tests for felt252 mode validation."""
 import pytest
-from hydra.bounded_int_circuit import BoundedIntCircuit
+from cairo_gen import BoundedIntCircuit
 
 
 def test_validate_felt252_mode_within_bounds():
-    """Circuit with bounds under 2^128 should pass validation."""
+    """Circuit with bounds under 2^252 should pass validation."""
     circuit = BoundedIntCircuit("test", modulus=12289)
     x = circuit.input("x", 0, 12288)
     y = circuit.input("y", 0, 12288)
@@ -16,26 +16,26 @@ def test_validate_felt252_mode_within_bounds():
 
 
 def test_validate_felt252_mode_exceeds_bounds():
-    """Circuit with bounds >= 2^128 should fail validation."""
-    circuit = BoundedIntCircuit("test", modulus=12289, max_bound=2**200)
-    x = circuit.input("x", 0, 2**130)
-    y = circuit.input("y", 0, 2**130)
-    z = x + y  # bounds: [0, 2^131]
+    """Circuit with bounds >= 2^252 should fail validation."""
+    circuit = BoundedIntCircuit("test", modulus=12289, max_bound=2**260)
+    x = circuit.input("x", 0, 2**253)
+    y = circuit.input("y", 0, 2**253)
+    z = x + y  # bounds: [0, 2^254]
     circuit.output(z, "z")
 
-    with pytest.raises(ValueError, match="Bounds exceed 2\\^128"):
+    with pytest.raises(ValueError, match="Bounds exceed 2\\^252"):
         circuit._validate_felt252_mode()
 
 
 def test_validate_felt252_mode_negative_bounds():
     """Negative bounds should also be checked."""
-    circuit = BoundedIntCircuit("test", modulus=12289, max_bound=2**200)
-    x = circuit.input("x", -(2**130), 0)
+    circuit = BoundedIntCircuit("test", modulus=12289, max_bound=2**260)
+    x = circuit.input("x", -(2**253), 0)
     y = circuit.input("y", 0, 12288)
-    z = x - y  # bounds: [-(2^130)-12288, 0]
+    z = x - y  # bounds: [-(2^253)-12288, 0]
     circuit.output(z, "z")
 
-    with pytest.raises(ValueError, match="Bounds exceed 2\\^128"):
+    with pytest.raises(ValueError, match="Bounds exceed 2\\^252"):
         circuit._validate_felt252_mode()
 
 
@@ -94,7 +94,12 @@ def test_generate_felt252_imports():
 
 
 def test_generate_felt252_constants_basic():
-    """Constants should be plain felt252 values."""
+    """Constants should include reduction machinery.
+
+    Note: Circuit constants (twiddle factors like SQR1) are generated as let
+    bindings inside the function, not module-level consts. This test verifies
+    the module-level reduction types.
+    """
     circuit = BoundedIntCircuit("test", modulus=12289)
     circuit.register_constant(1479, "SQR1")
     circuit.register_constant(5765, "W4_0")
@@ -103,8 +108,10 @@ def test_generate_felt252_constants_basic():
 
     constants = circuit._generate_felt252_constants()
 
-    assert "const SQR1: felt252 = 1479;" in constants
-    assert "const W4_0: felt252 = 5765;" in constants
+    # Verify reduction machinery is present
+    assert "const SHIFT: felt252 =" in constants
+    assert "type QConst = UnitInt<12289>;" in constants
+    assert "const nz_q: NonZero<QConst> = 12289;" in constants
 
 
 def test_generate_felt252_constants_reduction_machinery():
@@ -245,9 +252,10 @@ def test_compile_felt252_combines_all_parts():
 
     # Imports
     assert "use corelib_imports::bounded_int" in code
-    # Constants
-    assert "const SQR1: felt252 = 1479;" in code
+    # Reduction machinery
     assert "const SHIFT: felt252 =" in code
+    # Constants as let bindings inside function
+    assert "let SQR1 = 1479;" in code
     # Function
     assert "pub fn test_func(" in code
 

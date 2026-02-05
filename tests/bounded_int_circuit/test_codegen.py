@@ -1,6 +1,6 @@
 # tests/bounded_int_circuit/test_codegen.py
 import pytest
-from hydra.bounded_int_circuit import BoundedIntCircuit
+from cairo_gen import BoundedIntCircuit
 
 
 class TestTypeGeneration:

@@ -1,7 +1,94 @@
-# hydra/bounded_int_circuit/circuit.py
+# cairo_gen/circuit.py
+"""
+BoundedInt circuit DSL for generating Cairo code.
+
+This module provides a DSL for building arithmetic circuits with bounded
+integer variables. Operations track bounds automatically and the circuit
+can be compiled to Cairo source code.
+"""
 from __future__ import annotations
-from .variable import BoundedIntVar
-from .operation import Operation
+from dataclasses import dataclass, field
+
+
+def type_name(min_b: int, max_b: int, modulus: int, constants: dict[int, str]) -> str:
+    """Generate readable type name for bounds."""
+    # Singleton constant
+    if min_b == max_b and min_b in constants:
+        return f"{constants[min_b]}Const"
+
+    # Primary modular type
+    if min_b == 0 and max_b == modulus - 1:
+        return "Zq"
+
+    # Format min bound (use 'n' prefix for negative)
+    if min_b < 0:
+        min_str = f"n{abs(min_b)}"
+    else:
+        min_str = str(min_b)
+
+    # Format max bound (use 'n' prefix for negative)
+    if max_b < 0:
+        max_str = f"n{abs(max_b)}"
+    else:
+        max_str = str(max_b)
+
+    return f"BInt_{min_str}_{max_str}"
+
+
+@dataclass
+class Operation:
+    """Records a single operation in the circuit trace."""
+    op_type: str  # "ADD", "SUB", "MUL", "DIV", "REM", "REDUCE"
+    operands: list[BoundedIntVar]
+    result: BoundedIntVar
+    extra: dict = field(default_factory=dict)
+    comment: str | None = None
+
+
+@dataclass
+class BoundedIntVar:
+    """A variable in the circuit with tracked bounds."""
+    circuit: BoundedIntCircuit
+    name: str
+    min_bound: int
+    max_bound: int
+    source: Operation | None = None
+
+    @property
+    def bounds(self) -> tuple[int, int]:
+        return (self.min_bound, self.max_bound)
+
+    @property
+    def bit_width(self) -> int:
+        return max(abs(self.min_bound), abs(self.max_bound)).bit_length()
+
+    def inspect(self) -> str:
+        return f"{self.name}: BoundedInt<{self.min_bound}, {self.max_bound}>"
+
+    def __repr__(self) -> str:
+        return self.inspect()
+
+    # Operator overloading
+    def __add__(self, other: BoundedIntVar) -> BoundedIntVar:
+        return self.circuit.add(self, other)
+
+    def __sub__(self, other: BoundedIntVar) -> BoundedIntVar:
+        return self.circuit.sub(self, other)
+
+    def __mul__(self, other: BoundedIntVar) -> BoundedIntVar:
+        return self.circuit.mul(self, other)
+
+    def __floordiv__(self, other: BoundedIntVar | int) -> BoundedIntVar:
+        return self.circuit.div(self, other)
+
+    def __mod__(self, other: BoundedIntVar | int) -> BoundedIntVar:
+        return self.circuit.mod(self, other)
+
+    def div_rem(self, divisor: BoundedIntVar | int) -> tuple[BoundedIntVar, BoundedIntVar]:
+        return self.circuit.div_rem(self, divisor)
+
+    def reduce(self, modulus: int | None = None) -> BoundedIntVar:
+        return self.circuit.reduce(self, modulus)
 
 
 class BoundedIntCircuit:
@@ -264,7 +351,6 @@ class BoundedIntCircuit:
 
     def _type_name(self, min_b: int, max_b: int) -> str:
         """Generate readable type name for bounds."""
-        from .codegen import type_name
         return type_name(min_b, max_b, self.modulus, self.constants)
 
     def _generate_types(self) -> str:
@@ -581,14 +667,14 @@ use corelib_imports::bounded_int::bounded_int::{SubHelper, add, sub, mul};"""
         """Validate that all bounds stay within felt252-safe range.
 
         Raises:
-            ValueError: If any variable's bounds exceed 2^128.
+            ValueError: If any variable's bounds exceed 2^252.
         """
-        limit = 2**128
+        limit = 2**252
         for var in self.variables.values():
             max_abs = max(abs(var.min_bound), abs(var.max_bound))
             if max_abs >= limit:
                 raise ValueError(
-                    f"Bounds exceed 2^128, cannot use felt252 mode. "
+                    f"Bounds exceed 2^252, cannot use felt252 mode. "
                     f"Variable '{var.name}' has bounds [{var.min_bound}, {var.max_bound}]"
                 )
 
@@ -623,15 +709,12 @@ use corelib_imports::bounded_int::{
 """
 
     def _generate_felt252_constants(self) -> str:
-        """Generate Cairo constants and reduction types for felt252 mode."""
+        """Generate Cairo reduction types for felt252 mode.
+
+        Note: Circuit constants (twiddle factors) are generated as let bindings
+        inside the function rather than module-level const declarations.
+        """
         lines = []
-
-        # Generate plain felt252 constants (self.constants is value -> name)
-        for value, name in sorted(self.constants.items()):
-            lines.append(f"const {name}: felt252 = {value};")
-
-        if lines:
-            lines.append("")
 
         # Compute shift and max bounds for reduction types
         shift = self._compute_shift()
@@ -714,6 +797,18 @@ use corelib_imports::bounded_int::{
             return_type = "(" + ", ".join("felt252" for _ in self.outputs) + ")"
 
         lines.append(f"pub fn {func_name}({input_params}) -> {return_type} {{")
+
+        # Generate let bindings for circuit constants (twiddle factors)
+        # self.constants is value -> name mapping
+        const_bindings = []
+        for value, name in sorted(self.constants.items()):
+            # Skip SHIFT_ constants as they're part of bounded mode reduction
+            if not name.startswith("SHIFT_"):
+                const_bindings.append(f"    let {name} = {value};")
+
+        if const_bindings:
+            lines.extend(const_bindings)
+            lines.append("")
 
         # Generate operations (skip REDUCE and related shift-ADD operations in felt252 mode)
         for op in self.operations:

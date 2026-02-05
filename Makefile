@@ -35,5 +35,10 @@ falcon-burn:
 		--open-in-browser
 
 regenerate-ntt:
-	python3 -m hydra.compilable_circuits.regenerate ntt --n 512 --mode bounded
-	python3 -m hydra.compilable_circuits.regenerate ntt --n 512 --mode felt252
+	python3 -m cairo_gen.circuits.regenerate ntt --n 512
+
+regenerate-intt:
+	python3 -m cairo_gen.circuits.regenerate intt --n 512
+
+regenerate-all:
+	python3 -m cairo_gen.circuits.regenerate all --n 512

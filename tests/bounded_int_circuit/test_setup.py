@@ -1,6 +1,6 @@
 # tests/bounded_int_circuit/test_setup.py
 def test_imports():
-    from hydra.bounded_int_circuit import BoundedIntVar, Operation
+    from cairo_gen import BoundedIntVar, Operation
     assert BoundedIntVar is not None
     assert Operation is not None
 

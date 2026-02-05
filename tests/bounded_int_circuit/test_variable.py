@@ -1,6 +1,6 @@
 # tests/bounded_int_circuit/test_variable.py
 import pytest
-from hydra.bounded_int_circuit import BoundedIntCircuit, BoundedIntVar
+from cairo_gen import BoundedIntCircuit, BoundedIntVar
 
 
 class TestInputCreation:

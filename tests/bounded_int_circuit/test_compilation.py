@@ -7,7 +7,7 @@ Based on edge cases from:
 https://github.com/starkware-libs/cairo/blob/main/corelib/src/test/integer_test.cairo#L1939-L2268
 """
 import pytest
-from hydra.bounded_int_circuit import BoundedIntCircuit
+from cairo_gen import BoundedIntCircuit
 
 
 class TestCompilationBasicOps:
