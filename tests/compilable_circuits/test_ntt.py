@@ -254,29 +254,113 @@ class TestLargerSizes:
 
         assert actual == expected, f"n={n} random: mismatch"
 
-    def test_ntt_512_matches_reference(self):
-        """n=512 NTT matches reference algorithm."""
-        random.seed(42)
+    pass
 
-        gen = NttCircuitGenerator(n=512)
-        gen._register_constants()
 
-        inputs = [gen.circuit.input(f"f{i}", 0, gen.Q - 1) for i in range(512)]
-        result = gen._ntt(inputs)
+def _build_ntt_circuit(n):
+    """Build and return an NTT circuit generator with traced operations."""
+    gen = NttCircuitGenerator(n=n)
+    gen._register_constants()
+    inputs = [gen.circuit.input(f"f{i}", 0, gen.Q - 1) for i in range(n)]
+    result = gen._ntt(inputs)
+    for i, out in enumerate(result):
+        gen.circuit.output(out.reduce(), f"r{i}")
+    return gen
 
-        for i, out in enumerate(result):
-            gen.circuit.output(out.reduce(), f"r{i}")
 
-        # Test with random values
-        test_input = [random.randint(0, gen.Q - 1) for _ in range(512)]
+@pytest.fixture(scope="module")
+def ntt_512_circuit():
+    """Build n=512 circuit once for all tests in this module."""
+    return _build_ntt_circuit(512)
+
+
+class TestNtt512Correctness:
+    """Thorough correctness tests for n=512 NTT circuit against reference."""
+
+    Q = 12289
+
+    @pytest.mark.parametrize("seed", list(range(10)))
+    def test_random_inputs(self, ntt_512_circuit, seed):
+        """Circuit matches reference NTT on uniformly random inputs."""
+        rng = random.Random(seed)
+        test_input = [rng.randint(0, self.Q - 1) for _ in range(512)]
+
         expected = reference_ntt(test_input[:])
-        actual = gen.simulate(test_input[:])
+        actual = ntt_512_circuit.simulate(test_input[:])
 
-        assert actual == expected, "n=512: NTT mismatch"
+        assert actual == expected, (
+            f"seed={seed}: first mismatch at index "
+            f"{next(i for i in range(512) if actual[i] != expected[i])}"
+        )
 
-        # Check statistics
-        stats = gen.circuit.stats()
-        print(f"\nn=512 stats: {stats}")
+    def test_all_zeros(self, ntt_512_circuit):
+        """NTT(0, ..., 0) = (0, ..., 0)."""
+        test_input = [0] * 512
+        actual = ntt_512_circuit.simulate(test_input)
+        assert actual == [0] * 512
+
+    def test_all_ones(self, ntt_512_circuit):
+        """NTT of constant-1 polynomial."""
+        test_input = [1] * 512
+        expected = reference_ntt(test_input[:])
+        actual = ntt_512_circuit.simulate(test_input[:])
+        assert actual == expected
+
+    def test_all_max(self, ntt_512_circuit):
+        """NTT with all inputs at Q-1."""
+        test_input = [self.Q - 1] * 512
+        expected = reference_ntt(test_input[:])
+        actual = ntt_512_circuit.simulate(test_input[:])
+        assert actual == expected
+
+    def test_single_nonzero_first(self, ntt_512_circuit):
+        """NTT of delta function at index 0: [1, 0, 0, ...]."""
+        test_input = [1] + [0] * 511
+        expected = reference_ntt(test_input[:])
+        actual = ntt_512_circuit.simulate(test_input[:])
+        assert actual == expected
+
+    def test_single_nonzero_last(self, ntt_512_circuit):
+        """NTT of delta function at last index: [0, ..., 0, 1]."""
+        test_input = [0] * 511 + [1]
+        expected = reference_ntt(test_input[:])
+        actual = ntt_512_circuit.simulate(test_input[:])
+        assert actual == expected
+
+    def test_alternating_pattern(self, ntt_512_circuit):
+        """NTT of alternating 0, Q-1 at full size."""
+        test_input = [0 if i % 2 == 0 else self.Q - 1 for i in range(512)]
+        expected = reference_ntt(test_input[:])
+        actual = ntt_512_circuit.simulate(test_input[:])
+        assert actual == expected
+
+    def test_sequential_values(self, ntt_512_circuit):
+        """NTT of [1, 2, 3, ..., 512]."""
+        test_input = list(range(1, 513))
+        expected = reference_ntt(test_input[:])
+        actual = ntt_512_circuit.simulate(test_input[:])
+        assert actual == expected
+
+    def test_outputs_in_valid_range(self, ntt_512_circuit):
+        """All outputs are in [0, Q-1] for random inputs."""
+        rng = random.Random(999)
+        test_input = [rng.randint(0, self.Q - 1) for _ in range(512)]
+        actual = ntt_512_circuit.simulate(test_input)
+
+        for i, val in enumerate(actual):
+            assert 0 <= val < self.Q, f"output[{i}] = {val} out of range [0, {self.Q})"
+
+    def test_boundary_values_mixed(self, ntt_512_circuit):
+        """Mix of 0 and Q-1 at specific positions (boundary stress test)."""
+        # First half zeros, second half max
+        test_input = [0] * 256 + [self.Q - 1] * 256
+        expected = reference_ntt(test_input[:])
+        actual = ntt_512_circuit.simulate(test_input[:])
+        assert actual == expected
+
+    def test_circuit_stats(self, ntt_512_circuit):
+        """Circuit has expected complexity for n=512."""
+        stats = ntt_512_circuit.circuit.stats()
         assert stats["num_operations"] > 5000, "Expected >5000 operations for n=512"
 
 

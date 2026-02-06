@@ -96,13 +96,13 @@ class BoundedIntCircuit:
     A circuit that records bounded integer operations and compiles to Cairo.
     """
 
-    MAX_BOUND_LIMIT = 2**251
+    MAX_BOUND_LIMIT = 2**250
 
     def __init__(
         self,
         name: str,
         modulus: int,
-        max_bound: int = 2**251,
+        max_bound: int = 2**250,
     ):
         self.name = name
         self.modulus = modulus
@@ -836,15 +836,29 @@ use corelib_imports::bounded_int::{
             out_name = out_var.name
             src_name = out_name
 
-            # Trace back through reduction chain to find unreduced source
+            # Trace back through reduction chain to find unreduced source.
+            # In bounded mode, reduce() on negative-bounded vars creates:
+            #   ADD(var, shift_const) -> REDUCE(shifted)
+            # We need to trace back to `var`, skipping the shift-ADD.
+            # For non-negative vars, reduce() creates REDUCE(var) directly.
             if out_var.source is not None:
                 op = out_var.source
                 if op.op_type == "REDUCE":
-                    # REDUCE's operand is the shifted variable from ADD
                     shifted_var = op.operands[0]
                     if shifted_var.source is not None and shifted_var.source.op_type == "ADD":
-                        # ADD's first operand is the original unreduced variable
-                        src_name = shifted_var.source.operands[0].name
+                        # Only trace through if this ADD is a shift-ADD
+                        # (second operand is a SHIFT_ constant), not a regular ADD
+                        add_op = shifted_var.source
+                        second_operand = add_op.operands[1]
+                        is_shift_add = (
+                            second_operand.min_bound == second_operand.max_bound
+                            and second_operand.min_bound in self.constants
+                            and self.constants[second_operand.min_bound].startswith("SHIFT_")
+                        )
+                        if is_shift_add:
+                            src_name = add_op.operands[0].name
+                        else:
+                            src_name = shifted_var.name
                     else:
                         # No shift, REDUCE directly on the variable
                         src_name = shifted_var.name

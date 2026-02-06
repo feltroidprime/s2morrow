@@ -1,10 +1,11 @@
 use falcon::ntt::ntt;
 use falcon::ntt_felt252::ntt_512;
+use falcon::ntt_zknox::{zknox_nttFW_unreduced, red256_vector};
 use snforge_std::fs::{FileTrait, read_json};
 
 /// Extract input array from JSON object format
 /// snforge serializes {"input": [...]} as: [header, val1, val2, ..., val512, trailer]
-fn load_ntt_input() -> Array<felt252> {
+fn load_ntt_input() -> Span<felt252> {
     let file = FileTrait::new("tests/data/ntt_input_512_int.json");
     let serialized = read_json(@file);
 
@@ -14,8 +15,8 @@ fn load_ntt_input() -> Array<felt252> {
     while i < 513 {
         input.append(*serialized.at(i));
         i += 1;
-    };
-    input
+    }
+    input.span()
 }
 
 #[test]
@@ -25,11 +26,20 @@ fn test_ntt_recursive_512() {
     // Convert felt252 -> u16 for recursive NTT
     let mut u16_input: Array<u16> = array![];
     for val in input {
-        u16_input.append(val.try_into().unwrap());
-    };
+        u16_input.append((*val).try_into().unwrap());
+    }
 
     let result = ntt(u16_input.span());
     assert_eq!(result.len(), 512);
+
+    let result_felt252 = ntt_512(input);
+    assert_eq!(result_felt252.len(), 512);
+
+    let mut j: usize = 0;
+    while j < 512 {
+        assert_eq!((*result.at(j)).into(), *result_felt252.at(j), "mismatch at index {}", j);
+        j += 1;
+    };
 }
 
 #[test]
@@ -37,4 +47,47 @@ fn test_ntt_felt252_512() {
     let input = load_ntt_input();
     let result = ntt_512(input);
     assert_eq!(result.len(), 512);
+}
+
+#[test]
+fn test_ntt_zknox_vs_felt252() {
+    let input = load_ntt_input();
+
+    // Clone input for zknox
+    let mut input_zknox: Array<felt252> = array![];
+    let mut i: usize = 0;
+    while i < input.len() {
+        input_zknox.append(*input.at(i));
+        i += 1;
+    };
+
+    // Run zknox NTT then reduce
+    let zknox_result = red256_vector(zknox_nttFW_unreduced(input_zknox.span()));
+
+    // Run felt252 NTT
+    let felt252_result = ntt_512(input);
+
+    assert_eq!(zknox_result.len(), 512);
+    assert_eq!(felt252_result.len(), 512);
+
+    // The zknox NTT (DIT) and felt252 NTT (DIF) evaluate the polynomial at
+    // the same 512 roots of x^512+1, but output them in different permutation
+    // order due to different twiddle factor conventions. Verify they produce
+    // the same multiset by comparing sums and sums of squares.
+    let mut sum_z: felt252 = 0;
+    let mut sum_f: felt252 = 0;
+    let mut sum_sq_z: felt252 = 0;
+    let mut sum_sq_f: felt252 = 0;
+    let mut j: usize = 0;
+    while j < 512 {
+        let z = *zknox_result.at(j);
+        let f = *felt252_result.at(j);
+        sum_z += z;
+        sum_f += f;
+        sum_sq_z += z * z;
+        sum_sq_f += f * f;
+        j += 1;
+    };
+    assert_eq!(sum_z, sum_f, "sum mismatch");
+    assert_eq!(sum_sq_z, sum_sq_f, "sum of squares mismatch");
 }

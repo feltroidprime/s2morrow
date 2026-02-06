@@ -31,11 +31,9 @@ fn test_verify_512() {
     let args = load_args();
 
     for attestation in args.attestations.span() {
-        falcon::verify_uncompressed::<512>(
-            attestation.s1.span(),
-            attestation.pk.span(),
-            attestation.msg_point.span(),
-            args.n
-        ).expect('Invalid signature');
+        falcon::verify_uncompressed::<
+            512,
+        >(attestation.s1.span(), attestation.pk.span(), attestation.msg_point.span(), args.n)
+            .expect('Invalid signature');
     }
 }
