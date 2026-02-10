@@ -50,3 +50,7 @@ profiles/*.log
 # Keep legacy ignores for any stragglers
 *.pb.gz
 *.png
+
+scripts
+snfoundry_trace
+.snfoundry_cache

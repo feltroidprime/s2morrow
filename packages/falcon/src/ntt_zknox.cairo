@@ -9782,3 +9782,7 @@ pub fn red256_vector(a: Span<felt252>) -> Span<felt252> {
     };
     result.span()
 }
+
+pub fn zknox_nttFW_reduced(a: Span<felt252>) -> Span<felt252> {
+    red256_vector(zknox_nttFW_unreduced(a))
+}

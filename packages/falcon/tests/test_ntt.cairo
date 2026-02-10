@@ -1,6 +1,6 @@
 use falcon::ntt::ntt;
 use falcon::ntt_felt252::ntt_512;
-use falcon::ntt_zknox::{zknox_nttFW_unreduced, red256_vector};
+use falcon::ntt_zknox::zknox_nttFW_reduced;
 use snforge_std::fs::{FileTrait, read_json};
 
 /// Extract input array from JSON object format
@@ -61,8 +61,8 @@ fn test_ntt_zknox_vs_felt252() {
         i += 1;
     };
 
-    // Run zknox NTT then reduce
-    let zknox_result = red256_vector(zknox_nttFW_unreduced(input_zknox.span()));
+    // Run zknox NTT (unreduced + reduce combined)
+    let zknox_result = zknox_nttFW_reduced(input_zknox.span());
 
     // Run felt252 NTT
     let felt252_result = ntt_512(input);

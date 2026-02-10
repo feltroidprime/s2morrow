@@ -9,6 +9,7 @@ can be compiled to Cairo source code.
 from __future__ import annotations
 from dataclasses import dataclass, field
 
+STARK = 2**251 + 17*2**192 + 1
 
 def type_name(min_b: int, max_b: int, modulus: int, constants: dict[int, str]) -> str:
     """Generate readable type name for bounds."""
@@ -96,7 +97,7 @@ class BoundedIntCircuit:
     A circuit that records bounded integer operations and compiles to Cairo.
     """
 
-    MAX_BOUND_LIMIT = 2**250
+    MAX_BOUND_LIMIT = 2**300
 
     def __init__(
         self,
