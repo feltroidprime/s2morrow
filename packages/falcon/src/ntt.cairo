@@ -11,6 +11,7 @@
 //! - Downcasts only at deserialization boundaries
 
 use crate::ntt_constants::{get_even_roots, get_even_roots_inv};
+use crate::ntt_felt252::ntt_512;
 use crate::zq::{
     add_mod, from_u16, fused_add_mul_mod, fused_i2_add_mod, fused_i2_diff_sqr1inv_mod,
     fused_i2_sub_mul_mod, fused_i2_sum_mod, fused_sqr1_mul_mod, fused_sub_mul_mod, mul_mod, sub_mod,
@@ -47,10 +48,54 @@ pub fn mul_ntt(mut f: Span<u16>, mut g: Span<u16>) -> Span<u16> {
     res.span()
 }
 
+/// NTT using the fast felt252 unrolled implementation for n=512,
+/// falling back to recursive NTT for other sizes.
+pub fn ntt_fast(f: Span<u16>) -> Span<u16> {
+    if f.len() != 512 {
+        return ntt(f);
+    }
+
+    // Convert u16 -> felt252
+    let mut felt_input: Array<felt252> = array![];
+    for val in f {
+        felt_input.append((*val).into());
+    };
+
+    // Call fast NTT
+    let result = ntt_512(felt_input.span());
+
+    // Convert felt252 -> u16
+    let mut u16_result: Array<u16> = array![];
+    for val in result.span() {
+        u16_result.append((*val).try_into().unwrap());
+    };
+    u16_result.span()
+}
+
+/// Verify an INTT result supplied as a hint.
+/// Given f_ntt (NTT-domain polynomial) and result_hint (claimed coefficients),
+/// verifies that NTT(result_hint) == f_ntt element-by-element.
+/// Returns the verified result.
+pub fn intt_with_hint(f_ntt: Span<u16>, result_hint: Span<u16>) -> Span<u16> {
+    assert(f_ntt.len() == result_hint.len(), 'length mismatch');
+
+    // Compute NTT of the hint using the fast unrolled implementation
+    let roundtrip = ntt_fast(result_hint);
+
+    // Verify element-by-element
+    let mut i: usize = 0;
+    while i < f_ntt.len() {
+        assert(*f_ntt.at(i) == *roundtrip.at(i), 'intt hint mismatch');
+        i += 1;
+    };
+
+    result_hint
+}
+
 /// Multiply two polynomials using NTT
 pub fn mul_zq(f: Span<u16>, g: Span<u16>) -> Span<u16> {
-    let f_ntt = ntt(f);
-    let g_ntt = ntt(g);
+    let f_ntt = ntt_fast(f);
+    let g_ntt = ntt_fast(g);
     let res_ntt = mul_ntt(f_ntt, g_ntt);
     intt(res_ntt)
 }

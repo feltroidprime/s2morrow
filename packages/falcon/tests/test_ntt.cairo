@@ -3,20 +3,20 @@ use falcon::ntt_felt252::ntt_512;
 use falcon::ntt_zknox::zknox_nttFW_reduced;
 use snforge_std::fs::{FileTrait, read_json};
 
-/// Extract input array from JSON object format
-/// snforge serializes {"input": [...]} as: [header, val1, val2, ..., val512, trailer]
+#[derive(Drop, Serde)]
+struct NttJson {
+    input: Array<felt252>,
+}
+
+/// Load 512 felt252 values from a JSON file with format {"input": [512, v0, ..., v511]}.
+/// Uses Serde deserialization (matching test_verify.cairo pattern) to avoid manual index math.
 fn load_ntt_input() -> Span<felt252> {
     let file = FileTrait::new("tests/data/ntt_input_512_int.json");
     let serialized = read_json(@file);
-
-    // Skip first element (header) and last element (trailer)
-    let mut input: Array<felt252> = array![];
-    let mut i: usize = 1;
-    while i < 513 {
-        input.append(*serialized.at(i));
-        i += 1;
-    }
-    input.span()
+    let mut span = serialized.span();
+    let _header = span.pop_front();
+    let data: NttJson = Serde::deserialize(ref span).expect('deserialize failed');
+    data.input.span()
 }
 
 #[test]
