@@ -1,0 +1,9 @@
+[package]
+name = "falcon_zknox"
+version = "0.1.0"
+edition = "2024_07"
+
+[lib]
+
+[dependencies]
+corelib_imports = "0.1.2"

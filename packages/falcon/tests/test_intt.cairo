@@ -1,6 +1,6 @@
 use falcon::ntt::intt_with_hint;
-use falcon::ntt_zknox::zknox_nttFW_reduced;
-use falcon::intt_zknox::zknox_inttFW_reduced;
+use falcon_zknox::ntt_zknox::zknox_nttFW_reduced;
+use falcon_zknox::intt_zknox::zknox_inttFW_reduced;
 use snforge_std::fs::{FileTrait, read_json};
 
 #[derive(Drop, Serde)]
