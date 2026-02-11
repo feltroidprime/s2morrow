@@ -7,8 +7,10 @@
 //! Security: each coefficient comes from reducing a >=50-bit value mod Q.
 //! Per Renyi analysis (scripts/renyi.md), this gives <=0.37 bits security loss.
 
-use corelib_imports::bounded_int::{BoundedInt, DivRemHelper};
-use falcon::zq::{Zq, QConst};
+use corelib_imports::bounded_int::{BoundedInt, DivRemHelper, bounded_int_div_rem, downcast, upcast};
+use core::poseidon::hades_permutation;
+use falcon::zq::{Zq, QConst, nz_q};
+use falcon::types::HashToPoint;
 
 // =============================================================================
 // LOW extraction chain (from u128, 128 bits -> 6 Zq)
@@ -96,4 +98,114 @@ impl DivRemHQ4ByQ of DivRemHelper<ExtractHQ4, QConst> {
 impl DivRemHQ5ByQ of DivRemHelper<ExtractHQ5, QConst> {
     type DivT = ExtractHQ6;
     type RemT = Zq;
+}
+
+// =============================================================================
+// Extraction functions: base-Q digit extraction via DivRem chains
+// =============================================================================
+
+/// Extract 6 Zq coefficients from a u128 value via successive DivRem by Q.
+fn extract_6_from_low(value: u128, ref coeffs: Array<u16>) {
+    let (q1, r0) = bounded_int_div_rem(value, nz_q());
+    coeffs.append(upcast::<Zq, u16>(r0));
+    let (q2, r1) = bounded_int_div_rem(q1, nz_q());
+    coeffs.append(upcast::<Zq, u16>(r1));
+    let (q3, r2) = bounded_int_div_rem(q2, nz_q());
+    coeffs.append(upcast::<Zq, u16>(r2));
+    let (q4, r3) = bounded_int_div_rem(q3, nz_q());
+    coeffs.append(upcast::<Zq, u16>(r3));
+    let (q5, r4) = bounded_int_div_rem(q4, nz_q());
+    coeffs.append(upcast::<Zq, u16>(r4));
+    let (_q6, r5) = bounded_int_div_rem(q5, nz_q());
+    coeffs.append(upcast::<Zq, u16>(r5));
+}
+
+/// Extract 6 Zq coefficients from the high part of a felt252 (FeltHigh).
+fn extract_6_from_high(value: FeltHigh, ref coeffs: Array<u16>) {
+    let (q1, r0) = bounded_int_div_rem(value, nz_q());
+    coeffs.append(upcast::<Zq, u16>(r0));
+    let (q2, r1) = bounded_int_div_rem(q1, nz_q());
+    coeffs.append(upcast::<Zq, u16>(r1));
+    let (q3, r2) = bounded_int_div_rem(q2, nz_q());
+    coeffs.append(upcast::<Zq, u16>(r2));
+    let (q4, r3) = bounded_int_div_rem(q3, nz_q());
+    coeffs.append(upcast::<Zq, u16>(r3));
+    let (q5, r4) = bounded_int_div_rem(q4, nz_q());
+    coeffs.append(upcast::<Zq, u16>(r4));
+    let (_q6, r5) = bounded_int_div_rem(q5, nz_q());
+    coeffs.append(upcast::<Zq, u16>(r5));
+}
+
+/// Extract 12 Zq coefficients from a felt252: 6 from low u128, 6 from high FeltHigh.
+fn extract_12_from_felt252(value: felt252, ref coeffs: Array<u16>) {
+    let val_u256: u256 = value.into();
+    extract_6_from_low(val_u256.low, ref coeffs);
+    let high_bounded: FeltHigh = downcast(val_u256.high).expect('high exceeds FeltHigh');
+    extract_6_from_high(high_bounded, ref coeffs);
+}
+
+// =============================================================================
+// Poseidon sponge (rate=2, capacity=1)
+// =============================================================================
+
+/// Absorb a span of felt252 elements into the sponge state using rate-2 absorption.
+/// Odd-length inputs are padded with 1.
+fn absorb(ref s0: felt252, ref s1: felt252, ref s2: felt252, mut input: Span<felt252>) {
+    loop {
+        match input.pop_front() {
+            Option::None => { break; },
+            Option::Some(first) => {
+                let second = match input.pop_front() {
+                    Option::Some(v) => *v,
+                    Option::None => 1, // pad odd element
+                };
+                let (ns0, ns1, ns2) = hades_permutation(s0 + *first, s1 + second, s2);
+                s0 = ns0;
+                s1 = ns1;
+                s2 = ns2;
+            },
+        }
+    };
+}
+
+// =============================================================================
+// HashToPoint implementation using Poseidon XOF
+// =============================================================================
+
+pub struct PoseidonHashToPoint {}
+
+pub impl PoseidonHashToPointImpl of HashToPoint<PoseidonHashToPoint> {
+    fn hash_to_point(message: Span<felt252>, salt: Span<felt252>) -> Array<u16> {
+        let (mut s0, mut s1, mut s2): (felt252, felt252, felt252) = (0, 0, 0);
+
+        absorb(ref s0, ref s1, ref s2, message);
+        absorb(ref s0, ref s1, ref s2, salt);
+        s2 += 1; // domain separation before squeeze
+
+        let mut coeffs: Array<u16> = array![];
+        loop {
+            let (ns0, ns1, ns2) = hades_permutation(s0, s1, s2);
+            s0 = ns0;
+            s1 = ns1;
+            s2 = ns2;
+            extract_12_from_felt252(s0, ref coeffs);
+            if coeffs.len() >= 512 {
+                break;
+            }
+            extract_12_from_felt252(s1, ref coeffs);
+            if coeffs.len() >= 512 {
+                break;
+            }
+        };
+
+        // Truncate to exactly 512
+        let span = coeffs.span();
+        let mut result: Array<u16> = array![];
+        let mut i: usize = 0;
+        while i != 512 {
+            result.append(*span.at(i));
+            i += 1;
+        };
+        result
+    }
 }
