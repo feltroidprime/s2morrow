@@ -5,8 +5,11 @@
 //!
 //! DivRem by Q gives RemT = Zq directly — zero downcasts in the hot path.
 
-use corelib_imports::bounded_int::{AddHelper, BoundedInt, DivRemHelper, MulHelper};
-use falcon::zq::{Zq, QConst};
+use corelib_imports::bounded_int::bounded_int::{add, mul};
+use corelib_imports::bounded_int::{
+    AddHelper, BoundedInt, DivRemHelper, MulHelper, bounded_int_div_rem, downcast, upcast,
+};
+use falcon::zq::{Zq, QConst, Q_UNIT, nz_q};
 
 // =============================================================================
 // Constants
@@ -168,4 +171,212 @@ impl DivRemAcc7Impl of DivRemHelper<Acc7, QConst> {
 impl DivRemAcc8Impl of DivRemHelper<Acc8, QConst> {
     type DivT = Acc7;
     type RemT = Zq;
+}
+
+// =============================================================================
+// Packing functions
+// =============================================================================
+
+/// Helper: get a Zq value from a u16 span (downcast at boundary only)
+#[inline(always)]
+fn v(vals: Span<u16>, i: usize) -> Zq {
+    downcast(*vals.at(i)).expect('overflow')
+}
+
+/// Horner-encode up to 9 Zq values into a u128.
+/// Encoding: v0 + Q*(v1 + Q*(v2 + ... + Q*v8))
+fn pack_9(vals: Span<u16>) -> u128 {
+    let n = vals.len();
+    match n {
+        0 => 0_u128,
+        1 => {
+            let a: Zq = v(vals, 0);
+            upcast(a)
+        },
+        2 => {
+            let a1: Acc1 = add(v(vals, 0), mul(Q_UNIT, v(vals, 1)));
+            upcast(a1)
+        },
+        3 => {
+            let a1: Acc1 = add(v(vals, 1), mul(Q_UNIT, v(vals, 2)));
+            let a2: Acc2 = add(v(vals, 0), mul(Q_UNIT, a1));
+            upcast(a2)
+        },
+        4 => {
+            let a1: Acc1 = add(v(vals, 2), mul(Q_UNIT, v(vals, 3)));
+            let a2: Acc2 = add(v(vals, 1), mul(Q_UNIT, a1));
+            let a3: Acc3 = add(v(vals, 0), mul(Q_UNIT, a2));
+            upcast(a3)
+        },
+        5 => {
+            let a1: Acc1 = add(v(vals, 3), mul(Q_UNIT, v(vals, 4)));
+            let a2: Acc2 = add(v(vals, 2), mul(Q_UNIT, a1));
+            let a3: Acc3 = add(v(vals, 1), mul(Q_UNIT, a2));
+            let a4: Acc4 = add(v(vals, 0), mul(Q_UNIT, a3));
+            upcast(a4)
+        },
+        6 => {
+            let a1: Acc1 = add(v(vals, 4), mul(Q_UNIT, v(vals, 5)));
+            let a2: Acc2 = add(v(vals, 3), mul(Q_UNIT, a1));
+            let a3: Acc3 = add(v(vals, 2), mul(Q_UNIT, a2));
+            let a4: Acc4 = add(v(vals, 1), mul(Q_UNIT, a3));
+            let a5: Acc5 = add(v(vals, 0), mul(Q_UNIT, a4));
+            upcast(a5)
+        },
+        7 => {
+            let a1: Acc1 = add(v(vals, 5), mul(Q_UNIT, v(vals, 6)));
+            let a2: Acc2 = add(v(vals, 4), mul(Q_UNIT, a1));
+            let a3: Acc3 = add(v(vals, 3), mul(Q_UNIT, a2));
+            let a4: Acc4 = add(v(vals, 2), mul(Q_UNIT, a3));
+            let a5: Acc5 = add(v(vals, 1), mul(Q_UNIT, a4));
+            let a6: Acc6 = add(v(vals, 0), mul(Q_UNIT, a5));
+            upcast(a6)
+        },
+        8 => {
+            let a1: Acc1 = add(v(vals, 6), mul(Q_UNIT, v(vals, 7)));
+            let a2: Acc2 = add(v(vals, 5), mul(Q_UNIT, a1));
+            let a3: Acc3 = add(v(vals, 4), mul(Q_UNIT, a2));
+            let a4: Acc4 = add(v(vals, 3), mul(Q_UNIT, a3));
+            let a5: Acc5 = add(v(vals, 2), mul(Q_UNIT, a4));
+            let a6: Acc6 = add(v(vals, 1), mul(Q_UNIT, a5));
+            let a7: Acc7 = add(v(vals, 0), mul(Q_UNIT, a6));
+            upcast(a7)
+        },
+        9 => {
+            let a1: Acc1 = add(v(vals, 7), mul(Q_UNIT, v(vals, 8)));
+            let a2: Acc2 = add(v(vals, 6), mul(Q_UNIT, a1));
+            let a3: Acc3 = add(v(vals, 5), mul(Q_UNIT, a2));
+            let a4: Acc4 = add(v(vals, 4), mul(Q_UNIT, a3));
+            let a5: Acc5 = add(v(vals, 3), mul(Q_UNIT, a4));
+            let a6: Acc6 = add(v(vals, 2), mul(Q_UNIT, a5));
+            let a7: Acc7 = add(v(vals, 1), mul(Q_UNIT, a6));
+            let a8: Acc8 = add(v(vals, 0), mul(Q_UNIT, a7));
+            upcast(a8)
+        },
+        _ => core::panic_with_felt252('pack_9: count > 9'),
+    }
+}
+
+/// Unpack a u128 into `count` u16 values using iterated DivRem by Q.
+fn unpack_9(packed: u128, count: usize, ref output: Array<u16>) {
+    if count == 0 {
+        return;
+    }
+    let acc8: Acc8 = downcast(packed).expect('invalid packed value');
+    let (acc7, r0) = bounded_int_div_rem(acc8, nz_q());
+    output.append(upcast::<Zq, u16>(r0));
+    if count == 1 {
+        return;
+    }
+    let (acc6, r1) = bounded_int_div_rem(acc7, nz_q());
+    output.append(upcast::<Zq, u16>(r1));
+    if count == 2 {
+        return;
+    }
+    let (acc5, r2) = bounded_int_div_rem(acc6, nz_q());
+    output.append(upcast::<Zq, u16>(r2));
+    if count == 3 {
+        return;
+    }
+    let (acc4, r3) = bounded_int_div_rem(acc5, nz_q());
+    output.append(upcast::<Zq, u16>(r3));
+    if count == 4 {
+        return;
+    }
+    let (acc3, r4) = bounded_int_div_rem(acc4, nz_q());
+    output.append(upcast::<Zq, u16>(r4));
+    if count == 5 {
+        return;
+    }
+    let (acc2, r5) = bounded_int_div_rem(acc3, nz_q());
+    output.append(upcast::<Zq, u16>(r5));
+    if count == 6 {
+        return;
+    }
+    let (acc1, r6) = bounded_int_div_rem(acc2, nz_q());
+    output.append(upcast::<Zq, u16>(r6));
+    if count == 7 {
+        return;
+    }
+    let (acc0, r7) = bounded_int_div_rem(acc1, nz_q());
+    output.append(upcast::<Zq, u16>(r7));
+    if count == 8 {
+        return;
+    }
+    output.append(upcast::<Zq, u16>(acc0));
+}
+
+/// Pack 512 u16 values into 29 felt252 slots.
+/// Each slot encodes up to 18 values: pack_9(lo) + pack_9(hi) * 2^128.
+pub fn pack_public_key(values: Span<u16>) -> Array<felt252> {
+    assert!(values.len() == 512, "expected 512 values");
+    let mut result: Array<felt252> = array![];
+    let mut offset: usize = 0;
+    // 28 full slots of 18 values each = 504 values
+    // 1 final slot with 8 remaining values
+    let total = 512;
+    while offset != total {
+        let remaining = total - offset;
+        let chunk = if remaining >= VALS_PER_FELT {
+            VALS_PER_FELT
+        } else {
+            remaining
+        };
+        let lo_count = if chunk >= VALS_PER_U128 {
+            VALS_PER_U128
+        } else {
+            chunk
+        };
+        let hi_count = chunk - lo_count;
+
+        let lo_packed = pack_9(values.slice(offset, lo_count));
+        let lo_felt: felt252 = lo_packed.into();
+
+        let slot = if hi_count != 0 {
+            let hi_packed = pack_9(values.slice(offset + lo_count, hi_count));
+            let hi_felt: felt252 = hi_packed.into();
+            lo_felt + hi_felt * TWO_POW_128
+        } else {
+            lo_felt
+        };
+
+        result.append(slot);
+        offset += chunk;
+    };
+    result
+}
+
+/// Unpack 29 felt252 slots back to 512 u16 values.
+pub fn unpack_public_key(packed: Span<felt252>) -> Array<u16> {
+    let mut output: Array<u16> = array![];
+    let mut remaining: usize = 512;
+    let mut i: usize = 0;
+    let slot_count = packed.len();
+    while i != slot_count {
+        let value: felt252 = *packed.at(i);
+        let val_u256: u256 = value.into();
+        let low: u128 = val_u256.low;
+        let high: u128 = val_u256.high;
+
+        let lo_count = if remaining >= VALS_PER_U128 {
+            VALS_PER_U128
+        } else {
+            remaining
+        };
+        unpack_9(low, lo_count, ref output);
+        remaining -= lo_count;
+
+        let hi_count = if remaining >= VALS_PER_U128 {
+            VALS_PER_U128
+        } else {
+            remaining
+        };
+        if hi_count != 0 {
+            unpack_9(high, hi_count, ref output);
+            remaining -= hi_count;
+        }
+
+        i += 1;
+    };
+    output
 }
