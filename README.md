@@ -17,7 +17,7 @@ The inverse NTT is the most expensive operation. Instead of computing it on-chai
 All modular arithmetic uses `Zq = BoundedInt<0, 12288>` with compile-time bounds tracking. This eliminates runtime overflow checks — the type system guarantees correctness. Lazy reduction via `bounded_int_div_rem` keeps operations minimal.
 
 **Auto-generated unrolled NTT:**
-A Python DSL (`cairo_gen/`) generates a fully unrolled felt252 NTT for n=512. This runs in ~37K steps — 7.4x faster than recursive and 3.6x faster than iterative implementations.
+A Python DSL (`cairo_gen/`) generates a fully unrolled felt252 NTT for n=512. A single `ntt_512` call runs in ~15K steps.
 
 ### Storage
 
@@ -62,13 +62,28 @@ cd ../falcon-rs && cargo test generate_ -- --nocapture
 
 ## Performance
 
-| Implementation | Steps | Relative |
-|----------------|-------|----------|
-| Unrolled felt252 NTT | 37,353 | 1x |
-| zknox iterative DIT | 135,699 | 3.6x |
-| Recursive DIF | 275,867 | 7.4x |
+Profiled at commit `4158622` with `cairo-profiler` (cumulative steps):
 
-Full verification (2 NTTs + norm check) runs in ~67K L2 gas.
+| Function | Steps | Description |
+|----------|-------|-------------|
+| `verify` | 159,403 | Full verification including hash-to-point |
+| `verify_with_msg_point` | 152,834 | Verification with pre-computed message point |
+| `ntt_512` | 15,121 | Core unrolled NTT (felt252) |
+| `ntt_fast` | ~17,000 | NTT with u16 conversion overhead |
+| `hash_to_point` | 5,988 | Poseidon XOF squeeze (22 permutations) |
+| `extend_euclidean_norm` | 40,934 | Norm check for s0 + s1 |
+| `mul_ntt` | 17,936 | Pointwise multiply (512 elements) |
+| `sub_zq` | 18,448 | Coefficient subtraction (512 elements) |
+| `intt_with_hint` | 10,254 | Hint verification (forward NTT + compare) |
+
+**Verification cost breakdown** (`verify_with_msg_point`):
+- 2x `ntt_fast`: ~34K steps (~17K each: NTT of s1 + NTT of mul_hint)
+- `mul_ntt`: ~18K steps (pointwise s1_ntt * pk_ntt)
+- `intt_with_hint`: ~10K steps (verify hint correctness)
+- `sub_zq`: ~18K steps (s0 = msg_point - product)
+- `extend_euclidean_norm`: ~41K steps (norm check, dominant cost)
+
+L2 gas: `verify` ~48.7M | `ntt_512` alone ~2.9M
 
 ## References
 
