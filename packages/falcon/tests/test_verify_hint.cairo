@@ -61,3 +61,37 @@ fn test_verify_with_msg_point() {
     let result = verify_with_msg_point(@pk, sig_with_hint, att.msg_point.span());
     assert!(result, "verification should pass");
 }
+
+#[test]
+#[should_panic(expected: 'intt hint mismatch')]
+fn test_verify_bad_hint_panics() {
+    let args = load_args();
+    let att = args.attestations.at(0);
+
+    let pk_ntt = ntt_fast(att.pk.span());
+
+    // Build a WRONG hint (all zeros — won't match NTT(s1) * pk_ntt)
+    let mut bad_hint: Array<u16> = array![];
+    let mut i: usize = 0;
+    while i != 512 {
+        bad_hint.append(0);
+        i += 1;
+    };
+
+    let mut s1_arr: Array<u16> = array![];
+    for v in att.s1.span() {
+        s1_arr.append(*v);
+    };
+    let mut pk_ntt_arr: Array<u16> = array![];
+    for v in pk_ntt {
+        pk_ntt_arr.append(*v);
+    };
+
+    let pk = FalconPublicKey { h_ntt: pk_ntt_arr };
+    let sig = FalconSignature { s1: s1_arr, salt: array![] };
+    let hint = FalconVerificationHint { mul_hint: bad_hint };
+    let sig_with_hint = FalconSignatureWithHint { signature: sig, hint };
+
+    // This should panic with 'intt hint mismatch' because NTT(zeros) != s1_ntt * pk_ntt
+    verify_with_msg_point(@pk, sig_with_hint, att.msg_point.span());
+}

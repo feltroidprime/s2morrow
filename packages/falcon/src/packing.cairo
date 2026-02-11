@@ -343,6 +343,7 @@ pub fn pack_public_key(values: Span<u16>) -> Array<felt252> {
         result.append(slot);
         offset += chunk;
     };
+    assert!(result.len() == PACKED_SLOTS, "packing produced wrong slot count");
     result
 }
 

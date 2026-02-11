@@ -199,12 +199,9 @@ pub impl PoseidonHashToPointImpl of HashToPoint<PoseidonHashToPoint> {
         };
 
         // Truncate to exactly 512
-        let span = coeffs.span();
         let mut result: Array<u16> = array![];
-        let mut i: usize = 0;
-        while i != 512 {
-            result.append(*span.at(i));
-            i += 1;
+        for v in coeffs.span().slice(0, 512) {
+            result.append(*v);
         };
         result
     }
