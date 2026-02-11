@@ -55,13 +55,12 @@ See `test_cross_language.cairo` for the canonical example with nested structs.
 | File | Purpose |
 |------|---------|
 | `types.cairo` | `FalconPublicKey`, `FalconSignature`, `FalconSignatureWithHint`, `HashToPoint` trait |
-| `zq.cairo` | BoundedInt `Zq` type ([0, 12288]), modular arithmetic (`add_mod`, `sub_mod`, `mul_mod`, `fused_sub_mul_mod`) |
+| `zq.cairo` | BoundedInt `Zq` type ([0, 12288]), modular arithmetic (`add_mod`, `sub_mod`, `mul_mod`) |
 | `packing.cairo` | Base-Q packing: 512 Zq values ↔ 29 felt252 storage slots (9 values per u128, 18 per felt252) |
 | `hash_to_point.cairo` | Poseidon hash_to_point: `poseidon_hash_span(msg \|\| salt)` → seed, 22 squeeze permutations → 512 Zq |
-| `falcon.cairo` | `verify<H>()` (hint-based, 2 NTTs), `verify_uncompressed()`, `verify_with_msg_point()` |
-| `ntt.cairo` | Recursive NTT/INTT, `mul_zq`, `sub_zq`, `mul_ntt`, `intt_with_hint` |
+| `falcon.cairo` | `verify<H>()` (hint-based, 2 NTTs), `verify_with_msg_point()`, norm checking |
+| `ntt.cairo` | `sub_zq`, `mul_ntt`, `ntt_fast` (unrolled, n=512 only), `intt_with_hint` |
 | `ntt_felt252.cairo` | Auto-generated unrolled NTT (fastest, use `/cairo-coding` to regenerate) |
-| `ntt_constants.cairo` | Precomputed twiddle factors |
 
 ### Companion Rust crate: `falcon-rs`
 
@@ -91,3 +90,22 @@ This writes JSON files to `packages/falcon/tests/data/`:
 - On-chain: compute `NTT(s1)`, pointwise multiply by `pk_ntt`, verify `NTT(mul_hint) == product_ntt` (1 NTT), then `s0 = msg_point - mul_hint`, check norm
 
 **BoundedInt throughout:** `Zq = BoundedInt<0, 12288>`, all arithmetic stays in BoundedInt types to avoid runtime overflow checks. Use `Q_CONST: UnitInt<12289>` as the single modulus constant.
+
+## Falcon_Old Package
+
+`packages/falcon_old/` — Legacy u16-based Falcon implementation for reference testing.
+
+### Source modules
+| File | Purpose |
+|------|---------|
+| `zq.cairo` | u16 modular arithmetic: `add_mod`, `sub_mod`, `mul_mod`, `mul3_mod` |
+| `ntt.cairo` | Recursive NTT/INTT for arbitrary degrees: `ntt`, `intt`, `mul_zq`, `sub_zq`, `mul_ntt`, `split`, `merge` |
+| `ntt_constants.cairo` | Precomputed twiddle factors for recursive NTT |
+| `falcon.cairo` | `verify_uncompressed<const N>()` with norm checking for all degrees |
+
+### Usage
+
+`falcon_old` is a dev-dependency of `falcon`. Tests in `packages/falcon/tests/` use it as reference:
+- `test_ntt.cairo`: compares `ntt_fast` (unrolled) against `falcon_old::ntt::ntt` (recursive)
+- `test_verify.cairo`: runs `falcon_old::falcon::verify_uncompressed` on test vectors
+- `test_verify_hint.cairo`: uses `falcon_old::ntt::intt` for hint generation
