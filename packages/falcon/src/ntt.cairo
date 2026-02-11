@@ -83,10 +83,10 @@ pub fn intt_with_hint(f_ntt: Span<u16>, result_hint: Span<u16>) -> Span<u16> {
     let roundtrip = ntt_fast(result_hint);
 
     // Verify element-by-element
-    let mut i: usize = 0;
-    while i < f_ntt.len() {
-        assert(*f_ntt.at(i) == *roundtrip.at(i), 'intt hint mismatch');
-        i += 1;
+    let mut f_iter = f_ntt;
+    let mut r_iter = roundtrip;
+    while let Some(f_val) = f_iter.pop_front() {
+        assert(f_val == r_iter.pop_front().unwrap(), 'intt hint mismatch');
     };
 
     result_hint
@@ -196,10 +196,10 @@ pub fn ntt(mut f: Span<u16>) -> Span<u16> {
         let f1_ntt = ntt(f1);
         merge_ntt(f0_ntt, f1_ntt)
     } else if n == 2 {
-        let f0 = from_u16(*f[0]);
-        let f1 = from_u16(*f[1]);
+        let f0 = from_u16(*f.pop_front().unwrap());
+        let f1 = from_u16(*f.pop_front().unwrap());
 
-        // f1_j = SQR1 * f[1] mod Q
+        // f1_j = SQR1 * f1 mod Q
         let f1_j = fused_sqr1_mul_mod(f1);
 
         // even = f[0] + f1_j mod Q
@@ -228,8 +228,8 @@ pub fn intt(mut f_ntt: Span<u16>) -> Span<u16> {
         let f1 = intt(f1_ntt);
         merge(f0, f1)
     } else if n == 2 {
-        let a = from_u16(*f_ntt[0]);
-        let b = from_u16(*f_ntt[1]);
+        let a = from_u16(*f_ntt.pop_front().unwrap());
+        let b = from_u16(*f_ntt.pop_front().unwrap());
 
         // Fused: I2 * (a + b) mod Q
         let even = fused_i2_sum_mod(a, b);
