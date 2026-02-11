@@ -1,4 +1,4 @@
-use falcon::ntt::ntt;
+use falcon_old::ntt::ntt;
 use falcon::ntt_felt252::ntt_512;
 use falcon_zknox::ntt_zknox::zknox_nttFW_reduced;
 use snforge_std::fs::{FileTrait, read_json};

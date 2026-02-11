@@ -12,7 +12,15 @@ name = "falcon"
 version = "0.1.0"
 dependencies = [
  "corelib_imports",
+ "falcon_old",
  "falcon_zknox",
+ "snforge_std",
+]
+
+[[package]]
+name = "falcon_old"
+version = "0.1.0"
+dependencies = [
  "snforge_std",
 ]
 

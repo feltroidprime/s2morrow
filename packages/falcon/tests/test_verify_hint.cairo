@@ -2,7 +2,8 @@ use falcon::falcon::verify_with_msg_point;
 use falcon::types::{
     FalconPublicKey, FalconSignature, FalconSignatureWithHint, FalconVerificationHint,
 };
-use falcon::ntt::{ntt_fast, mul_ntt, intt};
+use falcon::ntt::{ntt_fast, mul_ntt};
+use falcon_old::ntt::intt;
 use snforge_std::fs::{FileTrait, read_json};
 
 #[derive(Drop, Serde)]

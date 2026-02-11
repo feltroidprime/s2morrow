@@ -1,2 +1,2 @@
 [workspace]
-members = ["packages/falcon", "packages/falcon_zknox"]
+members = ["packages/falcon", "packages/falcon_old", "packages/falcon_zknox"]

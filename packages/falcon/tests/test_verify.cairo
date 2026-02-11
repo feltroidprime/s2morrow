@@ -1,4 +1,4 @@
-use falcon::falcon;
+use falcon_old::falcon;
 use snforge_std::fs::{FileTrait, read_json};
 
 #[derive(Drop, Serde)]
