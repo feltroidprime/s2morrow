@@ -1,14 +1,14 @@
-//! Poseidon XOF hash_to_point for Falcon-512.
+//! Poseidon hash_to_point for Falcon-512.
 //!
 //! Produces 512 Zq coefficients from (message, salt) using:
-//! - Poseidon sponge (rate=2, capacity=1) in XOF mode
-//! - Base-Q extraction: felt252 -> u256 -> 2x u128 -> 6 DivRem-by-Q each -> 12 Zq per felt252
+//! - poseidon_hash_span(message || salt) -> single felt252 seed
+//! - Squeeze: 22 hades_permutations, base-Q extraction (12 Zq per felt252)
 //!
 //! Security: each coefficient comes from reducing a >=50-bit value mod Q.
 //! Per Renyi analysis (scripts/renyi.md), this gives <=0.37 bits security loss.
 
 use corelib_imports::bounded_int::{BoundedInt, DivRemHelper, bounded_int_div_rem, downcast, upcast};
-use core::poseidon::hades_permutation;
+use core::poseidon::{hades_permutation, poseidon_hash_span};
 use falcon::zq::{Zq, QConst, nz_q};
 use falcon::types::HashToPoint;
 
@@ -136,6 +136,15 @@ fn extract_6_from_high(value: FeltHigh, ref coeffs: Array<u16>) {
     coeffs.append(upcast::<Zq, u16>(r5));
 }
 
+/// Extract 2 Zq coefficients from the high part of a felt252 (FeltHigh).
+/// Used for the final partial squeeze round (512 = 21*24 + 6 + 2).
+fn extract_2_from_high(value: FeltHigh, ref coeffs: Array<u16>) {
+    let (q1, r0) = bounded_int_div_rem(value, nz_q());
+    coeffs.append(upcast::<Zq, u16>(r0));
+    let (_q2, r1) = bounded_int_div_rem(q1, nz_q());
+    coeffs.append(upcast::<Zq, u16>(r1));
+}
+
 /// Extract 12 Zq coefficients from a felt252: 6 from low u128, 6 from high FeltHigh.
 fn extract_12_from_felt252(value: felt252, ref coeffs: Array<u16>) {
     let val_u256: u256 = value.into();
@@ -144,32 +153,17 @@ fn extract_12_from_felt252(value: felt252, ref coeffs: Array<u16>) {
     extract_6_from_high(high_bounded, ref coeffs);
 }
 
-// =============================================================================
-// Poseidon sponge (rate=2, capacity=1)
-// =============================================================================
-
-/// Absorb a span of felt252 elements into the sponge state using rate-2 absorption.
-/// Odd-length inputs are padded with 1.
-fn absorb(ref s0: felt252, ref s1: felt252, ref s2: felt252, mut input: Span<felt252>) {
-    loop {
-        match input.pop_front() {
-            Option::None => { break; },
-            Option::Some(first) => {
-                let second = match input.pop_front() {
-                    Option::Some(v) => *v,
-                    Option::None => 1, // pad odd element
-                };
-                let (ns0, ns1, ns2) = hades_permutation(s0 + *first, s1 + second, s2);
-                s0 = ns0;
-                s1 = ns1;
-                s2 = ns2;
-            },
-        }
-    };
+/// Extract 8 Zq coefficients from a felt252: 6 from low u128, 2 from high FeltHigh.
+/// Used for the final partial squeeze round to reach exactly 512 coefficients.
+fn extract_8_from_felt252(value: felt252, ref coeffs: Array<u16>) {
+    let val_u256: u256 = value.into();
+    extract_6_from_low(val_u256.low, ref coeffs);
+    let high_bounded: FeltHigh = downcast(val_u256.high).expect('high exceeds FeltHigh');
+    extract_2_from_high(high_bounded, ref coeffs);
 }
 
 // =============================================================================
-// HashToPoint implementation using Poseidon XOF
+// HashToPoint implementation using Poseidon
 // =============================================================================
 
 #[derive(Drop)]
@@ -177,33 +171,36 @@ pub struct PoseidonHashToPoint {}
 
 pub impl PoseidonHashToPointImpl of HashToPoint<PoseidonHashToPoint> {
     fn hash_to_point(message: Span<felt252>, salt: Span<felt252>) -> Array<u16> {
-        let (mut s0, mut s1, mut s2): (felt252, felt252, felt252) = (0, 0, 0);
+        // Absorb: poseidon_hash_span(message || salt) -> single felt252 seed
+        let mut input: Array<felt252> = array![];
+        for m in message {
+            input.append(*m);
+        };
+        for s in salt {
+            input.append(*s);
+        };
+        let seed = poseidon_hash_span(input.span());
 
-        absorb(ref s0, ref s1, ref s2, message);
-        absorb(ref s0, ref s1, ref s2, salt);
-        s2 += 1; // domain separation before squeeze
-
+        // Squeeze: 21 full rounds (504 coefficients) + 1 partial round (8 coefficients)
+        let (mut s0, mut s1, mut s2): (felt252, felt252, felt252) = (seed, 0, 0);
         let mut coeffs: Array<u16> = array![];
-        loop {
+
+        // 21 full rounds: extract 24 coefficients each (12 from s0, 12 from s1)
+        let mut round: u32 = 0;
+        while round != 21 {
             let (ns0, ns1, ns2) = hades_permutation(s0, s1, s2);
             s0 = ns0;
             s1 = ns1;
             s2 = ns2;
             extract_12_from_felt252(s0, ref coeffs);
-            if coeffs.len() >= 512 {
-                break;
-            }
             extract_12_from_felt252(s1, ref coeffs);
-            if coeffs.len() >= 512 {
-                break;
-            }
+            round += 1;
         };
 
-        // Truncate to exactly 512
-        let mut result: Array<u16> = array![];
-        for v in coeffs.span().slice(0, 512) {
-            result.append(*v);
-        };
-        result
+        // Final round: extract 8 from s0 only (6 from low + 2 from high)
+        let (ns0, _, _) = hades_permutation(s0, s1, s2);
+        extract_8_from_felt252(ns0, ref coeffs);
+
+        coeffs
     }
 }
