@@ -9,7 +9,7 @@ use corelib_imports::bounded_int::bounded_int::{add, mul};
 use corelib_imports::bounded_int::{
     AddHelper, BoundedInt, DivRemHelper, MulHelper, bounded_int_div_rem, downcast, upcast,
 };
-use falcon::zq::{Zq, QConst, Q_UNIT, nz_q};
+use falcon::zq::{Zq, QConst, Q_CONST, nz_q};
 
 // =============================================================================
 // Constants
@@ -194,63 +194,63 @@ fn pack_9(vals: Span<u16>) -> u128 {
             upcast(a)
         },
         2 => {
-            let a1: Acc1 = add(v(vals, 0), mul(Q_UNIT, v(vals, 1)));
+            let a1: Acc1 = add(v(vals, 0), mul(Q_CONST, v(vals, 1)));
             upcast(a1)
         },
         3 => {
-            let a1: Acc1 = add(v(vals, 1), mul(Q_UNIT, v(vals, 2)));
-            let a2: Acc2 = add(v(vals, 0), mul(Q_UNIT, a1));
+            let a1: Acc1 = add(v(vals, 1), mul(Q_CONST, v(vals, 2)));
+            let a2: Acc2 = add(v(vals, 0), mul(Q_CONST, a1));
             upcast(a2)
         },
         4 => {
-            let a1: Acc1 = add(v(vals, 2), mul(Q_UNIT, v(vals, 3)));
-            let a2: Acc2 = add(v(vals, 1), mul(Q_UNIT, a1));
-            let a3: Acc3 = add(v(vals, 0), mul(Q_UNIT, a2));
+            let a1: Acc1 = add(v(vals, 2), mul(Q_CONST, v(vals, 3)));
+            let a2: Acc2 = add(v(vals, 1), mul(Q_CONST, a1));
+            let a3: Acc3 = add(v(vals, 0), mul(Q_CONST, a2));
             upcast(a3)
         },
         5 => {
-            let a1: Acc1 = add(v(vals, 3), mul(Q_UNIT, v(vals, 4)));
-            let a2: Acc2 = add(v(vals, 2), mul(Q_UNIT, a1));
-            let a3: Acc3 = add(v(vals, 1), mul(Q_UNIT, a2));
-            let a4: Acc4 = add(v(vals, 0), mul(Q_UNIT, a3));
+            let a1: Acc1 = add(v(vals, 3), mul(Q_CONST, v(vals, 4)));
+            let a2: Acc2 = add(v(vals, 2), mul(Q_CONST, a1));
+            let a3: Acc3 = add(v(vals, 1), mul(Q_CONST, a2));
+            let a4: Acc4 = add(v(vals, 0), mul(Q_CONST, a3));
             upcast(a4)
         },
         6 => {
-            let a1: Acc1 = add(v(vals, 4), mul(Q_UNIT, v(vals, 5)));
-            let a2: Acc2 = add(v(vals, 3), mul(Q_UNIT, a1));
-            let a3: Acc3 = add(v(vals, 2), mul(Q_UNIT, a2));
-            let a4: Acc4 = add(v(vals, 1), mul(Q_UNIT, a3));
-            let a5: Acc5 = add(v(vals, 0), mul(Q_UNIT, a4));
+            let a1: Acc1 = add(v(vals, 4), mul(Q_CONST, v(vals, 5)));
+            let a2: Acc2 = add(v(vals, 3), mul(Q_CONST, a1));
+            let a3: Acc3 = add(v(vals, 2), mul(Q_CONST, a2));
+            let a4: Acc4 = add(v(vals, 1), mul(Q_CONST, a3));
+            let a5: Acc5 = add(v(vals, 0), mul(Q_CONST, a4));
             upcast(a5)
         },
         7 => {
-            let a1: Acc1 = add(v(vals, 5), mul(Q_UNIT, v(vals, 6)));
-            let a2: Acc2 = add(v(vals, 4), mul(Q_UNIT, a1));
-            let a3: Acc3 = add(v(vals, 3), mul(Q_UNIT, a2));
-            let a4: Acc4 = add(v(vals, 2), mul(Q_UNIT, a3));
-            let a5: Acc5 = add(v(vals, 1), mul(Q_UNIT, a4));
-            let a6: Acc6 = add(v(vals, 0), mul(Q_UNIT, a5));
+            let a1: Acc1 = add(v(vals, 5), mul(Q_CONST, v(vals, 6)));
+            let a2: Acc2 = add(v(vals, 4), mul(Q_CONST, a1));
+            let a3: Acc3 = add(v(vals, 3), mul(Q_CONST, a2));
+            let a4: Acc4 = add(v(vals, 2), mul(Q_CONST, a3));
+            let a5: Acc5 = add(v(vals, 1), mul(Q_CONST, a4));
+            let a6: Acc6 = add(v(vals, 0), mul(Q_CONST, a5));
             upcast(a6)
         },
         8 => {
-            let a1: Acc1 = add(v(vals, 6), mul(Q_UNIT, v(vals, 7)));
-            let a2: Acc2 = add(v(vals, 5), mul(Q_UNIT, a1));
-            let a3: Acc3 = add(v(vals, 4), mul(Q_UNIT, a2));
-            let a4: Acc4 = add(v(vals, 3), mul(Q_UNIT, a3));
-            let a5: Acc5 = add(v(vals, 2), mul(Q_UNIT, a4));
-            let a6: Acc6 = add(v(vals, 1), mul(Q_UNIT, a5));
-            let a7: Acc7 = add(v(vals, 0), mul(Q_UNIT, a6));
+            let a1: Acc1 = add(v(vals, 6), mul(Q_CONST, v(vals, 7)));
+            let a2: Acc2 = add(v(vals, 5), mul(Q_CONST, a1));
+            let a3: Acc3 = add(v(vals, 4), mul(Q_CONST, a2));
+            let a4: Acc4 = add(v(vals, 3), mul(Q_CONST, a3));
+            let a5: Acc5 = add(v(vals, 2), mul(Q_CONST, a4));
+            let a6: Acc6 = add(v(vals, 1), mul(Q_CONST, a5));
+            let a7: Acc7 = add(v(vals, 0), mul(Q_CONST, a6));
             upcast(a7)
         },
         9 => {
-            let a1: Acc1 = add(v(vals, 7), mul(Q_UNIT, v(vals, 8)));
-            let a2: Acc2 = add(v(vals, 6), mul(Q_UNIT, a1));
-            let a3: Acc3 = add(v(vals, 5), mul(Q_UNIT, a2));
-            let a4: Acc4 = add(v(vals, 4), mul(Q_UNIT, a3));
-            let a5: Acc5 = add(v(vals, 3), mul(Q_UNIT, a4));
-            let a6: Acc6 = add(v(vals, 2), mul(Q_UNIT, a5));
-            let a7: Acc7 = add(v(vals, 1), mul(Q_UNIT, a6));
-            let a8: Acc8 = add(v(vals, 0), mul(Q_UNIT, a7));
+            let a1: Acc1 = add(v(vals, 7), mul(Q_CONST, v(vals, 8)));
+            let a2: Acc2 = add(v(vals, 6), mul(Q_CONST, a1));
+            let a3: Acc3 = add(v(vals, 5), mul(Q_CONST, a2));
+            let a4: Acc4 = add(v(vals, 4), mul(Q_CONST, a3));
+            let a5: Acc5 = add(v(vals, 3), mul(Q_CONST, a4));
+            let a6: Acc6 = add(v(vals, 2), mul(Q_CONST, a5));
+            let a7: Acc7 = add(v(vals, 1), mul(Q_CONST, a6));
+            let a8: Acc8 = add(v(vals, 0), mul(Q_CONST, a7));
             upcast(a8)
         },
         _ => core::panic_with_felt252('pack_9: count > 9'),

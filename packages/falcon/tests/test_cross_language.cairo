@@ -1,5 +1,7 @@
-use falcon::hash_to_point::PoseidonHashToPointImpl;
+use falcon::falcon::{verify};
+use falcon::hash_to_point::{PoseidonHashToPoint, PoseidonHashToPointImpl};
 use falcon::packing::{pack_public_key, unpack_public_key};
+use falcon::types::{FalconPublicKey, FalconSignature, FalconVerificationHint, FalconSignatureWithHint};
 use snforge_std::fs::{FileTrait, read_json};
 
 #[derive(Drop, Serde)]
@@ -13,6 +15,15 @@ struct HashToPointTest {
 struct PackingTest {
     values: Array<u16>,
     packed: Array<felt252>,
+}
+
+#[derive(Drop, Serde)]
+struct VerifyTest {
+    message: Array<felt252>,
+    salt: Array<felt252>,
+    pk_ntt: Array<u16>,
+    s1: Array<u16>,
+    mul_hint: Array<u16>,
 }
 
 fn load_hash_to_point_test() -> HashToPointTest {
@@ -71,4 +82,25 @@ fn test_packing_matches_rust() {
         assert_eq!(*unpacked_span.at(i), *values_span.at(i), "unpack mismatch at index {}", i);
         i += 1;
     };
+}
+
+fn load_verify_test() -> VerifyTest {
+    let file = FileTrait::new("tests/data/verify_test_int.json");
+    let serialized = read_json(@file);
+    let mut span = serialized.span();
+    let _header = span.pop_front();
+    Serde::deserialize(ref span).expect('deserialize failed')
+}
+
+#[test]
+fn test_verify_matches_rust() {
+    let test = load_verify_test();
+
+    let pk = FalconPublicKey { h_ntt: test.pk_ntt };
+    let sig = FalconSignature { s1: test.s1, salt: test.salt };
+    let hint = FalconVerificationHint { mul_hint: test.mul_hint };
+    let sig_with_hint = FalconSignatureWithHint { signature: sig, hint: hint };
+
+    let result = verify::<PoseidonHashToPoint>(@pk, sig_with_hint, test.message.span());
+    assert!(result, "Falcon verify with Poseidon hash should pass");
 }

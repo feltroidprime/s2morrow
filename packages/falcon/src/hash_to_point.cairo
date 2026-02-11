@@ -172,6 +172,7 @@ fn absorb(ref s0: felt252, ref s1: felt252, ref s2: felt252, mut input: Span<fel
 // HashToPoint implementation using Poseidon XOF
 // =============================================================================
 
+#[derive(Drop)]
 pub struct PoseidonHashToPoint {}
 
 pub impl PoseidonHashToPointImpl of HashToPoint<PoseidonHashToPoint> {

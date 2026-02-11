@@ -28,8 +28,6 @@ pub fn nz_q() -> NonZero<QConst> {
     12289
 }
 
-/// Q as a UnitInt constant for BoundedInt mul operations
-pub const Q_UNIT: QConst = 12289;
 
 // =============================================================================
 // Type conversion utilities
