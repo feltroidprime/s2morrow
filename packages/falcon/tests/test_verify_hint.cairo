@@ -91,7 +91,7 @@ fn test_verify_with_msg_point() {
 }
 
 #[test]
-#[should_panic(expected: 'intt hint mismatch')]
+#[should_panic(expected: 'hint mismatch')]
 fn test_verify_bad_hint_panics() {
     let args = load_args();
     let att = args.attestations.at(0);

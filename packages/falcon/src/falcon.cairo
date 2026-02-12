@@ -2,8 +2,8 @@
 //
 // SPDX-License-Identifier: MIT
 
-use crate::ntt::{ntt_fast, mul_ntt, intt_with_hint};
-use crate::zq::{Zq, sub_mod};
+use crate::ntt::ntt_fast;
+use crate::zq::{Zq, mul_mod, sub_mod};
 use falcon::types::{FalconPublicKey, FalconSignatureWithHint, HashToPoint};
 use corelib_imports::bounded_int::{BoundedInt, downcast, upcast};
 
@@ -27,21 +27,6 @@ fn center_and_square(coeff: Zq) -> felt252 {
     }
 }
 
-/// Compute ||msg_point - product||^2 + ||s1||^2 in a single pass.
-/// Fuses subtraction, centering, and norm accumulation for both s0 and s1.
-fn compute_norm(
-    mut msg_point: Span<Zq>, mut product: Span<Zq>, mut s1: Span<Zq>,
-) -> felt252 {
-    let mut acc: felt252 = 0;
-    while let Some(f_coeff) = msg_point.pop_front() {
-        let g_coeff = product.pop_front().unwrap();
-        let s1_coeff = s1.pop_front().unwrap();
-        let diff = sub_mod(*f_coeff, *g_coeff);
-        acc += center_and_square(diff) + center_and_square(*s1_coeff);
-    };
-    acc
-}
-
 /// Signature bound for Falcon-512
 const SIG_BOUND_512: u64 = 34034726;
 
@@ -56,6 +41,9 @@ pub fn verify<H, +HashToPoint<H>, +Drop<H>>(
 }
 
 /// Verify with a pre-computed msg_point (useful for testing without hash_to_point).
+///
+/// Single-pass verification: 2 unrolled NTTs + 1 fused loop that does
+/// hint verification, pointwise multiply check, and norm computation.
 pub fn verify_with_msg_point(
     pk: @FalconPublicKey,
     sig_with_hint: FalconSignatureWithHint,
@@ -70,17 +58,36 @@ pub fn verify_with_msg_point(
     assert!(mul_hint.len() == 512, "mul_hint must be 512 elements");
     assert!(msg_point.len() == 512, "msg_point must be 512 elements");
 
-    // 1. s1_ntt = NTT(s1)
+    // Two forward NTTs (unrolled, no loops)
     let s1_ntt = ntt_fast(s1);
+    let hint_ntt = ntt_fast(mul_hint);
 
-    // 2. product_ntt = s1_ntt * pk_ntt (pointwise mod Q)
-    let product_ntt = mul_ntt(s1_ntt.span(), pk_ntt);
+    // Single pass over all 512 coefficients:
+    //   - Verify hint: s1_ntt[i] * pk_ntt[i] == NTT(mul_hint)[i]
+    //   - Accumulate: ||msg_point - mul_hint||² + ||s1||²
+    let mut s1_ntt_iter = s1_ntt.span();
+    let mut pk_ntt_iter = pk_ntt;
+    let mut hint_ntt_iter = hint_ntt.span();
+    let mut msg_iter = msg_point;
+    let mut hint_iter = mul_hint;
+    let mut s1_iter = s1;
 
-    // 3. Verify hint: checks that NTT(mul_hint) == product_ntt (costs 1 NTT)
-    let product = intt_with_hint(product_ntt.span(), mul_hint);
+    let mut acc: felt252 = 0;
+    while let Some(s1n) = s1_ntt_iter.pop_front() {
+        let pkn = pk_ntt_iter.pop_front().unwrap();
+        let hn = hint_ntt_iter.pop_front().unwrap();
+        let msg = msg_iter.pop_front().unwrap();
+        let hint = hint_iter.pop_front().unwrap();
+        let s1v = s1_iter.pop_front().unwrap();
 
-    // 4+5. ||s0||^2 + ||s1||^2 in one pass (s0 = msg_point - product)
-    let norm = compute_norm(msg_point, product, s1);
-    let norm_u64: u64 = norm.try_into().unwrap();
+        // Verify: NTT(s1)[i] * pk_ntt[i] == NTT(mul_hint)[i]
+        assert(mul_mod(*s1n, *pkn) == *hn, 'hint mismatch');
+
+        // Accumulate: ||msg_point - mul_hint||² + ||s1||²
+        let diff = sub_mod(*msg, *hint);
+        acc += center_and_square(diff) + center_and_square(*s1v);
+    };
+
+    let norm_u64: u64 = acc.try_into().unwrap();
     norm_u64 <= SIG_BOUND_512
 }
