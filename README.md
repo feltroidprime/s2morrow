@@ -62,12 +62,12 @@ cd ../falcon-rs && cargo test generate_ -- --nocapture
 
 ## Performance
 
-Profiled at commit `08ed84e` with `cairo-profiler` (cumulative steps):
+Profiled at commit `c0e7510` with `cairo-profiler` (cumulative steps):
 
 | Function | Steps | Description |
 |----------|-------|-------------|
-| `verify` (e2e) | 173,693 | Full verification including hash-to-point |
-| `extend_euclidean_norm` | 40,934 | Norm check for s0 + s1 (dominant cost) |
+| `verify` (e2e) | 154,776 | Full verification including hash-to-point |
+| `norm_squared` | ~22K | Norm check (downcast split + felt252 squaring) |
 | `sub_zq` | 15,376 | Coefficient subtraction (512 elements) |
 | `mul_ntt` | 14,864 | Pointwise multiply (512 elements) |
 | `ntt_fast` | ~15K | NTT wrapper (delegates to ntt_512) |
@@ -76,12 +76,12 @@ Profiled at commit `08ed84e` with `cairo-profiler` (cumulative steps):
 
 **Verification cost breakdown** (`verify_with_msg_point`):
 - 2x `ntt_fast`: ~30K steps (NTT of s1 + NTT of mul_hint)
+- `norm_squared`: ~22K steps (2x 512 coefficients, downcast + felt252 sq)
 - `mul_ntt`: ~15K steps (pointwise s1_ntt * pk_ntt)
-- `intt_with_hint`: ~10K steps (verify hint correctness)
 - `sub_zq`: ~15K steps (s0 = msg_point - product)
-- `extend_euclidean_norm`: ~41K steps (norm check, dominant cost)
+- `intt_with_hint`: ~10K steps (verify hint correctness)
 
-L2 gas: `verify` ~19.1M | `verify_with_msg_point` ~62.5M (includes 2 NTTs)
+L2 gas: `verify` ~16.9M | `verify_with_msg_point` ~60.3M (includes 2 NTTs)
 
 ## References
 

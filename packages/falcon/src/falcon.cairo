@@ -2,56 +2,38 @@
 //
 // SPDX-License-Identifier: MIT
 
-use core::num::traits::{CheckedAdd, CheckedMul};
 use crate::ntt::{sub_zq, ntt_fast, mul_ntt, intt_with_hint};
 use crate::zq::Zq;
 use falcon::types::{FalconPublicKey, FalconSignatureWithHint, HashToPoint};
-use corelib_imports::bounded_int::upcast;
+use corelib_imports::bounded_int::{BoundedInt, downcast, upcast};
 
-/// Half of the base ring modulus
-const HALF_Q: u32 = 6145;
-/// Base ring modulus
-const Q_U32: u32 = 12289;
-
-#[derive(Drop, Debug)]
-pub enum FalconVerificationError {
-    NormOverflow,
-}
-
-/// Compute the Euclidean norm of a polynomial and add it to the accumulator
-fn extend_euclidean_norm(mut acc: u32, mut f: Span<Zq>) -> Result<u32, FalconVerificationError> {
-    let mut res = Ok(0);
-    while let Some(f_coeff) = f.pop_front() {
-        match norm_square_and_add(acc, *f_coeff) {
-            Some(res) => acc = res,
-            None => {
-                res = Result::Err(FalconVerificationError::NormOverflow);
-                break;
+/// Zq value in the low half: [0, (Q-1)/2] = [0, 6144]
+type ZqLow = BoundedInt<0, 6144>;
+const Q_felt252: felt252 = 12289;
+/// Compute sum of squared centered coefficients: sum(min(x, Q-x)^2 for x in f)
+/// Uses downcast to split at Q/2 (1 range check per element), then felt252
+/// arithmetic for squaring and accumulation (no overflow, no range checks).
+fn norm_squared(mut f: Span<Zq>) -> felt252 {
+    let mut acc: felt252 = 0;
+    while let Some(coeff) = f.pop_front() {
+        let sq: felt252 = match downcast::<Zq, ZqLow>(*coeff) {
+            Option::Some(low) => {
+                let x: felt252 = upcast(low);
+                x * x
             },
-        }
-    }
-    match res {
-        Ok(_) => Ok(acc),
-        Err(e) => Err(e),
-    }
-}
-
-/// Normalize the value square to be in the range [0, Q^2/4] and add it to an accumulator
-fn norm_square_and_add(acc: u32, x: Zq) -> Option<u32> {
-    let x_u32: u32 = upcast(x);
-    let x_centered: u32 = if x_u32 < HALF_Q {
-        x_u32
-    } else {
-        Q_U32 - x_u32
+            Option::None => {
+                let x: felt252 = upcast(*coeff);
+                let centered = Q_felt252 - x;
+                centered * centered
+            },
+        };
+        acc += sq;
     };
-    match x_centered.checked_mul(x_centered) {
-        Some(x_sq) => acc.checked_add(x_sq),
-        None => None,
-    }
+    acc
 }
 
 /// Signature bound for Falcon-512
-const SIG_BOUND_512: u32 = 34034726;
+const SIG_BOUND_512: u64 = 34034726;
 
 /// Verify a Falcon signature using the hint-based approach.
 /// Computes msg_point internally via hash_to_point.
@@ -91,15 +73,7 @@ pub fn verify_with_msg_point(
     let s0 = sub_zq(msg_point, product);
 
     // 5. Norm check: ||s0||^2 + ||s1||^2 <= SIG_BOUND
-    let mut norm: u32 = 0;
-    match extend_euclidean_norm(norm, s0.span()) {
-        Result::Ok(n) => norm = n,
-        Result::Err(_) => { return false; },
-    }
-    match extend_euclidean_norm(norm, s1) {
-        Result::Ok(n) => norm = n,
-        Result::Err(_) => { return false; },
-    }
-
-    norm <= SIG_BOUND_512
+    let norm = norm_squared(s0.span()) + norm_squared(s1);
+    let norm_u64: u64 = norm.try_into().unwrap();
+    norm_u64 <= SIG_BOUND_512
 }
