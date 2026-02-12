@@ -703,7 +703,7 @@ use corelib_imports::bounded_int::bounded_int::{SubHelper, add, sub, mul};"""
     def _generate_felt252_imports(self) -> str:
         """Generate Cairo imports for felt252 mode."""
         return """// Auto-generated felt252 mode - DO NOT EDIT
-use corelib_imports::bounded_int::{BoundedInt, DivRemHelper, bounded_int_div_rem};
+use corelib_imports::bounded_int::{BoundedInt, DivRemHelper, bounded_int_div_rem, upcast};
 use crate::zq::{Zq, QConst, NZ_Q};
 """
 

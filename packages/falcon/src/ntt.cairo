@@ -9,7 +9,6 @@
 
 use crate::ntt_felt252::ntt_512;
 use crate::zq::{Zq, mul_mod, sub_mod};
-use corelib_imports::bounded_int::upcast;
 
 /// Subtract coefficients of two polynomials modulo Q
 pub fn sub_zq(mut f: Span<Zq>, mut g: Span<Zq>) -> Array<Zq> {
@@ -36,11 +35,7 @@ pub fn mul_ntt(mut f: Span<Zq>, mut g: Span<Zq>) -> Array<Zq> {
 /// Compute NTT of a 512-element polynomial using the unrolled felt252 implementation.
 pub fn ntt_fast(f: Span<Zq>) -> Array<Zq> {
     assert(f.len() == 512, 'ntt_fast requires n=512');
-    let mut felt_input: Array<felt252> = array![];
-    for val in f {
-        felt_input.append(upcast(*val));
-    };
-    ntt_512(felt_input.span())
+    ntt_512(f)
 }
 
 /// Verify an INTT result supplied as a hint.

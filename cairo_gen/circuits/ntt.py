@@ -271,8 +271,8 @@ class NttCircuitGenerator:
         """
         Generate the public wrapper function.
 
-        In felt252 mode, the wrapper takes Span<felt252> input (for interop)
-        but returns Array<Zq> (since inner function returns Zq directly).
+        In felt252 mode, the wrapper takes Span<Zq> and upcasts to felt252
+        when calling the inner function. Returns Array<Zq>.
 
         Args:
             elem_type: Element type for arrays ("Zq" or "felt252").
@@ -285,22 +285,21 @@ class NttCircuitGenerator:
         # Parameter names for multi_pop_front destructuring
         param_names = ", ".join(f"f{i}" for i in range(n))
 
-        # Arguments to inner function call
-        inner_args = ", ".join(f"f{i}" for i in range(n))
-
         # Output names from inner function
         output_names = ", ".join(f"r{i}" for i in range(n))
 
         # Array construction
         array_items = ", ".join(f"r{i}" for i in range(n))
 
-        # In felt252 mode, input is felt252 but output is Zq
+        # In felt252 mode, input is Zq with upcast to felt252 for inner call
         if elem_type == "felt252":
-            input_type = "felt252"
+            input_type = "Zq"
             output_type = "Zq"
+            inner_args = ", ".join(f"upcast(f{i})" for i in range(n))
         else:
             input_type = elem_type
             output_type = elem_type
+            inner_args = ", ".join(f"f{i}" for i in range(n))
 
         return f"""
 /// NTT of size {n} — accepts Span<{input_type}>, returns Array<{output_type}>.
