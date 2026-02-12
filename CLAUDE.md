@@ -55,12 +55,12 @@ See `test_cross_language.cairo` for the canonical example with nested structs.
 | File | Purpose |
 |------|---------|
 | `types.cairo` | `FalconPublicKey`, `FalconSignature`, `FalconSignatureWithHint`, `HashToPoint` trait |
-| `zq.cairo` | BoundedInt `Zq` type ([0, 12288]), modular arithmetic (`add_mod`, `sub_mod`, `mul_mod`) |
+| `zq.cairo` | BoundedInt `Zq` type ([0, 12288]), modular arithmetic (`add_mod`, `sub_mod`, `mul_mod`), `Serde<Zq>`, `NZ_Q` const |
 | `packing.cairo` | Base-Q packing: 512 Zq values ↔ 29 felt252 storage slots (9 values per u128, 18 per felt252) |
 | `hash_to_point.cairo` | Poseidon hash_to_point: `poseidon_hash_span(msg \|\| salt)` → seed, 22 squeeze permutations → 512 Zq |
 | `falcon.cairo` | `verify<H>()` (hint-based, 2 NTTs), `verify_with_msg_point()`, norm checking |
-| `ntt.cairo` | `sub_zq`, `mul_ntt`, `ntt_fast` (unrolled, n=512 only), `intt_with_hint` |
-| `ntt_felt252.cairo` | Auto-generated unrolled NTT (fastest, use `/cairo-coding` to regenerate) |
+| `ntt.cairo` | `sub_zq`, `mul_ntt`, `ntt_fast` (delegates to `ntt_512`), `intt_with_hint` |
+| `ntt_felt252.cairo` | Auto-generated unrolled NTT — `ntt_512(Span<Zq>) -> Array<Zq>` (use `/cairo-coding` to regenerate) |
 
 ### Companion Rust crate: `falcon-rs`
 
@@ -89,7 +89,7 @@ This writes JSON files to `packages/falcon/tests/data/`:
 - Off-chain: compute `mul_hint = INTT(NTT(s1) * pk_ntt)` and pass as hint
 - On-chain: compute `NTT(s1)`, pointwise multiply by `pk_ntt`, verify `NTT(mul_hint) == product_ntt` (1 NTT), then `s0 = msg_point - mul_hint`, check norm
 
-**BoundedInt throughout:** `Zq = BoundedInt<0, 12288>`, all arithmetic stays in BoundedInt types to avoid runtime overflow checks. Use `Q_CONST: UnitInt<12289>` as the single modulus constant.
+**BoundedInt throughout:** `Zq = BoundedInt<0, 12288>`, all arithmetic stays in BoundedInt types to avoid runtime overflow checks. Use `Q_CONST: UnitInt<12289>` as the single modulus constant. All public APIs use `Zq` — no u16 anywhere in the falcon package. `upcast`/`downcast` convert directly between `Zq` and `felt252` (no intermediate u16/u32).
 
 ## Falcon_Old Package
 
