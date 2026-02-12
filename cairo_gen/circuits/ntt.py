@@ -271,6 +271,9 @@ class NttCircuitGenerator:
         """
         Generate the public wrapper function.
 
+        In felt252 mode, the wrapper takes Span<felt252> input (for interop)
+        but returns Array<Zq> (since inner function returns Zq directly).
+
         Args:
             elem_type: Element type for arrays ("Zq" or "felt252").
 
@@ -291,9 +294,17 @@ class NttCircuitGenerator:
         # Array construction
         array_items = ", ".join(f"r{i}" for i in range(n))
 
+        # In felt252 mode, input is felt252 but output is Zq
+        if elem_type == "felt252":
+            input_type = "felt252"
+            output_type = "Zq"
+        else:
+            input_type = elem_type
+            output_type = elem_type
+
         return f"""
-/// NTT of size {n} using Array<{elem_type}> interface.
-pub fn ntt_{n}(mut f: Span<{elem_type}>) -> Array<{elem_type}> {{
+/// NTT of size {n} — accepts Span<{input_type}>, returns Array<{output_type}>.
+pub fn ntt_{n}(mut f: Span<{input_type}>) -> Array<{output_type}> {{
     let boxed = f.multi_pop_front::<{n}>().expect('expected {n} elements');
     let [{param_names}] = boxed.unbox();
 

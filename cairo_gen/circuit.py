@@ -703,10 +703,8 @@ use corelib_imports::bounded_int::bounded_int::{SubHelper, add, sub, mul};"""
     def _generate_felt252_imports(self) -> str:
         """Generate Cairo imports for felt252 mode."""
         return """// Auto-generated felt252 mode - DO NOT EDIT
-use core::num::traits::Zero;
-use corelib_imports::bounded_int::{
-    BoundedInt, upcast, bounded_int_div_rem, DivRemHelper, UnitInt,
-};
+use corelib_imports::bounded_int::{BoundedInt, DivRemHelper, bounded_int_div_rem};
+use crate::zq::{Zq, QConst, NZ_Q};
 """
 
     def _generate_felt252_constants(self) -> str:
@@ -722,19 +720,16 @@ use corelib_imports::bounded_int::{
         max_bound = max(var.max_bound for var in self.variables.values())
         shifted_max = shift + max_bound
 
-        # Reduction machinery
+        # Reduction machinery — QConst and NZ_Q come from crate::zq
         lines.append(f"const SHIFT: felt252 = {shift};")
-        lines.append(f"type QConst = UnitInt<{self.modulus}>;")
-        lines.append(f"const nz_q: NonZero<QConst> = {self.modulus};")
         lines.append(f"type ShiftedT = BoundedInt<0, {shifted_max}>;")
-        lines.append(f"type RemT = BoundedInt<0, {self.modulus - 1}>;")
 
         # DivRemHelper impl
         div_max = shifted_max // self.modulus
         lines.append("")
         lines.append("impl DivRem_ShiftedT_QConst of DivRemHelper<ShiftedT, QConst> {")
         lines.append(f"    type DivT = BoundedInt<0, {div_max}>;")
-        lines.append("    type RemT = RemT;")
+        lines.append("    type RemT = Zq;")
         lines.append("}")
 
         return "\n".join(lines)
@@ -793,9 +788,9 @@ use corelib_imports::bounded_int::{
         # Function signature
         input_params = ", ".join(f"{inp.name}: felt252" for inp in self.inputs)
         if len(self.outputs) == 1:
-            return_type = "felt252"
+            return_type = "Zq"
         else:
-            return_type = "(" + ", ".join("felt252" for _ in self.outputs) + ")"
+            return_type = "(" + ", ".join("Zq" for _ in self.outputs) + ")"
 
         lines.append(f"pub fn {func_name}({input_params}) -> {return_type} {{")
 
@@ -865,8 +860,7 @@ use corelib_imports::bounded_int::{
                         src_name = shifted_var.name
 
             lines.append(f"    let {out_name}: ShiftedT = ({src_name} + SHIFT).try_into().unwrap();")
-            lines.append(f"    let (_, {out_name}_rem) = bounded_int_div_rem({out_name}, nz_q);")
-            lines.append(f"    let {out_name}: felt252 = upcast({out_name}_rem);")
+            lines.append(f"    let (_, {out_name}) = bounded_int_div_rem({out_name}, NZ_Q);")
 
         lines.append("")
 

@@ -1,6 +1,8 @@
 use falcon_old::ntt::ntt;
 use falcon::ntt_felt252::ntt_512;
+use falcon::zq::from_u16;
 use falcon_zknox::ntt_zknox::zknox_nttFW_reduced;
+use corelib_imports::bounded_int::upcast;
 use snforge_std::fs::{FileTrait, read_json};
 
 #[derive(Drop, Serde)]
@@ -32,12 +34,13 @@ fn test_ntt_recursive_512() {
     let result = ntt(u16_input.span());
     assert_eq!(result.len(), 512);
 
-    let result_felt252 = ntt_512(input);
-    assert_eq!(result_felt252.len(), 512);
+    // ntt_512 returns Array<Zq> — compare by converting u16 result to Zq
+    let result_zq = ntt_512(input);
+    assert_eq!(result_zq.len(), 512);
 
     let mut j: usize = 0;
     while j < 512 {
-        assert_eq!((*result.at(j)).into(), *result_felt252.at(j), "mismatch at index {}", j);
+        assert_eq!(from_u16(*result.at(j)), *result_zq.at(j), "mismatch at index {}", j);
         j += 1;
     };
 }
@@ -64,7 +67,7 @@ fn test_ntt_zknox_vs_felt252() {
     // Run zknox NTT (unreduced + reduce combined)
     let zknox_result = zknox_nttFW_reduced(input_zknox.span());
 
-    // Run felt252 NTT
+    // Run felt252 NTT (returns Array<Zq>)
     let felt252_result = ntt_512(input);
 
     assert_eq!(zknox_result.len(), 512);
@@ -74,6 +77,7 @@ fn test_ntt_zknox_vs_felt252() {
     // the same 512 roots of x^512+1, but output them in different permutation
     // order due to different twiddle factor conventions. Verify they produce
     // the same multiset by comparing sums and sums of squares.
+    // Convert Zq to felt252 for comparison with zknox felt252 output.
     let mut sum_z: felt252 = 0;
     let mut sum_f: felt252 = 0;
     let mut sum_sq_z: felt252 = 0;
@@ -81,7 +85,8 @@ fn test_ntt_zknox_vs_felt252() {
     let mut j: usize = 0;
     while j < 512 {
         let z = *zknox_result.at(j);
-        let f = *felt252_result.at(j);
+        let f_u32: u32 = upcast(*felt252_result.at(j));
+        let f: felt252 = f_u32.into();
         sum_z += z;
         sum_f += f;
         sum_sq_z += z * z;

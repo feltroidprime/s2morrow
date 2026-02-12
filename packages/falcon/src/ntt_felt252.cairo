@@ -2,18 +2,15 @@
 // DO NOT EDIT MANUALLY - regenerate with: python -m cairo_gen.circuits.regenerate ntt
 
 // Auto-generated felt252 mode - DO NOT EDIT
-use core::num::traits::Zero;
-use corelib_imports::bounded_int::{BoundedInt, DivRemHelper, UnitInt, bounded_int_div_rem, upcast};
+use corelib_imports::bounded_int::{BoundedInt, DivRemHelper, bounded_int_div_rem};
+use crate::zq::{NZ_Q, QConst, Zq};
 
 const SHIFT: felt252 = 2305326338167692623066702044767191040;
-type QConst = UnitInt<12289>;
-const nz_q: NonZero<QConst> = 12289;
 type ShiftedT = BoundedInt<0, 4612212885115823853836039849917814806>;
-type RemT = BoundedInt<0, 12288>;
 
 impl DivRem_ShiftedT_QConst of DivRemHelper<ShiftedT, QConst> {
     type DivT = BoundedInt<0, 375312302475044662204901932615982>;
-    type RemT = RemT;
+    type RemT = Zq;
 }
 
 pub fn ntt_512_inner(
@@ -530,518 +527,518 @@ pub fn ntt_512_inner(
     f510: felt252,
     f511: felt252,
 ) -> (
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
-    felt252,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
+    Zq,
 ) {
     let W256_12 = 3;
     let W128_6 = 9;
@@ -8470,1541 +8467,1029 @@ pub fn ntt_512_inner(
     let tmp_6911 = tmp_3071 - tmp_6909;
 
     let r0: ShiftedT = (tmp_6145 + SHIFT).try_into().unwrap();
-    let (_, r0_rem) = bounded_int_div_rem(r0, nz_q);
-    let r0: felt252 = upcast(r0_rem);
+    let (_, r0) = bounded_int_div_rem(r0, NZ_Q);
     let r1: ShiftedT = (tmp_6146 + SHIFT).try_into().unwrap();
-    let (_, r1_rem) = bounded_int_div_rem(r1, nz_q);
-    let r1: felt252 = upcast(r1_rem);
+    let (_, r1) = bounded_int_div_rem(r1, NZ_Q);
     let r2: ShiftedT = (tmp_6148 + SHIFT).try_into().unwrap();
-    let (_, r2_rem) = bounded_int_div_rem(r2, nz_q);
-    let r2: felt252 = upcast(r2_rem);
+    let (_, r2) = bounded_int_div_rem(r2, NZ_Q);
     let r3: ShiftedT = (tmp_6149 + SHIFT).try_into().unwrap();
-    let (_, r3_rem) = bounded_int_div_rem(r3, nz_q);
-    let r3: felt252 = upcast(r3_rem);
+    let (_, r3) = bounded_int_div_rem(r3, NZ_Q);
     let r4: ShiftedT = (tmp_6151 + SHIFT).try_into().unwrap();
-    let (_, r4_rem) = bounded_int_div_rem(r4, nz_q);
-    let r4: felt252 = upcast(r4_rem);
+    let (_, r4) = bounded_int_div_rem(r4, NZ_Q);
     let r5: ShiftedT = (tmp_6152 + SHIFT).try_into().unwrap();
-    let (_, r5_rem) = bounded_int_div_rem(r5, nz_q);
-    let r5: felt252 = upcast(r5_rem);
+    let (_, r5) = bounded_int_div_rem(r5, NZ_Q);
     let r6: ShiftedT = (tmp_6154 + SHIFT).try_into().unwrap();
-    let (_, r6_rem) = bounded_int_div_rem(r6, nz_q);
-    let r6: felt252 = upcast(r6_rem);
+    let (_, r6) = bounded_int_div_rem(r6, NZ_Q);
     let r7: ShiftedT = (tmp_6155 + SHIFT).try_into().unwrap();
-    let (_, r7_rem) = bounded_int_div_rem(r7, nz_q);
-    let r7: felt252 = upcast(r7_rem);
+    let (_, r7) = bounded_int_div_rem(r7, NZ_Q);
     let r8: ShiftedT = (tmp_6157 + SHIFT).try_into().unwrap();
-    let (_, r8_rem) = bounded_int_div_rem(r8, nz_q);
-    let r8: felt252 = upcast(r8_rem);
+    let (_, r8) = bounded_int_div_rem(r8, NZ_Q);
     let r9: ShiftedT = (tmp_6158 + SHIFT).try_into().unwrap();
-    let (_, r9_rem) = bounded_int_div_rem(r9, nz_q);
-    let r9: felt252 = upcast(r9_rem);
+    let (_, r9) = bounded_int_div_rem(r9, NZ_Q);
     let r10: ShiftedT = (tmp_6160 + SHIFT).try_into().unwrap();
-    let (_, r10_rem) = bounded_int_div_rem(r10, nz_q);
-    let r10: felt252 = upcast(r10_rem);
+    let (_, r10) = bounded_int_div_rem(r10, NZ_Q);
     let r11: ShiftedT = (tmp_6161 + SHIFT).try_into().unwrap();
-    let (_, r11_rem) = bounded_int_div_rem(r11, nz_q);
-    let r11: felt252 = upcast(r11_rem);
+    let (_, r11) = bounded_int_div_rem(r11, NZ_Q);
     let r12: ShiftedT = (tmp_6163 + SHIFT).try_into().unwrap();
-    let (_, r12_rem) = bounded_int_div_rem(r12, nz_q);
-    let r12: felt252 = upcast(r12_rem);
+    let (_, r12) = bounded_int_div_rem(r12, NZ_Q);
     let r13: ShiftedT = (tmp_6164 + SHIFT).try_into().unwrap();
-    let (_, r13_rem) = bounded_int_div_rem(r13, nz_q);
-    let r13: felt252 = upcast(r13_rem);
+    let (_, r13) = bounded_int_div_rem(r13, NZ_Q);
     let r14: ShiftedT = (tmp_6166 + SHIFT).try_into().unwrap();
-    let (_, r14_rem) = bounded_int_div_rem(r14, nz_q);
-    let r14: felt252 = upcast(r14_rem);
+    let (_, r14) = bounded_int_div_rem(r14, NZ_Q);
     let r15: ShiftedT = (tmp_6167 + SHIFT).try_into().unwrap();
-    let (_, r15_rem) = bounded_int_div_rem(r15, nz_q);
-    let r15: felt252 = upcast(r15_rem);
+    let (_, r15) = bounded_int_div_rem(r15, NZ_Q);
     let r16: ShiftedT = (tmp_6169 + SHIFT).try_into().unwrap();
-    let (_, r16_rem) = bounded_int_div_rem(r16, nz_q);
-    let r16: felt252 = upcast(r16_rem);
+    let (_, r16) = bounded_int_div_rem(r16, NZ_Q);
     let r17: ShiftedT = (tmp_6170 + SHIFT).try_into().unwrap();
-    let (_, r17_rem) = bounded_int_div_rem(r17, nz_q);
-    let r17: felt252 = upcast(r17_rem);
+    let (_, r17) = bounded_int_div_rem(r17, NZ_Q);
     let r18: ShiftedT = (tmp_6172 + SHIFT).try_into().unwrap();
-    let (_, r18_rem) = bounded_int_div_rem(r18, nz_q);
-    let r18: felt252 = upcast(r18_rem);
+    let (_, r18) = bounded_int_div_rem(r18, NZ_Q);
     let r19: ShiftedT = (tmp_6173 + SHIFT).try_into().unwrap();
-    let (_, r19_rem) = bounded_int_div_rem(r19, nz_q);
-    let r19: felt252 = upcast(r19_rem);
+    let (_, r19) = bounded_int_div_rem(r19, NZ_Q);
     let r20: ShiftedT = (tmp_6175 + SHIFT).try_into().unwrap();
-    let (_, r20_rem) = bounded_int_div_rem(r20, nz_q);
-    let r20: felt252 = upcast(r20_rem);
+    let (_, r20) = bounded_int_div_rem(r20, NZ_Q);
     let r21: ShiftedT = (tmp_6176 + SHIFT).try_into().unwrap();
-    let (_, r21_rem) = bounded_int_div_rem(r21, nz_q);
-    let r21: felt252 = upcast(r21_rem);
+    let (_, r21) = bounded_int_div_rem(r21, NZ_Q);
     let r22: ShiftedT = (tmp_6178 + SHIFT).try_into().unwrap();
-    let (_, r22_rem) = bounded_int_div_rem(r22, nz_q);
-    let r22: felt252 = upcast(r22_rem);
+    let (_, r22) = bounded_int_div_rem(r22, NZ_Q);
     let r23: ShiftedT = (tmp_6179 + SHIFT).try_into().unwrap();
-    let (_, r23_rem) = bounded_int_div_rem(r23, nz_q);
-    let r23: felt252 = upcast(r23_rem);
+    let (_, r23) = bounded_int_div_rem(r23, NZ_Q);
     let r24: ShiftedT = (tmp_6181 + SHIFT).try_into().unwrap();
-    let (_, r24_rem) = bounded_int_div_rem(r24, nz_q);
-    let r24: felt252 = upcast(r24_rem);
+    let (_, r24) = bounded_int_div_rem(r24, NZ_Q);
     let r25: ShiftedT = (tmp_6182 + SHIFT).try_into().unwrap();
-    let (_, r25_rem) = bounded_int_div_rem(r25, nz_q);
-    let r25: felt252 = upcast(r25_rem);
+    let (_, r25) = bounded_int_div_rem(r25, NZ_Q);
     let r26: ShiftedT = (tmp_6184 + SHIFT).try_into().unwrap();
-    let (_, r26_rem) = bounded_int_div_rem(r26, nz_q);
-    let r26: felt252 = upcast(r26_rem);
+    let (_, r26) = bounded_int_div_rem(r26, NZ_Q);
     let r27: ShiftedT = (tmp_6185 + SHIFT).try_into().unwrap();
-    let (_, r27_rem) = bounded_int_div_rem(r27, nz_q);
-    let r27: felt252 = upcast(r27_rem);
+    let (_, r27) = bounded_int_div_rem(r27, NZ_Q);
     let r28: ShiftedT = (tmp_6187 + SHIFT).try_into().unwrap();
-    let (_, r28_rem) = bounded_int_div_rem(r28, nz_q);
-    let r28: felt252 = upcast(r28_rem);
+    let (_, r28) = bounded_int_div_rem(r28, NZ_Q);
     let r29: ShiftedT = (tmp_6188 + SHIFT).try_into().unwrap();
-    let (_, r29_rem) = bounded_int_div_rem(r29, nz_q);
-    let r29: felt252 = upcast(r29_rem);
+    let (_, r29) = bounded_int_div_rem(r29, NZ_Q);
     let r30: ShiftedT = (tmp_6190 + SHIFT).try_into().unwrap();
-    let (_, r30_rem) = bounded_int_div_rem(r30, nz_q);
-    let r30: felt252 = upcast(r30_rem);
+    let (_, r30) = bounded_int_div_rem(r30, NZ_Q);
     let r31: ShiftedT = (tmp_6191 + SHIFT).try_into().unwrap();
-    let (_, r31_rem) = bounded_int_div_rem(r31, nz_q);
-    let r31: felt252 = upcast(r31_rem);
+    let (_, r31) = bounded_int_div_rem(r31, NZ_Q);
     let r32: ShiftedT = (tmp_6193 + SHIFT).try_into().unwrap();
-    let (_, r32_rem) = bounded_int_div_rem(r32, nz_q);
-    let r32: felt252 = upcast(r32_rem);
+    let (_, r32) = bounded_int_div_rem(r32, NZ_Q);
     let r33: ShiftedT = (tmp_6194 + SHIFT).try_into().unwrap();
-    let (_, r33_rem) = bounded_int_div_rem(r33, nz_q);
-    let r33: felt252 = upcast(r33_rem);
+    let (_, r33) = bounded_int_div_rem(r33, NZ_Q);
     let r34: ShiftedT = (tmp_6196 + SHIFT).try_into().unwrap();
-    let (_, r34_rem) = bounded_int_div_rem(r34, nz_q);
-    let r34: felt252 = upcast(r34_rem);
+    let (_, r34) = bounded_int_div_rem(r34, NZ_Q);
     let r35: ShiftedT = (tmp_6197 + SHIFT).try_into().unwrap();
-    let (_, r35_rem) = bounded_int_div_rem(r35, nz_q);
-    let r35: felt252 = upcast(r35_rem);
+    let (_, r35) = bounded_int_div_rem(r35, NZ_Q);
     let r36: ShiftedT = (tmp_6199 + SHIFT).try_into().unwrap();
-    let (_, r36_rem) = bounded_int_div_rem(r36, nz_q);
-    let r36: felt252 = upcast(r36_rem);
+    let (_, r36) = bounded_int_div_rem(r36, NZ_Q);
     let r37: ShiftedT = (tmp_6200 + SHIFT).try_into().unwrap();
-    let (_, r37_rem) = bounded_int_div_rem(r37, nz_q);
-    let r37: felt252 = upcast(r37_rem);
+    let (_, r37) = bounded_int_div_rem(r37, NZ_Q);
     let r38: ShiftedT = (tmp_6202 + SHIFT).try_into().unwrap();
-    let (_, r38_rem) = bounded_int_div_rem(r38, nz_q);
-    let r38: felt252 = upcast(r38_rem);
+    let (_, r38) = bounded_int_div_rem(r38, NZ_Q);
     let r39: ShiftedT = (tmp_6203 + SHIFT).try_into().unwrap();
-    let (_, r39_rem) = bounded_int_div_rem(r39, nz_q);
-    let r39: felt252 = upcast(r39_rem);
+    let (_, r39) = bounded_int_div_rem(r39, NZ_Q);
     let r40: ShiftedT = (tmp_6205 + SHIFT).try_into().unwrap();
-    let (_, r40_rem) = bounded_int_div_rem(r40, nz_q);
-    let r40: felt252 = upcast(r40_rem);
+    let (_, r40) = bounded_int_div_rem(r40, NZ_Q);
     let r41: ShiftedT = (tmp_6206 + SHIFT).try_into().unwrap();
-    let (_, r41_rem) = bounded_int_div_rem(r41, nz_q);
-    let r41: felt252 = upcast(r41_rem);
+    let (_, r41) = bounded_int_div_rem(r41, NZ_Q);
     let r42: ShiftedT = (tmp_6208 + SHIFT).try_into().unwrap();
-    let (_, r42_rem) = bounded_int_div_rem(r42, nz_q);
-    let r42: felt252 = upcast(r42_rem);
+    let (_, r42) = bounded_int_div_rem(r42, NZ_Q);
     let r43: ShiftedT = (tmp_6209 + SHIFT).try_into().unwrap();
-    let (_, r43_rem) = bounded_int_div_rem(r43, nz_q);
-    let r43: felt252 = upcast(r43_rem);
+    let (_, r43) = bounded_int_div_rem(r43, NZ_Q);
     let r44: ShiftedT = (tmp_6211 + SHIFT).try_into().unwrap();
-    let (_, r44_rem) = bounded_int_div_rem(r44, nz_q);
-    let r44: felt252 = upcast(r44_rem);
+    let (_, r44) = bounded_int_div_rem(r44, NZ_Q);
     let r45: ShiftedT = (tmp_6212 + SHIFT).try_into().unwrap();
-    let (_, r45_rem) = bounded_int_div_rem(r45, nz_q);
-    let r45: felt252 = upcast(r45_rem);
+    let (_, r45) = bounded_int_div_rem(r45, NZ_Q);
     let r46: ShiftedT = (tmp_6214 + SHIFT).try_into().unwrap();
-    let (_, r46_rem) = bounded_int_div_rem(r46, nz_q);
-    let r46: felt252 = upcast(r46_rem);
+    let (_, r46) = bounded_int_div_rem(r46, NZ_Q);
     let r47: ShiftedT = (tmp_6215 + SHIFT).try_into().unwrap();
-    let (_, r47_rem) = bounded_int_div_rem(r47, nz_q);
-    let r47: felt252 = upcast(r47_rem);
+    let (_, r47) = bounded_int_div_rem(r47, NZ_Q);
     let r48: ShiftedT = (tmp_6217 + SHIFT).try_into().unwrap();
-    let (_, r48_rem) = bounded_int_div_rem(r48, nz_q);
-    let r48: felt252 = upcast(r48_rem);
+    let (_, r48) = bounded_int_div_rem(r48, NZ_Q);
     let r49: ShiftedT = (tmp_6218 + SHIFT).try_into().unwrap();
-    let (_, r49_rem) = bounded_int_div_rem(r49, nz_q);
-    let r49: felt252 = upcast(r49_rem);
+    let (_, r49) = bounded_int_div_rem(r49, NZ_Q);
     let r50: ShiftedT = (tmp_6220 + SHIFT).try_into().unwrap();
-    let (_, r50_rem) = bounded_int_div_rem(r50, nz_q);
-    let r50: felt252 = upcast(r50_rem);
+    let (_, r50) = bounded_int_div_rem(r50, NZ_Q);
     let r51: ShiftedT = (tmp_6221 + SHIFT).try_into().unwrap();
-    let (_, r51_rem) = bounded_int_div_rem(r51, nz_q);
-    let r51: felt252 = upcast(r51_rem);
+    let (_, r51) = bounded_int_div_rem(r51, NZ_Q);
     let r52: ShiftedT = (tmp_6223 + SHIFT).try_into().unwrap();
-    let (_, r52_rem) = bounded_int_div_rem(r52, nz_q);
-    let r52: felt252 = upcast(r52_rem);
+    let (_, r52) = bounded_int_div_rem(r52, NZ_Q);
     let r53: ShiftedT = (tmp_6224 + SHIFT).try_into().unwrap();
-    let (_, r53_rem) = bounded_int_div_rem(r53, nz_q);
-    let r53: felt252 = upcast(r53_rem);
+    let (_, r53) = bounded_int_div_rem(r53, NZ_Q);
     let r54: ShiftedT = (tmp_6226 + SHIFT).try_into().unwrap();
-    let (_, r54_rem) = bounded_int_div_rem(r54, nz_q);
-    let r54: felt252 = upcast(r54_rem);
+    let (_, r54) = bounded_int_div_rem(r54, NZ_Q);
     let r55: ShiftedT = (tmp_6227 + SHIFT).try_into().unwrap();
-    let (_, r55_rem) = bounded_int_div_rem(r55, nz_q);
-    let r55: felt252 = upcast(r55_rem);
+    let (_, r55) = bounded_int_div_rem(r55, NZ_Q);
     let r56: ShiftedT = (tmp_6229 + SHIFT).try_into().unwrap();
-    let (_, r56_rem) = bounded_int_div_rem(r56, nz_q);
-    let r56: felt252 = upcast(r56_rem);
+    let (_, r56) = bounded_int_div_rem(r56, NZ_Q);
     let r57: ShiftedT = (tmp_6230 + SHIFT).try_into().unwrap();
-    let (_, r57_rem) = bounded_int_div_rem(r57, nz_q);
-    let r57: felt252 = upcast(r57_rem);
+    let (_, r57) = bounded_int_div_rem(r57, NZ_Q);
     let r58: ShiftedT = (tmp_6232 + SHIFT).try_into().unwrap();
-    let (_, r58_rem) = bounded_int_div_rem(r58, nz_q);
-    let r58: felt252 = upcast(r58_rem);
+    let (_, r58) = bounded_int_div_rem(r58, NZ_Q);
     let r59: ShiftedT = (tmp_6233 + SHIFT).try_into().unwrap();
-    let (_, r59_rem) = bounded_int_div_rem(r59, nz_q);
-    let r59: felt252 = upcast(r59_rem);
+    let (_, r59) = bounded_int_div_rem(r59, NZ_Q);
     let r60: ShiftedT = (tmp_6235 + SHIFT).try_into().unwrap();
-    let (_, r60_rem) = bounded_int_div_rem(r60, nz_q);
-    let r60: felt252 = upcast(r60_rem);
+    let (_, r60) = bounded_int_div_rem(r60, NZ_Q);
     let r61: ShiftedT = (tmp_6236 + SHIFT).try_into().unwrap();
-    let (_, r61_rem) = bounded_int_div_rem(r61, nz_q);
-    let r61: felt252 = upcast(r61_rem);
+    let (_, r61) = bounded_int_div_rem(r61, NZ_Q);
     let r62: ShiftedT = (tmp_6238 + SHIFT).try_into().unwrap();
-    let (_, r62_rem) = bounded_int_div_rem(r62, nz_q);
-    let r62: felt252 = upcast(r62_rem);
+    let (_, r62) = bounded_int_div_rem(r62, NZ_Q);
     let r63: ShiftedT = (tmp_6239 + SHIFT).try_into().unwrap();
-    let (_, r63_rem) = bounded_int_div_rem(r63, nz_q);
-    let r63: felt252 = upcast(r63_rem);
+    let (_, r63) = bounded_int_div_rem(r63, NZ_Q);
     let r64: ShiftedT = (tmp_6241 + SHIFT).try_into().unwrap();
-    let (_, r64_rem) = bounded_int_div_rem(r64, nz_q);
-    let r64: felt252 = upcast(r64_rem);
+    let (_, r64) = bounded_int_div_rem(r64, NZ_Q);
     let r65: ShiftedT = (tmp_6242 + SHIFT).try_into().unwrap();
-    let (_, r65_rem) = bounded_int_div_rem(r65, nz_q);
-    let r65: felt252 = upcast(r65_rem);
+    let (_, r65) = bounded_int_div_rem(r65, NZ_Q);
     let r66: ShiftedT = (tmp_6244 + SHIFT).try_into().unwrap();
-    let (_, r66_rem) = bounded_int_div_rem(r66, nz_q);
-    let r66: felt252 = upcast(r66_rem);
+    let (_, r66) = bounded_int_div_rem(r66, NZ_Q);
     let r67: ShiftedT = (tmp_6245 + SHIFT).try_into().unwrap();
-    let (_, r67_rem) = bounded_int_div_rem(r67, nz_q);
-    let r67: felt252 = upcast(r67_rem);
+    let (_, r67) = bounded_int_div_rem(r67, NZ_Q);
     let r68: ShiftedT = (tmp_6247 + SHIFT).try_into().unwrap();
-    let (_, r68_rem) = bounded_int_div_rem(r68, nz_q);
-    let r68: felt252 = upcast(r68_rem);
+    let (_, r68) = bounded_int_div_rem(r68, NZ_Q);
     let r69: ShiftedT = (tmp_6248 + SHIFT).try_into().unwrap();
-    let (_, r69_rem) = bounded_int_div_rem(r69, nz_q);
-    let r69: felt252 = upcast(r69_rem);
+    let (_, r69) = bounded_int_div_rem(r69, NZ_Q);
     let r70: ShiftedT = (tmp_6250 + SHIFT).try_into().unwrap();
-    let (_, r70_rem) = bounded_int_div_rem(r70, nz_q);
-    let r70: felt252 = upcast(r70_rem);
+    let (_, r70) = bounded_int_div_rem(r70, NZ_Q);
     let r71: ShiftedT = (tmp_6251 + SHIFT).try_into().unwrap();
-    let (_, r71_rem) = bounded_int_div_rem(r71, nz_q);
-    let r71: felt252 = upcast(r71_rem);
+    let (_, r71) = bounded_int_div_rem(r71, NZ_Q);
     let r72: ShiftedT = (tmp_6253 + SHIFT).try_into().unwrap();
-    let (_, r72_rem) = bounded_int_div_rem(r72, nz_q);
-    let r72: felt252 = upcast(r72_rem);
+    let (_, r72) = bounded_int_div_rem(r72, NZ_Q);
     let r73: ShiftedT = (tmp_6254 + SHIFT).try_into().unwrap();
-    let (_, r73_rem) = bounded_int_div_rem(r73, nz_q);
-    let r73: felt252 = upcast(r73_rem);
+    let (_, r73) = bounded_int_div_rem(r73, NZ_Q);
     let r74: ShiftedT = (tmp_6256 + SHIFT).try_into().unwrap();
-    let (_, r74_rem) = bounded_int_div_rem(r74, nz_q);
-    let r74: felt252 = upcast(r74_rem);
+    let (_, r74) = bounded_int_div_rem(r74, NZ_Q);
     let r75: ShiftedT = (tmp_6257 + SHIFT).try_into().unwrap();
-    let (_, r75_rem) = bounded_int_div_rem(r75, nz_q);
-    let r75: felt252 = upcast(r75_rem);
+    let (_, r75) = bounded_int_div_rem(r75, NZ_Q);
     let r76: ShiftedT = (tmp_6259 + SHIFT).try_into().unwrap();
-    let (_, r76_rem) = bounded_int_div_rem(r76, nz_q);
-    let r76: felt252 = upcast(r76_rem);
+    let (_, r76) = bounded_int_div_rem(r76, NZ_Q);
     let r77: ShiftedT = (tmp_6260 + SHIFT).try_into().unwrap();
-    let (_, r77_rem) = bounded_int_div_rem(r77, nz_q);
-    let r77: felt252 = upcast(r77_rem);
+    let (_, r77) = bounded_int_div_rem(r77, NZ_Q);
     let r78: ShiftedT = (tmp_6262 + SHIFT).try_into().unwrap();
-    let (_, r78_rem) = bounded_int_div_rem(r78, nz_q);
-    let r78: felt252 = upcast(r78_rem);
+    let (_, r78) = bounded_int_div_rem(r78, NZ_Q);
     let r79: ShiftedT = (tmp_6263 + SHIFT).try_into().unwrap();
-    let (_, r79_rem) = bounded_int_div_rem(r79, nz_q);
-    let r79: felt252 = upcast(r79_rem);
+    let (_, r79) = bounded_int_div_rem(r79, NZ_Q);
     let r80: ShiftedT = (tmp_6265 + SHIFT).try_into().unwrap();
-    let (_, r80_rem) = bounded_int_div_rem(r80, nz_q);
-    let r80: felt252 = upcast(r80_rem);
+    let (_, r80) = bounded_int_div_rem(r80, NZ_Q);
     let r81: ShiftedT = (tmp_6266 + SHIFT).try_into().unwrap();
-    let (_, r81_rem) = bounded_int_div_rem(r81, nz_q);
-    let r81: felt252 = upcast(r81_rem);
+    let (_, r81) = bounded_int_div_rem(r81, NZ_Q);
     let r82: ShiftedT = (tmp_6268 + SHIFT).try_into().unwrap();
-    let (_, r82_rem) = bounded_int_div_rem(r82, nz_q);
-    let r82: felt252 = upcast(r82_rem);
+    let (_, r82) = bounded_int_div_rem(r82, NZ_Q);
     let r83: ShiftedT = (tmp_6269 + SHIFT).try_into().unwrap();
-    let (_, r83_rem) = bounded_int_div_rem(r83, nz_q);
-    let r83: felt252 = upcast(r83_rem);
+    let (_, r83) = bounded_int_div_rem(r83, NZ_Q);
     let r84: ShiftedT = (tmp_6271 + SHIFT).try_into().unwrap();
-    let (_, r84_rem) = bounded_int_div_rem(r84, nz_q);
-    let r84: felt252 = upcast(r84_rem);
+    let (_, r84) = bounded_int_div_rem(r84, NZ_Q);
     let r85: ShiftedT = (tmp_6272 + SHIFT).try_into().unwrap();
-    let (_, r85_rem) = bounded_int_div_rem(r85, nz_q);
-    let r85: felt252 = upcast(r85_rem);
+    let (_, r85) = bounded_int_div_rem(r85, NZ_Q);
     let r86: ShiftedT = (tmp_6274 + SHIFT).try_into().unwrap();
-    let (_, r86_rem) = bounded_int_div_rem(r86, nz_q);
-    let r86: felt252 = upcast(r86_rem);
+    let (_, r86) = bounded_int_div_rem(r86, NZ_Q);
     let r87: ShiftedT = (tmp_6275 + SHIFT).try_into().unwrap();
-    let (_, r87_rem) = bounded_int_div_rem(r87, nz_q);
-    let r87: felt252 = upcast(r87_rem);
+    let (_, r87) = bounded_int_div_rem(r87, NZ_Q);
     let r88: ShiftedT = (tmp_6277 + SHIFT).try_into().unwrap();
-    let (_, r88_rem) = bounded_int_div_rem(r88, nz_q);
-    let r88: felt252 = upcast(r88_rem);
+    let (_, r88) = bounded_int_div_rem(r88, NZ_Q);
     let r89: ShiftedT = (tmp_6278 + SHIFT).try_into().unwrap();
-    let (_, r89_rem) = bounded_int_div_rem(r89, nz_q);
-    let r89: felt252 = upcast(r89_rem);
+    let (_, r89) = bounded_int_div_rem(r89, NZ_Q);
     let r90: ShiftedT = (tmp_6280 + SHIFT).try_into().unwrap();
-    let (_, r90_rem) = bounded_int_div_rem(r90, nz_q);
-    let r90: felt252 = upcast(r90_rem);
+    let (_, r90) = bounded_int_div_rem(r90, NZ_Q);
     let r91: ShiftedT = (tmp_6281 + SHIFT).try_into().unwrap();
-    let (_, r91_rem) = bounded_int_div_rem(r91, nz_q);
-    let r91: felt252 = upcast(r91_rem);
+    let (_, r91) = bounded_int_div_rem(r91, NZ_Q);
     let r92: ShiftedT = (tmp_6283 + SHIFT).try_into().unwrap();
-    let (_, r92_rem) = bounded_int_div_rem(r92, nz_q);
-    let r92: felt252 = upcast(r92_rem);
+    let (_, r92) = bounded_int_div_rem(r92, NZ_Q);
     let r93: ShiftedT = (tmp_6284 + SHIFT).try_into().unwrap();
-    let (_, r93_rem) = bounded_int_div_rem(r93, nz_q);
-    let r93: felt252 = upcast(r93_rem);
+    let (_, r93) = bounded_int_div_rem(r93, NZ_Q);
     let r94: ShiftedT = (tmp_6286 + SHIFT).try_into().unwrap();
-    let (_, r94_rem) = bounded_int_div_rem(r94, nz_q);
-    let r94: felt252 = upcast(r94_rem);
+    let (_, r94) = bounded_int_div_rem(r94, NZ_Q);
     let r95: ShiftedT = (tmp_6287 + SHIFT).try_into().unwrap();
-    let (_, r95_rem) = bounded_int_div_rem(r95, nz_q);
-    let r95: felt252 = upcast(r95_rem);
+    let (_, r95) = bounded_int_div_rem(r95, NZ_Q);
     let r96: ShiftedT = (tmp_6289 + SHIFT).try_into().unwrap();
-    let (_, r96_rem) = bounded_int_div_rem(r96, nz_q);
-    let r96: felt252 = upcast(r96_rem);
+    let (_, r96) = bounded_int_div_rem(r96, NZ_Q);
     let r97: ShiftedT = (tmp_6290 + SHIFT).try_into().unwrap();
-    let (_, r97_rem) = bounded_int_div_rem(r97, nz_q);
-    let r97: felt252 = upcast(r97_rem);
+    let (_, r97) = bounded_int_div_rem(r97, NZ_Q);
     let r98: ShiftedT = (tmp_6292 + SHIFT).try_into().unwrap();
-    let (_, r98_rem) = bounded_int_div_rem(r98, nz_q);
-    let r98: felt252 = upcast(r98_rem);
+    let (_, r98) = bounded_int_div_rem(r98, NZ_Q);
     let r99: ShiftedT = (tmp_6293 + SHIFT).try_into().unwrap();
-    let (_, r99_rem) = bounded_int_div_rem(r99, nz_q);
-    let r99: felt252 = upcast(r99_rem);
+    let (_, r99) = bounded_int_div_rem(r99, NZ_Q);
     let r100: ShiftedT = (tmp_6295 + SHIFT).try_into().unwrap();
-    let (_, r100_rem) = bounded_int_div_rem(r100, nz_q);
-    let r100: felt252 = upcast(r100_rem);
+    let (_, r100) = bounded_int_div_rem(r100, NZ_Q);
     let r101: ShiftedT = (tmp_6296 + SHIFT).try_into().unwrap();
-    let (_, r101_rem) = bounded_int_div_rem(r101, nz_q);
-    let r101: felt252 = upcast(r101_rem);
+    let (_, r101) = bounded_int_div_rem(r101, NZ_Q);
     let r102: ShiftedT = (tmp_6298 + SHIFT).try_into().unwrap();
-    let (_, r102_rem) = bounded_int_div_rem(r102, nz_q);
-    let r102: felt252 = upcast(r102_rem);
+    let (_, r102) = bounded_int_div_rem(r102, NZ_Q);
     let r103: ShiftedT = (tmp_6299 + SHIFT).try_into().unwrap();
-    let (_, r103_rem) = bounded_int_div_rem(r103, nz_q);
-    let r103: felt252 = upcast(r103_rem);
+    let (_, r103) = bounded_int_div_rem(r103, NZ_Q);
     let r104: ShiftedT = (tmp_6301 + SHIFT).try_into().unwrap();
-    let (_, r104_rem) = bounded_int_div_rem(r104, nz_q);
-    let r104: felt252 = upcast(r104_rem);
+    let (_, r104) = bounded_int_div_rem(r104, NZ_Q);
     let r105: ShiftedT = (tmp_6302 + SHIFT).try_into().unwrap();
-    let (_, r105_rem) = bounded_int_div_rem(r105, nz_q);
-    let r105: felt252 = upcast(r105_rem);
+    let (_, r105) = bounded_int_div_rem(r105, NZ_Q);
     let r106: ShiftedT = (tmp_6304 + SHIFT).try_into().unwrap();
-    let (_, r106_rem) = bounded_int_div_rem(r106, nz_q);
-    let r106: felt252 = upcast(r106_rem);
+    let (_, r106) = bounded_int_div_rem(r106, NZ_Q);
     let r107: ShiftedT = (tmp_6305 + SHIFT).try_into().unwrap();
-    let (_, r107_rem) = bounded_int_div_rem(r107, nz_q);
-    let r107: felt252 = upcast(r107_rem);
+    let (_, r107) = bounded_int_div_rem(r107, NZ_Q);
     let r108: ShiftedT = (tmp_6307 + SHIFT).try_into().unwrap();
-    let (_, r108_rem) = bounded_int_div_rem(r108, nz_q);
-    let r108: felt252 = upcast(r108_rem);
+    let (_, r108) = bounded_int_div_rem(r108, NZ_Q);
     let r109: ShiftedT = (tmp_6308 + SHIFT).try_into().unwrap();
-    let (_, r109_rem) = bounded_int_div_rem(r109, nz_q);
-    let r109: felt252 = upcast(r109_rem);
+    let (_, r109) = bounded_int_div_rem(r109, NZ_Q);
     let r110: ShiftedT = (tmp_6310 + SHIFT).try_into().unwrap();
-    let (_, r110_rem) = bounded_int_div_rem(r110, nz_q);
-    let r110: felt252 = upcast(r110_rem);
+    let (_, r110) = bounded_int_div_rem(r110, NZ_Q);
     let r111: ShiftedT = (tmp_6311 + SHIFT).try_into().unwrap();
-    let (_, r111_rem) = bounded_int_div_rem(r111, nz_q);
-    let r111: felt252 = upcast(r111_rem);
+    let (_, r111) = bounded_int_div_rem(r111, NZ_Q);
     let r112: ShiftedT = (tmp_6313 + SHIFT).try_into().unwrap();
-    let (_, r112_rem) = bounded_int_div_rem(r112, nz_q);
-    let r112: felt252 = upcast(r112_rem);
+    let (_, r112) = bounded_int_div_rem(r112, NZ_Q);
     let r113: ShiftedT = (tmp_6314 + SHIFT).try_into().unwrap();
-    let (_, r113_rem) = bounded_int_div_rem(r113, nz_q);
-    let r113: felt252 = upcast(r113_rem);
+    let (_, r113) = bounded_int_div_rem(r113, NZ_Q);
     let r114: ShiftedT = (tmp_6316 + SHIFT).try_into().unwrap();
-    let (_, r114_rem) = bounded_int_div_rem(r114, nz_q);
-    let r114: felt252 = upcast(r114_rem);
+    let (_, r114) = bounded_int_div_rem(r114, NZ_Q);
     let r115: ShiftedT = (tmp_6317 + SHIFT).try_into().unwrap();
-    let (_, r115_rem) = bounded_int_div_rem(r115, nz_q);
-    let r115: felt252 = upcast(r115_rem);
+    let (_, r115) = bounded_int_div_rem(r115, NZ_Q);
     let r116: ShiftedT = (tmp_6319 + SHIFT).try_into().unwrap();
-    let (_, r116_rem) = bounded_int_div_rem(r116, nz_q);
-    let r116: felt252 = upcast(r116_rem);
+    let (_, r116) = bounded_int_div_rem(r116, NZ_Q);
     let r117: ShiftedT = (tmp_6320 + SHIFT).try_into().unwrap();
-    let (_, r117_rem) = bounded_int_div_rem(r117, nz_q);
-    let r117: felt252 = upcast(r117_rem);
+    let (_, r117) = bounded_int_div_rem(r117, NZ_Q);
     let r118: ShiftedT = (tmp_6322 + SHIFT).try_into().unwrap();
-    let (_, r118_rem) = bounded_int_div_rem(r118, nz_q);
-    let r118: felt252 = upcast(r118_rem);
+    let (_, r118) = bounded_int_div_rem(r118, NZ_Q);
     let r119: ShiftedT = (tmp_6323 + SHIFT).try_into().unwrap();
-    let (_, r119_rem) = bounded_int_div_rem(r119, nz_q);
-    let r119: felt252 = upcast(r119_rem);
+    let (_, r119) = bounded_int_div_rem(r119, NZ_Q);
     let r120: ShiftedT = (tmp_6325 + SHIFT).try_into().unwrap();
-    let (_, r120_rem) = bounded_int_div_rem(r120, nz_q);
-    let r120: felt252 = upcast(r120_rem);
+    let (_, r120) = bounded_int_div_rem(r120, NZ_Q);
     let r121: ShiftedT = (tmp_6326 + SHIFT).try_into().unwrap();
-    let (_, r121_rem) = bounded_int_div_rem(r121, nz_q);
-    let r121: felt252 = upcast(r121_rem);
+    let (_, r121) = bounded_int_div_rem(r121, NZ_Q);
     let r122: ShiftedT = (tmp_6328 + SHIFT).try_into().unwrap();
-    let (_, r122_rem) = bounded_int_div_rem(r122, nz_q);
-    let r122: felt252 = upcast(r122_rem);
+    let (_, r122) = bounded_int_div_rem(r122, NZ_Q);
     let r123: ShiftedT = (tmp_6329 + SHIFT).try_into().unwrap();
-    let (_, r123_rem) = bounded_int_div_rem(r123, nz_q);
-    let r123: felt252 = upcast(r123_rem);
+    let (_, r123) = bounded_int_div_rem(r123, NZ_Q);
     let r124: ShiftedT = (tmp_6331 + SHIFT).try_into().unwrap();
-    let (_, r124_rem) = bounded_int_div_rem(r124, nz_q);
-    let r124: felt252 = upcast(r124_rem);
+    let (_, r124) = bounded_int_div_rem(r124, NZ_Q);
     let r125: ShiftedT = (tmp_6332 + SHIFT).try_into().unwrap();
-    let (_, r125_rem) = bounded_int_div_rem(r125, nz_q);
-    let r125: felt252 = upcast(r125_rem);
+    let (_, r125) = bounded_int_div_rem(r125, NZ_Q);
     let r126: ShiftedT = (tmp_6334 + SHIFT).try_into().unwrap();
-    let (_, r126_rem) = bounded_int_div_rem(r126, nz_q);
-    let r126: felt252 = upcast(r126_rem);
+    let (_, r126) = bounded_int_div_rem(r126, NZ_Q);
     let r127: ShiftedT = (tmp_6335 + SHIFT).try_into().unwrap();
-    let (_, r127_rem) = bounded_int_div_rem(r127, nz_q);
-    let r127: felt252 = upcast(r127_rem);
+    let (_, r127) = bounded_int_div_rem(r127, NZ_Q);
     let r128: ShiftedT = (tmp_6337 + SHIFT).try_into().unwrap();
-    let (_, r128_rem) = bounded_int_div_rem(r128, nz_q);
-    let r128: felt252 = upcast(r128_rem);
+    let (_, r128) = bounded_int_div_rem(r128, NZ_Q);
     let r129: ShiftedT = (tmp_6338 + SHIFT).try_into().unwrap();
-    let (_, r129_rem) = bounded_int_div_rem(r129, nz_q);
-    let r129: felt252 = upcast(r129_rem);
+    let (_, r129) = bounded_int_div_rem(r129, NZ_Q);
     let r130: ShiftedT = (tmp_6340 + SHIFT).try_into().unwrap();
-    let (_, r130_rem) = bounded_int_div_rem(r130, nz_q);
-    let r130: felt252 = upcast(r130_rem);
+    let (_, r130) = bounded_int_div_rem(r130, NZ_Q);
     let r131: ShiftedT = (tmp_6341 + SHIFT).try_into().unwrap();
-    let (_, r131_rem) = bounded_int_div_rem(r131, nz_q);
-    let r131: felt252 = upcast(r131_rem);
+    let (_, r131) = bounded_int_div_rem(r131, NZ_Q);
     let r132: ShiftedT = (tmp_6343 + SHIFT).try_into().unwrap();
-    let (_, r132_rem) = bounded_int_div_rem(r132, nz_q);
-    let r132: felt252 = upcast(r132_rem);
+    let (_, r132) = bounded_int_div_rem(r132, NZ_Q);
     let r133: ShiftedT = (tmp_6344 + SHIFT).try_into().unwrap();
-    let (_, r133_rem) = bounded_int_div_rem(r133, nz_q);
-    let r133: felt252 = upcast(r133_rem);
+    let (_, r133) = bounded_int_div_rem(r133, NZ_Q);
     let r134: ShiftedT = (tmp_6346 + SHIFT).try_into().unwrap();
-    let (_, r134_rem) = bounded_int_div_rem(r134, nz_q);
-    let r134: felt252 = upcast(r134_rem);
+    let (_, r134) = bounded_int_div_rem(r134, NZ_Q);
     let r135: ShiftedT = (tmp_6347 + SHIFT).try_into().unwrap();
-    let (_, r135_rem) = bounded_int_div_rem(r135, nz_q);
-    let r135: felt252 = upcast(r135_rem);
+    let (_, r135) = bounded_int_div_rem(r135, NZ_Q);
     let r136: ShiftedT = (tmp_6349 + SHIFT).try_into().unwrap();
-    let (_, r136_rem) = bounded_int_div_rem(r136, nz_q);
-    let r136: felt252 = upcast(r136_rem);
+    let (_, r136) = bounded_int_div_rem(r136, NZ_Q);
     let r137: ShiftedT = (tmp_6350 + SHIFT).try_into().unwrap();
-    let (_, r137_rem) = bounded_int_div_rem(r137, nz_q);
-    let r137: felt252 = upcast(r137_rem);
+    let (_, r137) = bounded_int_div_rem(r137, NZ_Q);
     let r138: ShiftedT = (tmp_6352 + SHIFT).try_into().unwrap();
-    let (_, r138_rem) = bounded_int_div_rem(r138, nz_q);
-    let r138: felt252 = upcast(r138_rem);
+    let (_, r138) = bounded_int_div_rem(r138, NZ_Q);
     let r139: ShiftedT = (tmp_6353 + SHIFT).try_into().unwrap();
-    let (_, r139_rem) = bounded_int_div_rem(r139, nz_q);
-    let r139: felt252 = upcast(r139_rem);
+    let (_, r139) = bounded_int_div_rem(r139, NZ_Q);
     let r140: ShiftedT = (tmp_6355 + SHIFT).try_into().unwrap();
-    let (_, r140_rem) = bounded_int_div_rem(r140, nz_q);
-    let r140: felt252 = upcast(r140_rem);
+    let (_, r140) = bounded_int_div_rem(r140, NZ_Q);
     let r141: ShiftedT = (tmp_6356 + SHIFT).try_into().unwrap();
-    let (_, r141_rem) = bounded_int_div_rem(r141, nz_q);
-    let r141: felt252 = upcast(r141_rem);
+    let (_, r141) = bounded_int_div_rem(r141, NZ_Q);
     let r142: ShiftedT = (tmp_6358 + SHIFT).try_into().unwrap();
-    let (_, r142_rem) = bounded_int_div_rem(r142, nz_q);
-    let r142: felt252 = upcast(r142_rem);
+    let (_, r142) = bounded_int_div_rem(r142, NZ_Q);
     let r143: ShiftedT = (tmp_6359 + SHIFT).try_into().unwrap();
-    let (_, r143_rem) = bounded_int_div_rem(r143, nz_q);
-    let r143: felt252 = upcast(r143_rem);
+    let (_, r143) = bounded_int_div_rem(r143, NZ_Q);
     let r144: ShiftedT = (tmp_6361 + SHIFT).try_into().unwrap();
-    let (_, r144_rem) = bounded_int_div_rem(r144, nz_q);
-    let r144: felt252 = upcast(r144_rem);
+    let (_, r144) = bounded_int_div_rem(r144, NZ_Q);
     let r145: ShiftedT = (tmp_6362 + SHIFT).try_into().unwrap();
-    let (_, r145_rem) = bounded_int_div_rem(r145, nz_q);
-    let r145: felt252 = upcast(r145_rem);
+    let (_, r145) = bounded_int_div_rem(r145, NZ_Q);
     let r146: ShiftedT = (tmp_6364 + SHIFT).try_into().unwrap();
-    let (_, r146_rem) = bounded_int_div_rem(r146, nz_q);
-    let r146: felt252 = upcast(r146_rem);
+    let (_, r146) = bounded_int_div_rem(r146, NZ_Q);
     let r147: ShiftedT = (tmp_6365 + SHIFT).try_into().unwrap();
-    let (_, r147_rem) = bounded_int_div_rem(r147, nz_q);
-    let r147: felt252 = upcast(r147_rem);
+    let (_, r147) = bounded_int_div_rem(r147, NZ_Q);
     let r148: ShiftedT = (tmp_6367 + SHIFT).try_into().unwrap();
-    let (_, r148_rem) = bounded_int_div_rem(r148, nz_q);
-    let r148: felt252 = upcast(r148_rem);
+    let (_, r148) = bounded_int_div_rem(r148, NZ_Q);
     let r149: ShiftedT = (tmp_6368 + SHIFT).try_into().unwrap();
-    let (_, r149_rem) = bounded_int_div_rem(r149, nz_q);
-    let r149: felt252 = upcast(r149_rem);
+    let (_, r149) = bounded_int_div_rem(r149, NZ_Q);
     let r150: ShiftedT = (tmp_6370 + SHIFT).try_into().unwrap();
-    let (_, r150_rem) = bounded_int_div_rem(r150, nz_q);
-    let r150: felt252 = upcast(r150_rem);
+    let (_, r150) = bounded_int_div_rem(r150, NZ_Q);
     let r151: ShiftedT = (tmp_6371 + SHIFT).try_into().unwrap();
-    let (_, r151_rem) = bounded_int_div_rem(r151, nz_q);
-    let r151: felt252 = upcast(r151_rem);
+    let (_, r151) = bounded_int_div_rem(r151, NZ_Q);
     let r152: ShiftedT = (tmp_6373 + SHIFT).try_into().unwrap();
-    let (_, r152_rem) = bounded_int_div_rem(r152, nz_q);
-    let r152: felt252 = upcast(r152_rem);
+    let (_, r152) = bounded_int_div_rem(r152, NZ_Q);
     let r153: ShiftedT = (tmp_6374 + SHIFT).try_into().unwrap();
-    let (_, r153_rem) = bounded_int_div_rem(r153, nz_q);
-    let r153: felt252 = upcast(r153_rem);
+    let (_, r153) = bounded_int_div_rem(r153, NZ_Q);
     let r154: ShiftedT = (tmp_6376 + SHIFT).try_into().unwrap();
-    let (_, r154_rem) = bounded_int_div_rem(r154, nz_q);
-    let r154: felt252 = upcast(r154_rem);
+    let (_, r154) = bounded_int_div_rem(r154, NZ_Q);
     let r155: ShiftedT = (tmp_6377 + SHIFT).try_into().unwrap();
-    let (_, r155_rem) = bounded_int_div_rem(r155, nz_q);
-    let r155: felt252 = upcast(r155_rem);
+    let (_, r155) = bounded_int_div_rem(r155, NZ_Q);
     let r156: ShiftedT = (tmp_6379 + SHIFT).try_into().unwrap();
-    let (_, r156_rem) = bounded_int_div_rem(r156, nz_q);
-    let r156: felt252 = upcast(r156_rem);
+    let (_, r156) = bounded_int_div_rem(r156, NZ_Q);
     let r157: ShiftedT = (tmp_6380 + SHIFT).try_into().unwrap();
-    let (_, r157_rem) = bounded_int_div_rem(r157, nz_q);
-    let r157: felt252 = upcast(r157_rem);
+    let (_, r157) = bounded_int_div_rem(r157, NZ_Q);
     let r158: ShiftedT = (tmp_6382 + SHIFT).try_into().unwrap();
-    let (_, r158_rem) = bounded_int_div_rem(r158, nz_q);
-    let r158: felt252 = upcast(r158_rem);
+    let (_, r158) = bounded_int_div_rem(r158, NZ_Q);
     let r159: ShiftedT = (tmp_6383 + SHIFT).try_into().unwrap();
-    let (_, r159_rem) = bounded_int_div_rem(r159, nz_q);
-    let r159: felt252 = upcast(r159_rem);
+    let (_, r159) = bounded_int_div_rem(r159, NZ_Q);
     let r160: ShiftedT = (tmp_6385 + SHIFT).try_into().unwrap();
-    let (_, r160_rem) = bounded_int_div_rem(r160, nz_q);
-    let r160: felt252 = upcast(r160_rem);
+    let (_, r160) = bounded_int_div_rem(r160, NZ_Q);
     let r161: ShiftedT = (tmp_6386 + SHIFT).try_into().unwrap();
-    let (_, r161_rem) = bounded_int_div_rem(r161, nz_q);
-    let r161: felt252 = upcast(r161_rem);
+    let (_, r161) = bounded_int_div_rem(r161, NZ_Q);
     let r162: ShiftedT = (tmp_6388 + SHIFT).try_into().unwrap();
-    let (_, r162_rem) = bounded_int_div_rem(r162, nz_q);
-    let r162: felt252 = upcast(r162_rem);
+    let (_, r162) = bounded_int_div_rem(r162, NZ_Q);
     let r163: ShiftedT = (tmp_6389 + SHIFT).try_into().unwrap();
-    let (_, r163_rem) = bounded_int_div_rem(r163, nz_q);
-    let r163: felt252 = upcast(r163_rem);
+    let (_, r163) = bounded_int_div_rem(r163, NZ_Q);
     let r164: ShiftedT = (tmp_6391 + SHIFT).try_into().unwrap();
-    let (_, r164_rem) = bounded_int_div_rem(r164, nz_q);
-    let r164: felt252 = upcast(r164_rem);
+    let (_, r164) = bounded_int_div_rem(r164, NZ_Q);
     let r165: ShiftedT = (tmp_6392 + SHIFT).try_into().unwrap();
-    let (_, r165_rem) = bounded_int_div_rem(r165, nz_q);
-    let r165: felt252 = upcast(r165_rem);
+    let (_, r165) = bounded_int_div_rem(r165, NZ_Q);
     let r166: ShiftedT = (tmp_6394 + SHIFT).try_into().unwrap();
-    let (_, r166_rem) = bounded_int_div_rem(r166, nz_q);
-    let r166: felt252 = upcast(r166_rem);
+    let (_, r166) = bounded_int_div_rem(r166, NZ_Q);
     let r167: ShiftedT = (tmp_6395 + SHIFT).try_into().unwrap();
-    let (_, r167_rem) = bounded_int_div_rem(r167, nz_q);
-    let r167: felt252 = upcast(r167_rem);
+    let (_, r167) = bounded_int_div_rem(r167, NZ_Q);
     let r168: ShiftedT = (tmp_6397 + SHIFT).try_into().unwrap();
-    let (_, r168_rem) = bounded_int_div_rem(r168, nz_q);
-    let r168: felt252 = upcast(r168_rem);
+    let (_, r168) = bounded_int_div_rem(r168, NZ_Q);
     let r169: ShiftedT = (tmp_6398 + SHIFT).try_into().unwrap();
-    let (_, r169_rem) = bounded_int_div_rem(r169, nz_q);
-    let r169: felt252 = upcast(r169_rem);
+    let (_, r169) = bounded_int_div_rem(r169, NZ_Q);
     let r170: ShiftedT = (tmp_6400 + SHIFT).try_into().unwrap();
-    let (_, r170_rem) = bounded_int_div_rem(r170, nz_q);
-    let r170: felt252 = upcast(r170_rem);
+    let (_, r170) = bounded_int_div_rem(r170, NZ_Q);
     let r171: ShiftedT = (tmp_6401 + SHIFT).try_into().unwrap();
-    let (_, r171_rem) = bounded_int_div_rem(r171, nz_q);
-    let r171: felt252 = upcast(r171_rem);
+    let (_, r171) = bounded_int_div_rem(r171, NZ_Q);
     let r172: ShiftedT = (tmp_6403 + SHIFT).try_into().unwrap();
-    let (_, r172_rem) = bounded_int_div_rem(r172, nz_q);
-    let r172: felt252 = upcast(r172_rem);
+    let (_, r172) = bounded_int_div_rem(r172, NZ_Q);
     let r173: ShiftedT = (tmp_6404 + SHIFT).try_into().unwrap();
-    let (_, r173_rem) = bounded_int_div_rem(r173, nz_q);
-    let r173: felt252 = upcast(r173_rem);
+    let (_, r173) = bounded_int_div_rem(r173, NZ_Q);
     let r174: ShiftedT = (tmp_6406 + SHIFT).try_into().unwrap();
-    let (_, r174_rem) = bounded_int_div_rem(r174, nz_q);
-    let r174: felt252 = upcast(r174_rem);
+    let (_, r174) = bounded_int_div_rem(r174, NZ_Q);
     let r175: ShiftedT = (tmp_6407 + SHIFT).try_into().unwrap();
-    let (_, r175_rem) = bounded_int_div_rem(r175, nz_q);
-    let r175: felt252 = upcast(r175_rem);
+    let (_, r175) = bounded_int_div_rem(r175, NZ_Q);
     let r176: ShiftedT = (tmp_6409 + SHIFT).try_into().unwrap();
-    let (_, r176_rem) = bounded_int_div_rem(r176, nz_q);
-    let r176: felt252 = upcast(r176_rem);
+    let (_, r176) = bounded_int_div_rem(r176, NZ_Q);
     let r177: ShiftedT = (tmp_6410 + SHIFT).try_into().unwrap();
-    let (_, r177_rem) = bounded_int_div_rem(r177, nz_q);
-    let r177: felt252 = upcast(r177_rem);
+    let (_, r177) = bounded_int_div_rem(r177, NZ_Q);
     let r178: ShiftedT = (tmp_6412 + SHIFT).try_into().unwrap();
-    let (_, r178_rem) = bounded_int_div_rem(r178, nz_q);
-    let r178: felt252 = upcast(r178_rem);
+    let (_, r178) = bounded_int_div_rem(r178, NZ_Q);
     let r179: ShiftedT = (tmp_6413 + SHIFT).try_into().unwrap();
-    let (_, r179_rem) = bounded_int_div_rem(r179, nz_q);
-    let r179: felt252 = upcast(r179_rem);
+    let (_, r179) = bounded_int_div_rem(r179, NZ_Q);
     let r180: ShiftedT = (tmp_6415 + SHIFT).try_into().unwrap();
-    let (_, r180_rem) = bounded_int_div_rem(r180, nz_q);
-    let r180: felt252 = upcast(r180_rem);
+    let (_, r180) = bounded_int_div_rem(r180, NZ_Q);
     let r181: ShiftedT = (tmp_6416 + SHIFT).try_into().unwrap();
-    let (_, r181_rem) = bounded_int_div_rem(r181, nz_q);
-    let r181: felt252 = upcast(r181_rem);
+    let (_, r181) = bounded_int_div_rem(r181, NZ_Q);
     let r182: ShiftedT = (tmp_6418 + SHIFT).try_into().unwrap();
-    let (_, r182_rem) = bounded_int_div_rem(r182, nz_q);
-    let r182: felt252 = upcast(r182_rem);
+    let (_, r182) = bounded_int_div_rem(r182, NZ_Q);
     let r183: ShiftedT = (tmp_6419 + SHIFT).try_into().unwrap();
-    let (_, r183_rem) = bounded_int_div_rem(r183, nz_q);
-    let r183: felt252 = upcast(r183_rem);
+    let (_, r183) = bounded_int_div_rem(r183, NZ_Q);
     let r184: ShiftedT = (tmp_6421 + SHIFT).try_into().unwrap();
-    let (_, r184_rem) = bounded_int_div_rem(r184, nz_q);
-    let r184: felt252 = upcast(r184_rem);
+    let (_, r184) = bounded_int_div_rem(r184, NZ_Q);
     let r185: ShiftedT = (tmp_6422 + SHIFT).try_into().unwrap();
-    let (_, r185_rem) = bounded_int_div_rem(r185, nz_q);
-    let r185: felt252 = upcast(r185_rem);
+    let (_, r185) = bounded_int_div_rem(r185, NZ_Q);
     let r186: ShiftedT = (tmp_6424 + SHIFT).try_into().unwrap();
-    let (_, r186_rem) = bounded_int_div_rem(r186, nz_q);
-    let r186: felt252 = upcast(r186_rem);
+    let (_, r186) = bounded_int_div_rem(r186, NZ_Q);
     let r187: ShiftedT = (tmp_6425 + SHIFT).try_into().unwrap();
-    let (_, r187_rem) = bounded_int_div_rem(r187, nz_q);
-    let r187: felt252 = upcast(r187_rem);
+    let (_, r187) = bounded_int_div_rem(r187, NZ_Q);
     let r188: ShiftedT = (tmp_6427 + SHIFT).try_into().unwrap();
-    let (_, r188_rem) = bounded_int_div_rem(r188, nz_q);
-    let r188: felt252 = upcast(r188_rem);
+    let (_, r188) = bounded_int_div_rem(r188, NZ_Q);
     let r189: ShiftedT = (tmp_6428 + SHIFT).try_into().unwrap();
-    let (_, r189_rem) = bounded_int_div_rem(r189, nz_q);
-    let r189: felt252 = upcast(r189_rem);
+    let (_, r189) = bounded_int_div_rem(r189, NZ_Q);
     let r190: ShiftedT = (tmp_6430 + SHIFT).try_into().unwrap();
-    let (_, r190_rem) = bounded_int_div_rem(r190, nz_q);
-    let r190: felt252 = upcast(r190_rem);
+    let (_, r190) = bounded_int_div_rem(r190, NZ_Q);
     let r191: ShiftedT = (tmp_6431 + SHIFT).try_into().unwrap();
-    let (_, r191_rem) = bounded_int_div_rem(r191, nz_q);
-    let r191: felt252 = upcast(r191_rem);
+    let (_, r191) = bounded_int_div_rem(r191, NZ_Q);
     let r192: ShiftedT = (tmp_6433 + SHIFT).try_into().unwrap();
-    let (_, r192_rem) = bounded_int_div_rem(r192, nz_q);
-    let r192: felt252 = upcast(r192_rem);
+    let (_, r192) = bounded_int_div_rem(r192, NZ_Q);
     let r193: ShiftedT = (tmp_6434 + SHIFT).try_into().unwrap();
-    let (_, r193_rem) = bounded_int_div_rem(r193, nz_q);
-    let r193: felt252 = upcast(r193_rem);
+    let (_, r193) = bounded_int_div_rem(r193, NZ_Q);
     let r194: ShiftedT = (tmp_6436 + SHIFT).try_into().unwrap();
-    let (_, r194_rem) = bounded_int_div_rem(r194, nz_q);
-    let r194: felt252 = upcast(r194_rem);
+    let (_, r194) = bounded_int_div_rem(r194, NZ_Q);
     let r195: ShiftedT = (tmp_6437 + SHIFT).try_into().unwrap();
-    let (_, r195_rem) = bounded_int_div_rem(r195, nz_q);
-    let r195: felt252 = upcast(r195_rem);
+    let (_, r195) = bounded_int_div_rem(r195, NZ_Q);
     let r196: ShiftedT = (tmp_6439 + SHIFT).try_into().unwrap();
-    let (_, r196_rem) = bounded_int_div_rem(r196, nz_q);
-    let r196: felt252 = upcast(r196_rem);
+    let (_, r196) = bounded_int_div_rem(r196, NZ_Q);
     let r197: ShiftedT = (tmp_6440 + SHIFT).try_into().unwrap();
-    let (_, r197_rem) = bounded_int_div_rem(r197, nz_q);
-    let r197: felt252 = upcast(r197_rem);
+    let (_, r197) = bounded_int_div_rem(r197, NZ_Q);
     let r198: ShiftedT = (tmp_6442 + SHIFT).try_into().unwrap();
-    let (_, r198_rem) = bounded_int_div_rem(r198, nz_q);
-    let r198: felt252 = upcast(r198_rem);
+    let (_, r198) = bounded_int_div_rem(r198, NZ_Q);
     let r199: ShiftedT = (tmp_6443 + SHIFT).try_into().unwrap();
-    let (_, r199_rem) = bounded_int_div_rem(r199, nz_q);
-    let r199: felt252 = upcast(r199_rem);
+    let (_, r199) = bounded_int_div_rem(r199, NZ_Q);
     let r200: ShiftedT = (tmp_6445 + SHIFT).try_into().unwrap();
-    let (_, r200_rem) = bounded_int_div_rem(r200, nz_q);
-    let r200: felt252 = upcast(r200_rem);
+    let (_, r200) = bounded_int_div_rem(r200, NZ_Q);
     let r201: ShiftedT = (tmp_6446 + SHIFT).try_into().unwrap();
-    let (_, r201_rem) = bounded_int_div_rem(r201, nz_q);
-    let r201: felt252 = upcast(r201_rem);
+    let (_, r201) = bounded_int_div_rem(r201, NZ_Q);
     let r202: ShiftedT = (tmp_6448 + SHIFT).try_into().unwrap();
-    let (_, r202_rem) = bounded_int_div_rem(r202, nz_q);
-    let r202: felt252 = upcast(r202_rem);
+    let (_, r202) = bounded_int_div_rem(r202, NZ_Q);
     let r203: ShiftedT = (tmp_6449 + SHIFT).try_into().unwrap();
-    let (_, r203_rem) = bounded_int_div_rem(r203, nz_q);
-    let r203: felt252 = upcast(r203_rem);
+    let (_, r203) = bounded_int_div_rem(r203, NZ_Q);
     let r204: ShiftedT = (tmp_6451 + SHIFT).try_into().unwrap();
-    let (_, r204_rem) = bounded_int_div_rem(r204, nz_q);
-    let r204: felt252 = upcast(r204_rem);
+    let (_, r204) = bounded_int_div_rem(r204, NZ_Q);
     let r205: ShiftedT = (tmp_6452 + SHIFT).try_into().unwrap();
-    let (_, r205_rem) = bounded_int_div_rem(r205, nz_q);
-    let r205: felt252 = upcast(r205_rem);
+    let (_, r205) = bounded_int_div_rem(r205, NZ_Q);
     let r206: ShiftedT = (tmp_6454 + SHIFT).try_into().unwrap();
-    let (_, r206_rem) = bounded_int_div_rem(r206, nz_q);
-    let r206: felt252 = upcast(r206_rem);
+    let (_, r206) = bounded_int_div_rem(r206, NZ_Q);
     let r207: ShiftedT = (tmp_6455 + SHIFT).try_into().unwrap();
-    let (_, r207_rem) = bounded_int_div_rem(r207, nz_q);
-    let r207: felt252 = upcast(r207_rem);
+    let (_, r207) = bounded_int_div_rem(r207, NZ_Q);
     let r208: ShiftedT = (tmp_6457 + SHIFT).try_into().unwrap();
-    let (_, r208_rem) = bounded_int_div_rem(r208, nz_q);
-    let r208: felt252 = upcast(r208_rem);
+    let (_, r208) = bounded_int_div_rem(r208, NZ_Q);
     let r209: ShiftedT = (tmp_6458 + SHIFT).try_into().unwrap();
-    let (_, r209_rem) = bounded_int_div_rem(r209, nz_q);
-    let r209: felt252 = upcast(r209_rem);
+    let (_, r209) = bounded_int_div_rem(r209, NZ_Q);
     let r210: ShiftedT = (tmp_6460 + SHIFT).try_into().unwrap();
-    let (_, r210_rem) = bounded_int_div_rem(r210, nz_q);
-    let r210: felt252 = upcast(r210_rem);
+    let (_, r210) = bounded_int_div_rem(r210, NZ_Q);
     let r211: ShiftedT = (tmp_6461 + SHIFT).try_into().unwrap();
-    let (_, r211_rem) = bounded_int_div_rem(r211, nz_q);
-    let r211: felt252 = upcast(r211_rem);
+    let (_, r211) = bounded_int_div_rem(r211, NZ_Q);
     let r212: ShiftedT = (tmp_6463 + SHIFT).try_into().unwrap();
-    let (_, r212_rem) = bounded_int_div_rem(r212, nz_q);
-    let r212: felt252 = upcast(r212_rem);
+    let (_, r212) = bounded_int_div_rem(r212, NZ_Q);
     let r213: ShiftedT = (tmp_6464 + SHIFT).try_into().unwrap();
-    let (_, r213_rem) = bounded_int_div_rem(r213, nz_q);
-    let r213: felt252 = upcast(r213_rem);
+    let (_, r213) = bounded_int_div_rem(r213, NZ_Q);
     let r214: ShiftedT = (tmp_6466 + SHIFT).try_into().unwrap();
-    let (_, r214_rem) = bounded_int_div_rem(r214, nz_q);
-    let r214: felt252 = upcast(r214_rem);
+    let (_, r214) = bounded_int_div_rem(r214, NZ_Q);
     let r215: ShiftedT = (tmp_6467 + SHIFT).try_into().unwrap();
-    let (_, r215_rem) = bounded_int_div_rem(r215, nz_q);
-    let r215: felt252 = upcast(r215_rem);
+    let (_, r215) = bounded_int_div_rem(r215, NZ_Q);
     let r216: ShiftedT = (tmp_6469 + SHIFT).try_into().unwrap();
-    let (_, r216_rem) = bounded_int_div_rem(r216, nz_q);
-    let r216: felt252 = upcast(r216_rem);
+    let (_, r216) = bounded_int_div_rem(r216, NZ_Q);
     let r217: ShiftedT = (tmp_6470 + SHIFT).try_into().unwrap();
-    let (_, r217_rem) = bounded_int_div_rem(r217, nz_q);
-    let r217: felt252 = upcast(r217_rem);
+    let (_, r217) = bounded_int_div_rem(r217, NZ_Q);
     let r218: ShiftedT = (tmp_6472 + SHIFT).try_into().unwrap();
-    let (_, r218_rem) = bounded_int_div_rem(r218, nz_q);
-    let r218: felt252 = upcast(r218_rem);
+    let (_, r218) = bounded_int_div_rem(r218, NZ_Q);
     let r219: ShiftedT = (tmp_6473 + SHIFT).try_into().unwrap();
-    let (_, r219_rem) = bounded_int_div_rem(r219, nz_q);
-    let r219: felt252 = upcast(r219_rem);
+    let (_, r219) = bounded_int_div_rem(r219, NZ_Q);
     let r220: ShiftedT = (tmp_6475 + SHIFT).try_into().unwrap();
-    let (_, r220_rem) = bounded_int_div_rem(r220, nz_q);
-    let r220: felt252 = upcast(r220_rem);
+    let (_, r220) = bounded_int_div_rem(r220, NZ_Q);
     let r221: ShiftedT = (tmp_6476 + SHIFT).try_into().unwrap();
-    let (_, r221_rem) = bounded_int_div_rem(r221, nz_q);
-    let r221: felt252 = upcast(r221_rem);
+    let (_, r221) = bounded_int_div_rem(r221, NZ_Q);
     let r222: ShiftedT = (tmp_6478 + SHIFT).try_into().unwrap();
-    let (_, r222_rem) = bounded_int_div_rem(r222, nz_q);
-    let r222: felt252 = upcast(r222_rem);
+    let (_, r222) = bounded_int_div_rem(r222, NZ_Q);
     let r223: ShiftedT = (tmp_6479 + SHIFT).try_into().unwrap();
-    let (_, r223_rem) = bounded_int_div_rem(r223, nz_q);
-    let r223: felt252 = upcast(r223_rem);
+    let (_, r223) = bounded_int_div_rem(r223, NZ_Q);
     let r224: ShiftedT = (tmp_6481 + SHIFT).try_into().unwrap();
-    let (_, r224_rem) = bounded_int_div_rem(r224, nz_q);
-    let r224: felt252 = upcast(r224_rem);
+    let (_, r224) = bounded_int_div_rem(r224, NZ_Q);
     let r225: ShiftedT = (tmp_6482 + SHIFT).try_into().unwrap();
-    let (_, r225_rem) = bounded_int_div_rem(r225, nz_q);
-    let r225: felt252 = upcast(r225_rem);
+    let (_, r225) = bounded_int_div_rem(r225, NZ_Q);
     let r226: ShiftedT = (tmp_6484 + SHIFT).try_into().unwrap();
-    let (_, r226_rem) = bounded_int_div_rem(r226, nz_q);
-    let r226: felt252 = upcast(r226_rem);
+    let (_, r226) = bounded_int_div_rem(r226, NZ_Q);
     let r227: ShiftedT = (tmp_6485 + SHIFT).try_into().unwrap();
-    let (_, r227_rem) = bounded_int_div_rem(r227, nz_q);
-    let r227: felt252 = upcast(r227_rem);
+    let (_, r227) = bounded_int_div_rem(r227, NZ_Q);
     let r228: ShiftedT = (tmp_6487 + SHIFT).try_into().unwrap();
-    let (_, r228_rem) = bounded_int_div_rem(r228, nz_q);
-    let r228: felt252 = upcast(r228_rem);
+    let (_, r228) = bounded_int_div_rem(r228, NZ_Q);
     let r229: ShiftedT = (tmp_6488 + SHIFT).try_into().unwrap();
-    let (_, r229_rem) = bounded_int_div_rem(r229, nz_q);
-    let r229: felt252 = upcast(r229_rem);
+    let (_, r229) = bounded_int_div_rem(r229, NZ_Q);
     let r230: ShiftedT = (tmp_6490 + SHIFT).try_into().unwrap();
-    let (_, r230_rem) = bounded_int_div_rem(r230, nz_q);
-    let r230: felt252 = upcast(r230_rem);
+    let (_, r230) = bounded_int_div_rem(r230, NZ_Q);
     let r231: ShiftedT = (tmp_6491 + SHIFT).try_into().unwrap();
-    let (_, r231_rem) = bounded_int_div_rem(r231, nz_q);
-    let r231: felt252 = upcast(r231_rem);
+    let (_, r231) = bounded_int_div_rem(r231, NZ_Q);
     let r232: ShiftedT = (tmp_6493 + SHIFT).try_into().unwrap();
-    let (_, r232_rem) = bounded_int_div_rem(r232, nz_q);
-    let r232: felt252 = upcast(r232_rem);
+    let (_, r232) = bounded_int_div_rem(r232, NZ_Q);
     let r233: ShiftedT = (tmp_6494 + SHIFT).try_into().unwrap();
-    let (_, r233_rem) = bounded_int_div_rem(r233, nz_q);
-    let r233: felt252 = upcast(r233_rem);
+    let (_, r233) = bounded_int_div_rem(r233, NZ_Q);
     let r234: ShiftedT = (tmp_6496 + SHIFT).try_into().unwrap();
-    let (_, r234_rem) = bounded_int_div_rem(r234, nz_q);
-    let r234: felt252 = upcast(r234_rem);
+    let (_, r234) = bounded_int_div_rem(r234, NZ_Q);
     let r235: ShiftedT = (tmp_6497 + SHIFT).try_into().unwrap();
-    let (_, r235_rem) = bounded_int_div_rem(r235, nz_q);
-    let r235: felt252 = upcast(r235_rem);
+    let (_, r235) = bounded_int_div_rem(r235, NZ_Q);
     let r236: ShiftedT = (tmp_6499 + SHIFT).try_into().unwrap();
-    let (_, r236_rem) = bounded_int_div_rem(r236, nz_q);
-    let r236: felt252 = upcast(r236_rem);
+    let (_, r236) = bounded_int_div_rem(r236, NZ_Q);
     let r237: ShiftedT = (tmp_6500 + SHIFT).try_into().unwrap();
-    let (_, r237_rem) = bounded_int_div_rem(r237, nz_q);
-    let r237: felt252 = upcast(r237_rem);
+    let (_, r237) = bounded_int_div_rem(r237, NZ_Q);
     let r238: ShiftedT = (tmp_6502 + SHIFT).try_into().unwrap();
-    let (_, r238_rem) = bounded_int_div_rem(r238, nz_q);
-    let r238: felt252 = upcast(r238_rem);
+    let (_, r238) = bounded_int_div_rem(r238, NZ_Q);
     let r239: ShiftedT = (tmp_6503 + SHIFT).try_into().unwrap();
-    let (_, r239_rem) = bounded_int_div_rem(r239, nz_q);
-    let r239: felt252 = upcast(r239_rem);
+    let (_, r239) = bounded_int_div_rem(r239, NZ_Q);
     let r240: ShiftedT = (tmp_6505 + SHIFT).try_into().unwrap();
-    let (_, r240_rem) = bounded_int_div_rem(r240, nz_q);
-    let r240: felt252 = upcast(r240_rem);
+    let (_, r240) = bounded_int_div_rem(r240, NZ_Q);
     let r241: ShiftedT = (tmp_6506 + SHIFT).try_into().unwrap();
-    let (_, r241_rem) = bounded_int_div_rem(r241, nz_q);
-    let r241: felt252 = upcast(r241_rem);
+    let (_, r241) = bounded_int_div_rem(r241, NZ_Q);
     let r242: ShiftedT = (tmp_6508 + SHIFT).try_into().unwrap();
-    let (_, r242_rem) = bounded_int_div_rem(r242, nz_q);
-    let r242: felt252 = upcast(r242_rem);
+    let (_, r242) = bounded_int_div_rem(r242, NZ_Q);
     let r243: ShiftedT = (tmp_6509 + SHIFT).try_into().unwrap();
-    let (_, r243_rem) = bounded_int_div_rem(r243, nz_q);
-    let r243: felt252 = upcast(r243_rem);
+    let (_, r243) = bounded_int_div_rem(r243, NZ_Q);
     let r244: ShiftedT = (tmp_6511 + SHIFT).try_into().unwrap();
-    let (_, r244_rem) = bounded_int_div_rem(r244, nz_q);
-    let r244: felt252 = upcast(r244_rem);
+    let (_, r244) = bounded_int_div_rem(r244, NZ_Q);
     let r245: ShiftedT = (tmp_6512 + SHIFT).try_into().unwrap();
-    let (_, r245_rem) = bounded_int_div_rem(r245, nz_q);
-    let r245: felt252 = upcast(r245_rem);
+    let (_, r245) = bounded_int_div_rem(r245, NZ_Q);
     let r246: ShiftedT = (tmp_6514 + SHIFT).try_into().unwrap();
-    let (_, r246_rem) = bounded_int_div_rem(r246, nz_q);
-    let r246: felt252 = upcast(r246_rem);
+    let (_, r246) = bounded_int_div_rem(r246, NZ_Q);
     let r247: ShiftedT = (tmp_6515 + SHIFT).try_into().unwrap();
-    let (_, r247_rem) = bounded_int_div_rem(r247, nz_q);
-    let r247: felt252 = upcast(r247_rem);
+    let (_, r247) = bounded_int_div_rem(r247, NZ_Q);
     let r248: ShiftedT = (tmp_6517 + SHIFT).try_into().unwrap();
-    let (_, r248_rem) = bounded_int_div_rem(r248, nz_q);
-    let r248: felt252 = upcast(r248_rem);
+    let (_, r248) = bounded_int_div_rem(r248, NZ_Q);
     let r249: ShiftedT = (tmp_6518 + SHIFT).try_into().unwrap();
-    let (_, r249_rem) = bounded_int_div_rem(r249, nz_q);
-    let r249: felt252 = upcast(r249_rem);
+    let (_, r249) = bounded_int_div_rem(r249, NZ_Q);
     let r250: ShiftedT = (tmp_6520 + SHIFT).try_into().unwrap();
-    let (_, r250_rem) = bounded_int_div_rem(r250, nz_q);
-    let r250: felt252 = upcast(r250_rem);
+    let (_, r250) = bounded_int_div_rem(r250, NZ_Q);
     let r251: ShiftedT = (tmp_6521 + SHIFT).try_into().unwrap();
-    let (_, r251_rem) = bounded_int_div_rem(r251, nz_q);
-    let r251: felt252 = upcast(r251_rem);
+    let (_, r251) = bounded_int_div_rem(r251, NZ_Q);
     let r252: ShiftedT = (tmp_6523 + SHIFT).try_into().unwrap();
-    let (_, r252_rem) = bounded_int_div_rem(r252, nz_q);
-    let r252: felt252 = upcast(r252_rem);
+    let (_, r252) = bounded_int_div_rem(r252, NZ_Q);
     let r253: ShiftedT = (tmp_6524 + SHIFT).try_into().unwrap();
-    let (_, r253_rem) = bounded_int_div_rem(r253, nz_q);
-    let r253: felt252 = upcast(r253_rem);
+    let (_, r253) = bounded_int_div_rem(r253, NZ_Q);
     let r254: ShiftedT = (tmp_6526 + SHIFT).try_into().unwrap();
-    let (_, r254_rem) = bounded_int_div_rem(r254, nz_q);
-    let r254: felt252 = upcast(r254_rem);
+    let (_, r254) = bounded_int_div_rem(r254, NZ_Q);
     let r255: ShiftedT = (tmp_6527 + SHIFT).try_into().unwrap();
-    let (_, r255_rem) = bounded_int_div_rem(r255, nz_q);
-    let r255: felt252 = upcast(r255_rem);
+    let (_, r255) = bounded_int_div_rem(r255, NZ_Q);
     let r256: ShiftedT = (tmp_6529 + SHIFT).try_into().unwrap();
-    let (_, r256_rem) = bounded_int_div_rem(r256, nz_q);
-    let r256: felt252 = upcast(r256_rem);
+    let (_, r256) = bounded_int_div_rem(r256, NZ_Q);
     let r257: ShiftedT = (tmp_6530 + SHIFT).try_into().unwrap();
-    let (_, r257_rem) = bounded_int_div_rem(r257, nz_q);
-    let r257: felt252 = upcast(r257_rem);
+    let (_, r257) = bounded_int_div_rem(r257, NZ_Q);
     let r258: ShiftedT = (tmp_6532 + SHIFT).try_into().unwrap();
-    let (_, r258_rem) = bounded_int_div_rem(r258, nz_q);
-    let r258: felt252 = upcast(r258_rem);
+    let (_, r258) = bounded_int_div_rem(r258, NZ_Q);
     let r259: ShiftedT = (tmp_6533 + SHIFT).try_into().unwrap();
-    let (_, r259_rem) = bounded_int_div_rem(r259, nz_q);
-    let r259: felt252 = upcast(r259_rem);
+    let (_, r259) = bounded_int_div_rem(r259, NZ_Q);
     let r260: ShiftedT = (tmp_6535 + SHIFT).try_into().unwrap();
-    let (_, r260_rem) = bounded_int_div_rem(r260, nz_q);
-    let r260: felt252 = upcast(r260_rem);
+    let (_, r260) = bounded_int_div_rem(r260, NZ_Q);
     let r261: ShiftedT = (tmp_6536 + SHIFT).try_into().unwrap();
-    let (_, r261_rem) = bounded_int_div_rem(r261, nz_q);
-    let r261: felt252 = upcast(r261_rem);
+    let (_, r261) = bounded_int_div_rem(r261, NZ_Q);
     let r262: ShiftedT = (tmp_6538 + SHIFT).try_into().unwrap();
-    let (_, r262_rem) = bounded_int_div_rem(r262, nz_q);
-    let r262: felt252 = upcast(r262_rem);
+    let (_, r262) = bounded_int_div_rem(r262, NZ_Q);
     let r263: ShiftedT = (tmp_6539 + SHIFT).try_into().unwrap();
-    let (_, r263_rem) = bounded_int_div_rem(r263, nz_q);
-    let r263: felt252 = upcast(r263_rem);
+    let (_, r263) = bounded_int_div_rem(r263, NZ_Q);
     let r264: ShiftedT = (tmp_6541 + SHIFT).try_into().unwrap();
-    let (_, r264_rem) = bounded_int_div_rem(r264, nz_q);
-    let r264: felt252 = upcast(r264_rem);
+    let (_, r264) = bounded_int_div_rem(r264, NZ_Q);
     let r265: ShiftedT = (tmp_6542 + SHIFT).try_into().unwrap();
-    let (_, r265_rem) = bounded_int_div_rem(r265, nz_q);
-    let r265: felt252 = upcast(r265_rem);
+    let (_, r265) = bounded_int_div_rem(r265, NZ_Q);
     let r266: ShiftedT = (tmp_6544 + SHIFT).try_into().unwrap();
-    let (_, r266_rem) = bounded_int_div_rem(r266, nz_q);
-    let r266: felt252 = upcast(r266_rem);
+    let (_, r266) = bounded_int_div_rem(r266, NZ_Q);
     let r267: ShiftedT = (tmp_6545 + SHIFT).try_into().unwrap();
-    let (_, r267_rem) = bounded_int_div_rem(r267, nz_q);
-    let r267: felt252 = upcast(r267_rem);
+    let (_, r267) = bounded_int_div_rem(r267, NZ_Q);
     let r268: ShiftedT = (tmp_6547 + SHIFT).try_into().unwrap();
-    let (_, r268_rem) = bounded_int_div_rem(r268, nz_q);
-    let r268: felt252 = upcast(r268_rem);
+    let (_, r268) = bounded_int_div_rem(r268, NZ_Q);
     let r269: ShiftedT = (tmp_6548 + SHIFT).try_into().unwrap();
-    let (_, r269_rem) = bounded_int_div_rem(r269, nz_q);
-    let r269: felt252 = upcast(r269_rem);
+    let (_, r269) = bounded_int_div_rem(r269, NZ_Q);
     let r270: ShiftedT = (tmp_6550 + SHIFT).try_into().unwrap();
-    let (_, r270_rem) = bounded_int_div_rem(r270, nz_q);
-    let r270: felt252 = upcast(r270_rem);
+    let (_, r270) = bounded_int_div_rem(r270, NZ_Q);
     let r271: ShiftedT = (tmp_6551 + SHIFT).try_into().unwrap();
-    let (_, r271_rem) = bounded_int_div_rem(r271, nz_q);
-    let r271: felt252 = upcast(r271_rem);
+    let (_, r271) = bounded_int_div_rem(r271, NZ_Q);
     let r272: ShiftedT = (tmp_6553 + SHIFT).try_into().unwrap();
-    let (_, r272_rem) = bounded_int_div_rem(r272, nz_q);
-    let r272: felt252 = upcast(r272_rem);
+    let (_, r272) = bounded_int_div_rem(r272, NZ_Q);
     let r273: ShiftedT = (tmp_6554 + SHIFT).try_into().unwrap();
-    let (_, r273_rem) = bounded_int_div_rem(r273, nz_q);
-    let r273: felt252 = upcast(r273_rem);
+    let (_, r273) = bounded_int_div_rem(r273, NZ_Q);
     let r274: ShiftedT = (tmp_6556 + SHIFT).try_into().unwrap();
-    let (_, r274_rem) = bounded_int_div_rem(r274, nz_q);
-    let r274: felt252 = upcast(r274_rem);
+    let (_, r274) = bounded_int_div_rem(r274, NZ_Q);
     let r275: ShiftedT = (tmp_6557 + SHIFT).try_into().unwrap();
-    let (_, r275_rem) = bounded_int_div_rem(r275, nz_q);
-    let r275: felt252 = upcast(r275_rem);
+    let (_, r275) = bounded_int_div_rem(r275, NZ_Q);
     let r276: ShiftedT = (tmp_6559 + SHIFT).try_into().unwrap();
-    let (_, r276_rem) = bounded_int_div_rem(r276, nz_q);
-    let r276: felt252 = upcast(r276_rem);
+    let (_, r276) = bounded_int_div_rem(r276, NZ_Q);
     let r277: ShiftedT = (tmp_6560 + SHIFT).try_into().unwrap();
-    let (_, r277_rem) = bounded_int_div_rem(r277, nz_q);
-    let r277: felt252 = upcast(r277_rem);
+    let (_, r277) = bounded_int_div_rem(r277, NZ_Q);
     let r278: ShiftedT = (tmp_6562 + SHIFT).try_into().unwrap();
-    let (_, r278_rem) = bounded_int_div_rem(r278, nz_q);
-    let r278: felt252 = upcast(r278_rem);
+    let (_, r278) = bounded_int_div_rem(r278, NZ_Q);
     let r279: ShiftedT = (tmp_6563 + SHIFT).try_into().unwrap();
-    let (_, r279_rem) = bounded_int_div_rem(r279, nz_q);
-    let r279: felt252 = upcast(r279_rem);
+    let (_, r279) = bounded_int_div_rem(r279, NZ_Q);
     let r280: ShiftedT = (tmp_6565 + SHIFT).try_into().unwrap();
-    let (_, r280_rem) = bounded_int_div_rem(r280, nz_q);
-    let r280: felt252 = upcast(r280_rem);
+    let (_, r280) = bounded_int_div_rem(r280, NZ_Q);
     let r281: ShiftedT = (tmp_6566 + SHIFT).try_into().unwrap();
-    let (_, r281_rem) = bounded_int_div_rem(r281, nz_q);
-    let r281: felt252 = upcast(r281_rem);
+    let (_, r281) = bounded_int_div_rem(r281, NZ_Q);
     let r282: ShiftedT = (tmp_6568 + SHIFT).try_into().unwrap();
-    let (_, r282_rem) = bounded_int_div_rem(r282, nz_q);
-    let r282: felt252 = upcast(r282_rem);
+    let (_, r282) = bounded_int_div_rem(r282, NZ_Q);
     let r283: ShiftedT = (tmp_6569 + SHIFT).try_into().unwrap();
-    let (_, r283_rem) = bounded_int_div_rem(r283, nz_q);
-    let r283: felt252 = upcast(r283_rem);
+    let (_, r283) = bounded_int_div_rem(r283, NZ_Q);
     let r284: ShiftedT = (tmp_6571 + SHIFT).try_into().unwrap();
-    let (_, r284_rem) = bounded_int_div_rem(r284, nz_q);
-    let r284: felt252 = upcast(r284_rem);
+    let (_, r284) = bounded_int_div_rem(r284, NZ_Q);
     let r285: ShiftedT = (tmp_6572 + SHIFT).try_into().unwrap();
-    let (_, r285_rem) = bounded_int_div_rem(r285, nz_q);
-    let r285: felt252 = upcast(r285_rem);
+    let (_, r285) = bounded_int_div_rem(r285, NZ_Q);
     let r286: ShiftedT = (tmp_6574 + SHIFT).try_into().unwrap();
-    let (_, r286_rem) = bounded_int_div_rem(r286, nz_q);
-    let r286: felt252 = upcast(r286_rem);
+    let (_, r286) = bounded_int_div_rem(r286, NZ_Q);
     let r287: ShiftedT = (tmp_6575 + SHIFT).try_into().unwrap();
-    let (_, r287_rem) = bounded_int_div_rem(r287, nz_q);
-    let r287: felt252 = upcast(r287_rem);
+    let (_, r287) = bounded_int_div_rem(r287, NZ_Q);
     let r288: ShiftedT = (tmp_6577 + SHIFT).try_into().unwrap();
-    let (_, r288_rem) = bounded_int_div_rem(r288, nz_q);
-    let r288: felt252 = upcast(r288_rem);
+    let (_, r288) = bounded_int_div_rem(r288, NZ_Q);
     let r289: ShiftedT = (tmp_6578 + SHIFT).try_into().unwrap();
-    let (_, r289_rem) = bounded_int_div_rem(r289, nz_q);
-    let r289: felt252 = upcast(r289_rem);
+    let (_, r289) = bounded_int_div_rem(r289, NZ_Q);
     let r290: ShiftedT = (tmp_6580 + SHIFT).try_into().unwrap();
-    let (_, r290_rem) = bounded_int_div_rem(r290, nz_q);
-    let r290: felt252 = upcast(r290_rem);
+    let (_, r290) = bounded_int_div_rem(r290, NZ_Q);
     let r291: ShiftedT = (tmp_6581 + SHIFT).try_into().unwrap();
-    let (_, r291_rem) = bounded_int_div_rem(r291, nz_q);
-    let r291: felt252 = upcast(r291_rem);
+    let (_, r291) = bounded_int_div_rem(r291, NZ_Q);
     let r292: ShiftedT = (tmp_6583 + SHIFT).try_into().unwrap();
-    let (_, r292_rem) = bounded_int_div_rem(r292, nz_q);
-    let r292: felt252 = upcast(r292_rem);
+    let (_, r292) = bounded_int_div_rem(r292, NZ_Q);
     let r293: ShiftedT = (tmp_6584 + SHIFT).try_into().unwrap();
-    let (_, r293_rem) = bounded_int_div_rem(r293, nz_q);
-    let r293: felt252 = upcast(r293_rem);
+    let (_, r293) = bounded_int_div_rem(r293, NZ_Q);
     let r294: ShiftedT = (tmp_6586 + SHIFT).try_into().unwrap();
-    let (_, r294_rem) = bounded_int_div_rem(r294, nz_q);
-    let r294: felt252 = upcast(r294_rem);
+    let (_, r294) = bounded_int_div_rem(r294, NZ_Q);
     let r295: ShiftedT = (tmp_6587 + SHIFT).try_into().unwrap();
-    let (_, r295_rem) = bounded_int_div_rem(r295, nz_q);
-    let r295: felt252 = upcast(r295_rem);
+    let (_, r295) = bounded_int_div_rem(r295, NZ_Q);
     let r296: ShiftedT = (tmp_6589 + SHIFT).try_into().unwrap();
-    let (_, r296_rem) = bounded_int_div_rem(r296, nz_q);
-    let r296: felt252 = upcast(r296_rem);
+    let (_, r296) = bounded_int_div_rem(r296, NZ_Q);
     let r297: ShiftedT = (tmp_6590 + SHIFT).try_into().unwrap();
-    let (_, r297_rem) = bounded_int_div_rem(r297, nz_q);
-    let r297: felt252 = upcast(r297_rem);
+    let (_, r297) = bounded_int_div_rem(r297, NZ_Q);
     let r298: ShiftedT = (tmp_6592 + SHIFT).try_into().unwrap();
-    let (_, r298_rem) = bounded_int_div_rem(r298, nz_q);
-    let r298: felt252 = upcast(r298_rem);
+    let (_, r298) = bounded_int_div_rem(r298, NZ_Q);
     let r299: ShiftedT = (tmp_6593 + SHIFT).try_into().unwrap();
-    let (_, r299_rem) = bounded_int_div_rem(r299, nz_q);
-    let r299: felt252 = upcast(r299_rem);
+    let (_, r299) = bounded_int_div_rem(r299, NZ_Q);
     let r300: ShiftedT = (tmp_6595 + SHIFT).try_into().unwrap();
-    let (_, r300_rem) = bounded_int_div_rem(r300, nz_q);
-    let r300: felt252 = upcast(r300_rem);
+    let (_, r300) = bounded_int_div_rem(r300, NZ_Q);
     let r301: ShiftedT = (tmp_6596 + SHIFT).try_into().unwrap();
-    let (_, r301_rem) = bounded_int_div_rem(r301, nz_q);
-    let r301: felt252 = upcast(r301_rem);
+    let (_, r301) = bounded_int_div_rem(r301, NZ_Q);
     let r302: ShiftedT = (tmp_6598 + SHIFT).try_into().unwrap();
-    let (_, r302_rem) = bounded_int_div_rem(r302, nz_q);
-    let r302: felt252 = upcast(r302_rem);
+    let (_, r302) = bounded_int_div_rem(r302, NZ_Q);
     let r303: ShiftedT = (tmp_6599 + SHIFT).try_into().unwrap();
-    let (_, r303_rem) = bounded_int_div_rem(r303, nz_q);
-    let r303: felt252 = upcast(r303_rem);
+    let (_, r303) = bounded_int_div_rem(r303, NZ_Q);
     let r304: ShiftedT = (tmp_6601 + SHIFT).try_into().unwrap();
-    let (_, r304_rem) = bounded_int_div_rem(r304, nz_q);
-    let r304: felt252 = upcast(r304_rem);
+    let (_, r304) = bounded_int_div_rem(r304, NZ_Q);
     let r305: ShiftedT = (tmp_6602 + SHIFT).try_into().unwrap();
-    let (_, r305_rem) = bounded_int_div_rem(r305, nz_q);
-    let r305: felt252 = upcast(r305_rem);
+    let (_, r305) = bounded_int_div_rem(r305, NZ_Q);
     let r306: ShiftedT = (tmp_6604 + SHIFT).try_into().unwrap();
-    let (_, r306_rem) = bounded_int_div_rem(r306, nz_q);
-    let r306: felt252 = upcast(r306_rem);
+    let (_, r306) = bounded_int_div_rem(r306, NZ_Q);
     let r307: ShiftedT = (tmp_6605 + SHIFT).try_into().unwrap();
-    let (_, r307_rem) = bounded_int_div_rem(r307, nz_q);
-    let r307: felt252 = upcast(r307_rem);
+    let (_, r307) = bounded_int_div_rem(r307, NZ_Q);
     let r308: ShiftedT = (tmp_6607 + SHIFT).try_into().unwrap();
-    let (_, r308_rem) = bounded_int_div_rem(r308, nz_q);
-    let r308: felt252 = upcast(r308_rem);
+    let (_, r308) = bounded_int_div_rem(r308, NZ_Q);
     let r309: ShiftedT = (tmp_6608 + SHIFT).try_into().unwrap();
-    let (_, r309_rem) = bounded_int_div_rem(r309, nz_q);
-    let r309: felt252 = upcast(r309_rem);
+    let (_, r309) = bounded_int_div_rem(r309, NZ_Q);
     let r310: ShiftedT = (tmp_6610 + SHIFT).try_into().unwrap();
-    let (_, r310_rem) = bounded_int_div_rem(r310, nz_q);
-    let r310: felt252 = upcast(r310_rem);
+    let (_, r310) = bounded_int_div_rem(r310, NZ_Q);
     let r311: ShiftedT = (tmp_6611 + SHIFT).try_into().unwrap();
-    let (_, r311_rem) = bounded_int_div_rem(r311, nz_q);
-    let r311: felt252 = upcast(r311_rem);
+    let (_, r311) = bounded_int_div_rem(r311, NZ_Q);
     let r312: ShiftedT = (tmp_6613 + SHIFT).try_into().unwrap();
-    let (_, r312_rem) = bounded_int_div_rem(r312, nz_q);
-    let r312: felt252 = upcast(r312_rem);
+    let (_, r312) = bounded_int_div_rem(r312, NZ_Q);
     let r313: ShiftedT = (tmp_6614 + SHIFT).try_into().unwrap();
-    let (_, r313_rem) = bounded_int_div_rem(r313, nz_q);
-    let r313: felt252 = upcast(r313_rem);
+    let (_, r313) = bounded_int_div_rem(r313, NZ_Q);
     let r314: ShiftedT = (tmp_6616 + SHIFT).try_into().unwrap();
-    let (_, r314_rem) = bounded_int_div_rem(r314, nz_q);
-    let r314: felt252 = upcast(r314_rem);
+    let (_, r314) = bounded_int_div_rem(r314, NZ_Q);
     let r315: ShiftedT = (tmp_6617 + SHIFT).try_into().unwrap();
-    let (_, r315_rem) = bounded_int_div_rem(r315, nz_q);
-    let r315: felt252 = upcast(r315_rem);
+    let (_, r315) = bounded_int_div_rem(r315, NZ_Q);
     let r316: ShiftedT = (tmp_6619 + SHIFT).try_into().unwrap();
-    let (_, r316_rem) = bounded_int_div_rem(r316, nz_q);
-    let r316: felt252 = upcast(r316_rem);
+    let (_, r316) = bounded_int_div_rem(r316, NZ_Q);
     let r317: ShiftedT = (tmp_6620 + SHIFT).try_into().unwrap();
-    let (_, r317_rem) = bounded_int_div_rem(r317, nz_q);
-    let r317: felt252 = upcast(r317_rem);
+    let (_, r317) = bounded_int_div_rem(r317, NZ_Q);
     let r318: ShiftedT = (tmp_6622 + SHIFT).try_into().unwrap();
-    let (_, r318_rem) = bounded_int_div_rem(r318, nz_q);
-    let r318: felt252 = upcast(r318_rem);
+    let (_, r318) = bounded_int_div_rem(r318, NZ_Q);
     let r319: ShiftedT = (tmp_6623 + SHIFT).try_into().unwrap();
-    let (_, r319_rem) = bounded_int_div_rem(r319, nz_q);
-    let r319: felt252 = upcast(r319_rem);
+    let (_, r319) = bounded_int_div_rem(r319, NZ_Q);
     let r320: ShiftedT = (tmp_6625 + SHIFT).try_into().unwrap();
-    let (_, r320_rem) = bounded_int_div_rem(r320, nz_q);
-    let r320: felt252 = upcast(r320_rem);
+    let (_, r320) = bounded_int_div_rem(r320, NZ_Q);
     let r321: ShiftedT = (tmp_6626 + SHIFT).try_into().unwrap();
-    let (_, r321_rem) = bounded_int_div_rem(r321, nz_q);
-    let r321: felt252 = upcast(r321_rem);
+    let (_, r321) = bounded_int_div_rem(r321, NZ_Q);
     let r322: ShiftedT = (tmp_6628 + SHIFT).try_into().unwrap();
-    let (_, r322_rem) = bounded_int_div_rem(r322, nz_q);
-    let r322: felt252 = upcast(r322_rem);
+    let (_, r322) = bounded_int_div_rem(r322, NZ_Q);
     let r323: ShiftedT = (tmp_6629 + SHIFT).try_into().unwrap();
-    let (_, r323_rem) = bounded_int_div_rem(r323, nz_q);
-    let r323: felt252 = upcast(r323_rem);
+    let (_, r323) = bounded_int_div_rem(r323, NZ_Q);
     let r324: ShiftedT = (tmp_6631 + SHIFT).try_into().unwrap();
-    let (_, r324_rem) = bounded_int_div_rem(r324, nz_q);
-    let r324: felt252 = upcast(r324_rem);
+    let (_, r324) = bounded_int_div_rem(r324, NZ_Q);
     let r325: ShiftedT = (tmp_6632 + SHIFT).try_into().unwrap();
-    let (_, r325_rem) = bounded_int_div_rem(r325, nz_q);
-    let r325: felt252 = upcast(r325_rem);
+    let (_, r325) = bounded_int_div_rem(r325, NZ_Q);
     let r326: ShiftedT = (tmp_6634 + SHIFT).try_into().unwrap();
-    let (_, r326_rem) = bounded_int_div_rem(r326, nz_q);
-    let r326: felt252 = upcast(r326_rem);
+    let (_, r326) = bounded_int_div_rem(r326, NZ_Q);
     let r327: ShiftedT = (tmp_6635 + SHIFT).try_into().unwrap();
-    let (_, r327_rem) = bounded_int_div_rem(r327, nz_q);
-    let r327: felt252 = upcast(r327_rem);
+    let (_, r327) = bounded_int_div_rem(r327, NZ_Q);
     let r328: ShiftedT = (tmp_6637 + SHIFT).try_into().unwrap();
-    let (_, r328_rem) = bounded_int_div_rem(r328, nz_q);
-    let r328: felt252 = upcast(r328_rem);
+    let (_, r328) = bounded_int_div_rem(r328, NZ_Q);
     let r329: ShiftedT = (tmp_6638 + SHIFT).try_into().unwrap();
-    let (_, r329_rem) = bounded_int_div_rem(r329, nz_q);
-    let r329: felt252 = upcast(r329_rem);
+    let (_, r329) = bounded_int_div_rem(r329, NZ_Q);
     let r330: ShiftedT = (tmp_6640 + SHIFT).try_into().unwrap();
-    let (_, r330_rem) = bounded_int_div_rem(r330, nz_q);
-    let r330: felt252 = upcast(r330_rem);
+    let (_, r330) = bounded_int_div_rem(r330, NZ_Q);
     let r331: ShiftedT = (tmp_6641 + SHIFT).try_into().unwrap();
-    let (_, r331_rem) = bounded_int_div_rem(r331, nz_q);
-    let r331: felt252 = upcast(r331_rem);
+    let (_, r331) = bounded_int_div_rem(r331, NZ_Q);
     let r332: ShiftedT = (tmp_6643 + SHIFT).try_into().unwrap();
-    let (_, r332_rem) = bounded_int_div_rem(r332, nz_q);
-    let r332: felt252 = upcast(r332_rem);
+    let (_, r332) = bounded_int_div_rem(r332, NZ_Q);
     let r333: ShiftedT = (tmp_6644 + SHIFT).try_into().unwrap();
-    let (_, r333_rem) = bounded_int_div_rem(r333, nz_q);
-    let r333: felt252 = upcast(r333_rem);
+    let (_, r333) = bounded_int_div_rem(r333, NZ_Q);
     let r334: ShiftedT = (tmp_6646 + SHIFT).try_into().unwrap();
-    let (_, r334_rem) = bounded_int_div_rem(r334, nz_q);
-    let r334: felt252 = upcast(r334_rem);
+    let (_, r334) = bounded_int_div_rem(r334, NZ_Q);
     let r335: ShiftedT = (tmp_6647 + SHIFT).try_into().unwrap();
-    let (_, r335_rem) = bounded_int_div_rem(r335, nz_q);
-    let r335: felt252 = upcast(r335_rem);
+    let (_, r335) = bounded_int_div_rem(r335, NZ_Q);
     let r336: ShiftedT = (tmp_6649 + SHIFT).try_into().unwrap();
-    let (_, r336_rem) = bounded_int_div_rem(r336, nz_q);
-    let r336: felt252 = upcast(r336_rem);
+    let (_, r336) = bounded_int_div_rem(r336, NZ_Q);
     let r337: ShiftedT = (tmp_6650 + SHIFT).try_into().unwrap();
-    let (_, r337_rem) = bounded_int_div_rem(r337, nz_q);
-    let r337: felt252 = upcast(r337_rem);
+    let (_, r337) = bounded_int_div_rem(r337, NZ_Q);
     let r338: ShiftedT = (tmp_6652 + SHIFT).try_into().unwrap();
-    let (_, r338_rem) = bounded_int_div_rem(r338, nz_q);
-    let r338: felt252 = upcast(r338_rem);
+    let (_, r338) = bounded_int_div_rem(r338, NZ_Q);
     let r339: ShiftedT = (tmp_6653 + SHIFT).try_into().unwrap();
-    let (_, r339_rem) = bounded_int_div_rem(r339, nz_q);
-    let r339: felt252 = upcast(r339_rem);
+    let (_, r339) = bounded_int_div_rem(r339, NZ_Q);
     let r340: ShiftedT = (tmp_6655 + SHIFT).try_into().unwrap();
-    let (_, r340_rem) = bounded_int_div_rem(r340, nz_q);
-    let r340: felt252 = upcast(r340_rem);
+    let (_, r340) = bounded_int_div_rem(r340, NZ_Q);
     let r341: ShiftedT = (tmp_6656 + SHIFT).try_into().unwrap();
-    let (_, r341_rem) = bounded_int_div_rem(r341, nz_q);
-    let r341: felt252 = upcast(r341_rem);
+    let (_, r341) = bounded_int_div_rem(r341, NZ_Q);
     let r342: ShiftedT = (tmp_6658 + SHIFT).try_into().unwrap();
-    let (_, r342_rem) = bounded_int_div_rem(r342, nz_q);
-    let r342: felt252 = upcast(r342_rem);
+    let (_, r342) = bounded_int_div_rem(r342, NZ_Q);
     let r343: ShiftedT = (tmp_6659 + SHIFT).try_into().unwrap();
-    let (_, r343_rem) = bounded_int_div_rem(r343, nz_q);
-    let r343: felt252 = upcast(r343_rem);
+    let (_, r343) = bounded_int_div_rem(r343, NZ_Q);
     let r344: ShiftedT = (tmp_6661 + SHIFT).try_into().unwrap();
-    let (_, r344_rem) = bounded_int_div_rem(r344, nz_q);
-    let r344: felt252 = upcast(r344_rem);
+    let (_, r344) = bounded_int_div_rem(r344, NZ_Q);
     let r345: ShiftedT = (tmp_6662 + SHIFT).try_into().unwrap();
-    let (_, r345_rem) = bounded_int_div_rem(r345, nz_q);
-    let r345: felt252 = upcast(r345_rem);
+    let (_, r345) = bounded_int_div_rem(r345, NZ_Q);
     let r346: ShiftedT = (tmp_6664 + SHIFT).try_into().unwrap();
-    let (_, r346_rem) = bounded_int_div_rem(r346, nz_q);
-    let r346: felt252 = upcast(r346_rem);
+    let (_, r346) = bounded_int_div_rem(r346, NZ_Q);
     let r347: ShiftedT = (tmp_6665 + SHIFT).try_into().unwrap();
-    let (_, r347_rem) = bounded_int_div_rem(r347, nz_q);
-    let r347: felt252 = upcast(r347_rem);
+    let (_, r347) = bounded_int_div_rem(r347, NZ_Q);
     let r348: ShiftedT = (tmp_6667 + SHIFT).try_into().unwrap();
-    let (_, r348_rem) = bounded_int_div_rem(r348, nz_q);
-    let r348: felt252 = upcast(r348_rem);
+    let (_, r348) = bounded_int_div_rem(r348, NZ_Q);
     let r349: ShiftedT = (tmp_6668 + SHIFT).try_into().unwrap();
-    let (_, r349_rem) = bounded_int_div_rem(r349, nz_q);
-    let r349: felt252 = upcast(r349_rem);
+    let (_, r349) = bounded_int_div_rem(r349, NZ_Q);
     let r350: ShiftedT = (tmp_6670 + SHIFT).try_into().unwrap();
-    let (_, r350_rem) = bounded_int_div_rem(r350, nz_q);
-    let r350: felt252 = upcast(r350_rem);
+    let (_, r350) = bounded_int_div_rem(r350, NZ_Q);
     let r351: ShiftedT = (tmp_6671 + SHIFT).try_into().unwrap();
-    let (_, r351_rem) = bounded_int_div_rem(r351, nz_q);
-    let r351: felt252 = upcast(r351_rem);
+    let (_, r351) = bounded_int_div_rem(r351, NZ_Q);
     let r352: ShiftedT = (tmp_6673 + SHIFT).try_into().unwrap();
-    let (_, r352_rem) = bounded_int_div_rem(r352, nz_q);
-    let r352: felt252 = upcast(r352_rem);
+    let (_, r352) = bounded_int_div_rem(r352, NZ_Q);
     let r353: ShiftedT = (tmp_6674 + SHIFT).try_into().unwrap();
-    let (_, r353_rem) = bounded_int_div_rem(r353, nz_q);
-    let r353: felt252 = upcast(r353_rem);
+    let (_, r353) = bounded_int_div_rem(r353, NZ_Q);
     let r354: ShiftedT = (tmp_6676 + SHIFT).try_into().unwrap();
-    let (_, r354_rem) = bounded_int_div_rem(r354, nz_q);
-    let r354: felt252 = upcast(r354_rem);
+    let (_, r354) = bounded_int_div_rem(r354, NZ_Q);
     let r355: ShiftedT = (tmp_6677 + SHIFT).try_into().unwrap();
-    let (_, r355_rem) = bounded_int_div_rem(r355, nz_q);
-    let r355: felt252 = upcast(r355_rem);
+    let (_, r355) = bounded_int_div_rem(r355, NZ_Q);
     let r356: ShiftedT = (tmp_6679 + SHIFT).try_into().unwrap();
-    let (_, r356_rem) = bounded_int_div_rem(r356, nz_q);
-    let r356: felt252 = upcast(r356_rem);
+    let (_, r356) = bounded_int_div_rem(r356, NZ_Q);
     let r357: ShiftedT = (tmp_6680 + SHIFT).try_into().unwrap();
-    let (_, r357_rem) = bounded_int_div_rem(r357, nz_q);
-    let r357: felt252 = upcast(r357_rem);
+    let (_, r357) = bounded_int_div_rem(r357, NZ_Q);
     let r358: ShiftedT = (tmp_6682 + SHIFT).try_into().unwrap();
-    let (_, r358_rem) = bounded_int_div_rem(r358, nz_q);
-    let r358: felt252 = upcast(r358_rem);
+    let (_, r358) = bounded_int_div_rem(r358, NZ_Q);
     let r359: ShiftedT = (tmp_6683 + SHIFT).try_into().unwrap();
-    let (_, r359_rem) = bounded_int_div_rem(r359, nz_q);
-    let r359: felt252 = upcast(r359_rem);
+    let (_, r359) = bounded_int_div_rem(r359, NZ_Q);
     let r360: ShiftedT = (tmp_6685 + SHIFT).try_into().unwrap();
-    let (_, r360_rem) = bounded_int_div_rem(r360, nz_q);
-    let r360: felt252 = upcast(r360_rem);
+    let (_, r360) = bounded_int_div_rem(r360, NZ_Q);
     let r361: ShiftedT = (tmp_6686 + SHIFT).try_into().unwrap();
-    let (_, r361_rem) = bounded_int_div_rem(r361, nz_q);
-    let r361: felt252 = upcast(r361_rem);
+    let (_, r361) = bounded_int_div_rem(r361, NZ_Q);
     let r362: ShiftedT = (tmp_6688 + SHIFT).try_into().unwrap();
-    let (_, r362_rem) = bounded_int_div_rem(r362, nz_q);
-    let r362: felt252 = upcast(r362_rem);
+    let (_, r362) = bounded_int_div_rem(r362, NZ_Q);
     let r363: ShiftedT = (tmp_6689 + SHIFT).try_into().unwrap();
-    let (_, r363_rem) = bounded_int_div_rem(r363, nz_q);
-    let r363: felt252 = upcast(r363_rem);
+    let (_, r363) = bounded_int_div_rem(r363, NZ_Q);
     let r364: ShiftedT = (tmp_6691 + SHIFT).try_into().unwrap();
-    let (_, r364_rem) = bounded_int_div_rem(r364, nz_q);
-    let r364: felt252 = upcast(r364_rem);
+    let (_, r364) = bounded_int_div_rem(r364, NZ_Q);
     let r365: ShiftedT = (tmp_6692 + SHIFT).try_into().unwrap();
-    let (_, r365_rem) = bounded_int_div_rem(r365, nz_q);
-    let r365: felt252 = upcast(r365_rem);
+    let (_, r365) = bounded_int_div_rem(r365, NZ_Q);
     let r366: ShiftedT = (tmp_6694 + SHIFT).try_into().unwrap();
-    let (_, r366_rem) = bounded_int_div_rem(r366, nz_q);
-    let r366: felt252 = upcast(r366_rem);
+    let (_, r366) = bounded_int_div_rem(r366, NZ_Q);
     let r367: ShiftedT = (tmp_6695 + SHIFT).try_into().unwrap();
-    let (_, r367_rem) = bounded_int_div_rem(r367, nz_q);
-    let r367: felt252 = upcast(r367_rem);
+    let (_, r367) = bounded_int_div_rem(r367, NZ_Q);
     let r368: ShiftedT = (tmp_6697 + SHIFT).try_into().unwrap();
-    let (_, r368_rem) = bounded_int_div_rem(r368, nz_q);
-    let r368: felt252 = upcast(r368_rem);
+    let (_, r368) = bounded_int_div_rem(r368, NZ_Q);
     let r369: ShiftedT = (tmp_6698 + SHIFT).try_into().unwrap();
-    let (_, r369_rem) = bounded_int_div_rem(r369, nz_q);
-    let r369: felt252 = upcast(r369_rem);
+    let (_, r369) = bounded_int_div_rem(r369, NZ_Q);
     let r370: ShiftedT = (tmp_6700 + SHIFT).try_into().unwrap();
-    let (_, r370_rem) = bounded_int_div_rem(r370, nz_q);
-    let r370: felt252 = upcast(r370_rem);
+    let (_, r370) = bounded_int_div_rem(r370, NZ_Q);
     let r371: ShiftedT = (tmp_6701 + SHIFT).try_into().unwrap();
-    let (_, r371_rem) = bounded_int_div_rem(r371, nz_q);
-    let r371: felt252 = upcast(r371_rem);
+    let (_, r371) = bounded_int_div_rem(r371, NZ_Q);
     let r372: ShiftedT = (tmp_6703 + SHIFT).try_into().unwrap();
-    let (_, r372_rem) = bounded_int_div_rem(r372, nz_q);
-    let r372: felt252 = upcast(r372_rem);
+    let (_, r372) = bounded_int_div_rem(r372, NZ_Q);
     let r373: ShiftedT = (tmp_6704 + SHIFT).try_into().unwrap();
-    let (_, r373_rem) = bounded_int_div_rem(r373, nz_q);
-    let r373: felt252 = upcast(r373_rem);
+    let (_, r373) = bounded_int_div_rem(r373, NZ_Q);
     let r374: ShiftedT = (tmp_6706 + SHIFT).try_into().unwrap();
-    let (_, r374_rem) = bounded_int_div_rem(r374, nz_q);
-    let r374: felt252 = upcast(r374_rem);
+    let (_, r374) = bounded_int_div_rem(r374, NZ_Q);
     let r375: ShiftedT = (tmp_6707 + SHIFT).try_into().unwrap();
-    let (_, r375_rem) = bounded_int_div_rem(r375, nz_q);
-    let r375: felt252 = upcast(r375_rem);
+    let (_, r375) = bounded_int_div_rem(r375, NZ_Q);
     let r376: ShiftedT = (tmp_6709 + SHIFT).try_into().unwrap();
-    let (_, r376_rem) = bounded_int_div_rem(r376, nz_q);
-    let r376: felt252 = upcast(r376_rem);
+    let (_, r376) = bounded_int_div_rem(r376, NZ_Q);
     let r377: ShiftedT = (tmp_6710 + SHIFT).try_into().unwrap();
-    let (_, r377_rem) = bounded_int_div_rem(r377, nz_q);
-    let r377: felt252 = upcast(r377_rem);
+    let (_, r377) = bounded_int_div_rem(r377, NZ_Q);
     let r378: ShiftedT = (tmp_6712 + SHIFT).try_into().unwrap();
-    let (_, r378_rem) = bounded_int_div_rem(r378, nz_q);
-    let r378: felt252 = upcast(r378_rem);
+    let (_, r378) = bounded_int_div_rem(r378, NZ_Q);
     let r379: ShiftedT = (tmp_6713 + SHIFT).try_into().unwrap();
-    let (_, r379_rem) = bounded_int_div_rem(r379, nz_q);
-    let r379: felt252 = upcast(r379_rem);
+    let (_, r379) = bounded_int_div_rem(r379, NZ_Q);
     let r380: ShiftedT = (tmp_6715 + SHIFT).try_into().unwrap();
-    let (_, r380_rem) = bounded_int_div_rem(r380, nz_q);
-    let r380: felt252 = upcast(r380_rem);
+    let (_, r380) = bounded_int_div_rem(r380, NZ_Q);
     let r381: ShiftedT = (tmp_6716 + SHIFT).try_into().unwrap();
-    let (_, r381_rem) = bounded_int_div_rem(r381, nz_q);
-    let r381: felt252 = upcast(r381_rem);
+    let (_, r381) = bounded_int_div_rem(r381, NZ_Q);
     let r382: ShiftedT = (tmp_6718 + SHIFT).try_into().unwrap();
-    let (_, r382_rem) = bounded_int_div_rem(r382, nz_q);
-    let r382: felt252 = upcast(r382_rem);
+    let (_, r382) = bounded_int_div_rem(r382, NZ_Q);
     let r383: ShiftedT = (tmp_6719 + SHIFT).try_into().unwrap();
-    let (_, r383_rem) = bounded_int_div_rem(r383, nz_q);
-    let r383: felt252 = upcast(r383_rem);
+    let (_, r383) = bounded_int_div_rem(r383, NZ_Q);
     let r384: ShiftedT = (tmp_6721 + SHIFT).try_into().unwrap();
-    let (_, r384_rem) = bounded_int_div_rem(r384, nz_q);
-    let r384: felt252 = upcast(r384_rem);
+    let (_, r384) = bounded_int_div_rem(r384, NZ_Q);
     let r385: ShiftedT = (tmp_6722 + SHIFT).try_into().unwrap();
-    let (_, r385_rem) = bounded_int_div_rem(r385, nz_q);
-    let r385: felt252 = upcast(r385_rem);
+    let (_, r385) = bounded_int_div_rem(r385, NZ_Q);
     let r386: ShiftedT = (tmp_6724 + SHIFT).try_into().unwrap();
-    let (_, r386_rem) = bounded_int_div_rem(r386, nz_q);
-    let r386: felt252 = upcast(r386_rem);
+    let (_, r386) = bounded_int_div_rem(r386, NZ_Q);
     let r387: ShiftedT = (tmp_6725 + SHIFT).try_into().unwrap();
-    let (_, r387_rem) = bounded_int_div_rem(r387, nz_q);
-    let r387: felt252 = upcast(r387_rem);
+    let (_, r387) = bounded_int_div_rem(r387, NZ_Q);
     let r388: ShiftedT = (tmp_6727 + SHIFT).try_into().unwrap();
-    let (_, r388_rem) = bounded_int_div_rem(r388, nz_q);
-    let r388: felt252 = upcast(r388_rem);
+    let (_, r388) = bounded_int_div_rem(r388, NZ_Q);
     let r389: ShiftedT = (tmp_6728 + SHIFT).try_into().unwrap();
-    let (_, r389_rem) = bounded_int_div_rem(r389, nz_q);
-    let r389: felt252 = upcast(r389_rem);
+    let (_, r389) = bounded_int_div_rem(r389, NZ_Q);
     let r390: ShiftedT = (tmp_6730 + SHIFT).try_into().unwrap();
-    let (_, r390_rem) = bounded_int_div_rem(r390, nz_q);
-    let r390: felt252 = upcast(r390_rem);
+    let (_, r390) = bounded_int_div_rem(r390, NZ_Q);
     let r391: ShiftedT = (tmp_6731 + SHIFT).try_into().unwrap();
-    let (_, r391_rem) = bounded_int_div_rem(r391, nz_q);
-    let r391: felt252 = upcast(r391_rem);
+    let (_, r391) = bounded_int_div_rem(r391, NZ_Q);
     let r392: ShiftedT = (tmp_6733 + SHIFT).try_into().unwrap();
-    let (_, r392_rem) = bounded_int_div_rem(r392, nz_q);
-    let r392: felt252 = upcast(r392_rem);
+    let (_, r392) = bounded_int_div_rem(r392, NZ_Q);
     let r393: ShiftedT = (tmp_6734 + SHIFT).try_into().unwrap();
-    let (_, r393_rem) = bounded_int_div_rem(r393, nz_q);
-    let r393: felt252 = upcast(r393_rem);
+    let (_, r393) = bounded_int_div_rem(r393, NZ_Q);
     let r394: ShiftedT = (tmp_6736 + SHIFT).try_into().unwrap();
-    let (_, r394_rem) = bounded_int_div_rem(r394, nz_q);
-    let r394: felt252 = upcast(r394_rem);
+    let (_, r394) = bounded_int_div_rem(r394, NZ_Q);
     let r395: ShiftedT = (tmp_6737 + SHIFT).try_into().unwrap();
-    let (_, r395_rem) = bounded_int_div_rem(r395, nz_q);
-    let r395: felt252 = upcast(r395_rem);
+    let (_, r395) = bounded_int_div_rem(r395, NZ_Q);
     let r396: ShiftedT = (tmp_6739 + SHIFT).try_into().unwrap();
-    let (_, r396_rem) = bounded_int_div_rem(r396, nz_q);
-    let r396: felt252 = upcast(r396_rem);
+    let (_, r396) = bounded_int_div_rem(r396, NZ_Q);
     let r397: ShiftedT = (tmp_6740 + SHIFT).try_into().unwrap();
-    let (_, r397_rem) = bounded_int_div_rem(r397, nz_q);
-    let r397: felt252 = upcast(r397_rem);
+    let (_, r397) = bounded_int_div_rem(r397, NZ_Q);
     let r398: ShiftedT = (tmp_6742 + SHIFT).try_into().unwrap();
-    let (_, r398_rem) = bounded_int_div_rem(r398, nz_q);
-    let r398: felt252 = upcast(r398_rem);
+    let (_, r398) = bounded_int_div_rem(r398, NZ_Q);
     let r399: ShiftedT = (tmp_6743 + SHIFT).try_into().unwrap();
-    let (_, r399_rem) = bounded_int_div_rem(r399, nz_q);
-    let r399: felt252 = upcast(r399_rem);
+    let (_, r399) = bounded_int_div_rem(r399, NZ_Q);
     let r400: ShiftedT = (tmp_6745 + SHIFT).try_into().unwrap();
-    let (_, r400_rem) = bounded_int_div_rem(r400, nz_q);
-    let r400: felt252 = upcast(r400_rem);
+    let (_, r400) = bounded_int_div_rem(r400, NZ_Q);
     let r401: ShiftedT = (tmp_6746 + SHIFT).try_into().unwrap();
-    let (_, r401_rem) = bounded_int_div_rem(r401, nz_q);
-    let r401: felt252 = upcast(r401_rem);
+    let (_, r401) = bounded_int_div_rem(r401, NZ_Q);
     let r402: ShiftedT = (tmp_6748 + SHIFT).try_into().unwrap();
-    let (_, r402_rem) = bounded_int_div_rem(r402, nz_q);
-    let r402: felt252 = upcast(r402_rem);
+    let (_, r402) = bounded_int_div_rem(r402, NZ_Q);
     let r403: ShiftedT = (tmp_6749 + SHIFT).try_into().unwrap();
-    let (_, r403_rem) = bounded_int_div_rem(r403, nz_q);
-    let r403: felt252 = upcast(r403_rem);
+    let (_, r403) = bounded_int_div_rem(r403, NZ_Q);
     let r404: ShiftedT = (tmp_6751 + SHIFT).try_into().unwrap();
-    let (_, r404_rem) = bounded_int_div_rem(r404, nz_q);
-    let r404: felt252 = upcast(r404_rem);
+    let (_, r404) = bounded_int_div_rem(r404, NZ_Q);
     let r405: ShiftedT = (tmp_6752 + SHIFT).try_into().unwrap();
-    let (_, r405_rem) = bounded_int_div_rem(r405, nz_q);
-    let r405: felt252 = upcast(r405_rem);
+    let (_, r405) = bounded_int_div_rem(r405, NZ_Q);
     let r406: ShiftedT = (tmp_6754 + SHIFT).try_into().unwrap();
-    let (_, r406_rem) = bounded_int_div_rem(r406, nz_q);
-    let r406: felt252 = upcast(r406_rem);
+    let (_, r406) = bounded_int_div_rem(r406, NZ_Q);
     let r407: ShiftedT = (tmp_6755 + SHIFT).try_into().unwrap();
-    let (_, r407_rem) = bounded_int_div_rem(r407, nz_q);
-    let r407: felt252 = upcast(r407_rem);
+    let (_, r407) = bounded_int_div_rem(r407, NZ_Q);
     let r408: ShiftedT = (tmp_6757 + SHIFT).try_into().unwrap();
-    let (_, r408_rem) = bounded_int_div_rem(r408, nz_q);
-    let r408: felt252 = upcast(r408_rem);
+    let (_, r408) = bounded_int_div_rem(r408, NZ_Q);
     let r409: ShiftedT = (tmp_6758 + SHIFT).try_into().unwrap();
-    let (_, r409_rem) = bounded_int_div_rem(r409, nz_q);
-    let r409: felt252 = upcast(r409_rem);
+    let (_, r409) = bounded_int_div_rem(r409, NZ_Q);
     let r410: ShiftedT = (tmp_6760 + SHIFT).try_into().unwrap();
-    let (_, r410_rem) = bounded_int_div_rem(r410, nz_q);
-    let r410: felt252 = upcast(r410_rem);
+    let (_, r410) = bounded_int_div_rem(r410, NZ_Q);
     let r411: ShiftedT = (tmp_6761 + SHIFT).try_into().unwrap();
-    let (_, r411_rem) = bounded_int_div_rem(r411, nz_q);
-    let r411: felt252 = upcast(r411_rem);
+    let (_, r411) = bounded_int_div_rem(r411, NZ_Q);
     let r412: ShiftedT = (tmp_6763 + SHIFT).try_into().unwrap();
-    let (_, r412_rem) = bounded_int_div_rem(r412, nz_q);
-    let r412: felt252 = upcast(r412_rem);
+    let (_, r412) = bounded_int_div_rem(r412, NZ_Q);
     let r413: ShiftedT = (tmp_6764 + SHIFT).try_into().unwrap();
-    let (_, r413_rem) = bounded_int_div_rem(r413, nz_q);
-    let r413: felt252 = upcast(r413_rem);
+    let (_, r413) = bounded_int_div_rem(r413, NZ_Q);
     let r414: ShiftedT = (tmp_6766 + SHIFT).try_into().unwrap();
-    let (_, r414_rem) = bounded_int_div_rem(r414, nz_q);
-    let r414: felt252 = upcast(r414_rem);
+    let (_, r414) = bounded_int_div_rem(r414, NZ_Q);
     let r415: ShiftedT = (tmp_6767 + SHIFT).try_into().unwrap();
-    let (_, r415_rem) = bounded_int_div_rem(r415, nz_q);
-    let r415: felt252 = upcast(r415_rem);
+    let (_, r415) = bounded_int_div_rem(r415, NZ_Q);
     let r416: ShiftedT = (tmp_6769 + SHIFT).try_into().unwrap();
-    let (_, r416_rem) = bounded_int_div_rem(r416, nz_q);
-    let r416: felt252 = upcast(r416_rem);
+    let (_, r416) = bounded_int_div_rem(r416, NZ_Q);
     let r417: ShiftedT = (tmp_6770 + SHIFT).try_into().unwrap();
-    let (_, r417_rem) = bounded_int_div_rem(r417, nz_q);
-    let r417: felt252 = upcast(r417_rem);
+    let (_, r417) = bounded_int_div_rem(r417, NZ_Q);
     let r418: ShiftedT = (tmp_6772 + SHIFT).try_into().unwrap();
-    let (_, r418_rem) = bounded_int_div_rem(r418, nz_q);
-    let r418: felt252 = upcast(r418_rem);
+    let (_, r418) = bounded_int_div_rem(r418, NZ_Q);
     let r419: ShiftedT = (tmp_6773 + SHIFT).try_into().unwrap();
-    let (_, r419_rem) = bounded_int_div_rem(r419, nz_q);
-    let r419: felt252 = upcast(r419_rem);
+    let (_, r419) = bounded_int_div_rem(r419, NZ_Q);
     let r420: ShiftedT = (tmp_6775 + SHIFT).try_into().unwrap();
-    let (_, r420_rem) = bounded_int_div_rem(r420, nz_q);
-    let r420: felt252 = upcast(r420_rem);
+    let (_, r420) = bounded_int_div_rem(r420, NZ_Q);
     let r421: ShiftedT = (tmp_6776 + SHIFT).try_into().unwrap();
-    let (_, r421_rem) = bounded_int_div_rem(r421, nz_q);
-    let r421: felt252 = upcast(r421_rem);
+    let (_, r421) = bounded_int_div_rem(r421, NZ_Q);
     let r422: ShiftedT = (tmp_6778 + SHIFT).try_into().unwrap();
-    let (_, r422_rem) = bounded_int_div_rem(r422, nz_q);
-    let r422: felt252 = upcast(r422_rem);
+    let (_, r422) = bounded_int_div_rem(r422, NZ_Q);
     let r423: ShiftedT = (tmp_6779 + SHIFT).try_into().unwrap();
-    let (_, r423_rem) = bounded_int_div_rem(r423, nz_q);
-    let r423: felt252 = upcast(r423_rem);
+    let (_, r423) = bounded_int_div_rem(r423, NZ_Q);
     let r424: ShiftedT = (tmp_6781 + SHIFT).try_into().unwrap();
-    let (_, r424_rem) = bounded_int_div_rem(r424, nz_q);
-    let r424: felt252 = upcast(r424_rem);
+    let (_, r424) = bounded_int_div_rem(r424, NZ_Q);
     let r425: ShiftedT = (tmp_6782 + SHIFT).try_into().unwrap();
-    let (_, r425_rem) = bounded_int_div_rem(r425, nz_q);
-    let r425: felt252 = upcast(r425_rem);
+    let (_, r425) = bounded_int_div_rem(r425, NZ_Q);
     let r426: ShiftedT = (tmp_6784 + SHIFT).try_into().unwrap();
-    let (_, r426_rem) = bounded_int_div_rem(r426, nz_q);
-    let r426: felt252 = upcast(r426_rem);
+    let (_, r426) = bounded_int_div_rem(r426, NZ_Q);
     let r427: ShiftedT = (tmp_6785 + SHIFT).try_into().unwrap();
-    let (_, r427_rem) = bounded_int_div_rem(r427, nz_q);
-    let r427: felt252 = upcast(r427_rem);
+    let (_, r427) = bounded_int_div_rem(r427, NZ_Q);
     let r428: ShiftedT = (tmp_6787 + SHIFT).try_into().unwrap();
-    let (_, r428_rem) = bounded_int_div_rem(r428, nz_q);
-    let r428: felt252 = upcast(r428_rem);
+    let (_, r428) = bounded_int_div_rem(r428, NZ_Q);
     let r429: ShiftedT = (tmp_6788 + SHIFT).try_into().unwrap();
-    let (_, r429_rem) = bounded_int_div_rem(r429, nz_q);
-    let r429: felt252 = upcast(r429_rem);
+    let (_, r429) = bounded_int_div_rem(r429, NZ_Q);
     let r430: ShiftedT = (tmp_6790 + SHIFT).try_into().unwrap();
-    let (_, r430_rem) = bounded_int_div_rem(r430, nz_q);
-    let r430: felt252 = upcast(r430_rem);
+    let (_, r430) = bounded_int_div_rem(r430, NZ_Q);
     let r431: ShiftedT = (tmp_6791 + SHIFT).try_into().unwrap();
-    let (_, r431_rem) = bounded_int_div_rem(r431, nz_q);
-    let r431: felt252 = upcast(r431_rem);
+    let (_, r431) = bounded_int_div_rem(r431, NZ_Q);
     let r432: ShiftedT = (tmp_6793 + SHIFT).try_into().unwrap();
-    let (_, r432_rem) = bounded_int_div_rem(r432, nz_q);
-    let r432: felt252 = upcast(r432_rem);
+    let (_, r432) = bounded_int_div_rem(r432, NZ_Q);
     let r433: ShiftedT = (tmp_6794 + SHIFT).try_into().unwrap();
-    let (_, r433_rem) = bounded_int_div_rem(r433, nz_q);
-    let r433: felt252 = upcast(r433_rem);
+    let (_, r433) = bounded_int_div_rem(r433, NZ_Q);
     let r434: ShiftedT = (tmp_6796 + SHIFT).try_into().unwrap();
-    let (_, r434_rem) = bounded_int_div_rem(r434, nz_q);
-    let r434: felt252 = upcast(r434_rem);
+    let (_, r434) = bounded_int_div_rem(r434, NZ_Q);
     let r435: ShiftedT = (tmp_6797 + SHIFT).try_into().unwrap();
-    let (_, r435_rem) = bounded_int_div_rem(r435, nz_q);
-    let r435: felt252 = upcast(r435_rem);
+    let (_, r435) = bounded_int_div_rem(r435, NZ_Q);
     let r436: ShiftedT = (tmp_6799 + SHIFT).try_into().unwrap();
-    let (_, r436_rem) = bounded_int_div_rem(r436, nz_q);
-    let r436: felt252 = upcast(r436_rem);
+    let (_, r436) = bounded_int_div_rem(r436, NZ_Q);
     let r437: ShiftedT = (tmp_6800 + SHIFT).try_into().unwrap();
-    let (_, r437_rem) = bounded_int_div_rem(r437, nz_q);
-    let r437: felt252 = upcast(r437_rem);
+    let (_, r437) = bounded_int_div_rem(r437, NZ_Q);
     let r438: ShiftedT = (tmp_6802 + SHIFT).try_into().unwrap();
-    let (_, r438_rem) = bounded_int_div_rem(r438, nz_q);
-    let r438: felt252 = upcast(r438_rem);
+    let (_, r438) = bounded_int_div_rem(r438, NZ_Q);
     let r439: ShiftedT = (tmp_6803 + SHIFT).try_into().unwrap();
-    let (_, r439_rem) = bounded_int_div_rem(r439, nz_q);
-    let r439: felt252 = upcast(r439_rem);
+    let (_, r439) = bounded_int_div_rem(r439, NZ_Q);
     let r440: ShiftedT = (tmp_6805 + SHIFT).try_into().unwrap();
-    let (_, r440_rem) = bounded_int_div_rem(r440, nz_q);
-    let r440: felt252 = upcast(r440_rem);
+    let (_, r440) = bounded_int_div_rem(r440, NZ_Q);
     let r441: ShiftedT = (tmp_6806 + SHIFT).try_into().unwrap();
-    let (_, r441_rem) = bounded_int_div_rem(r441, nz_q);
-    let r441: felt252 = upcast(r441_rem);
+    let (_, r441) = bounded_int_div_rem(r441, NZ_Q);
     let r442: ShiftedT = (tmp_6808 + SHIFT).try_into().unwrap();
-    let (_, r442_rem) = bounded_int_div_rem(r442, nz_q);
-    let r442: felt252 = upcast(r442_rem);
+    let (_, r442) = bounded_int_div_rem(r442, NZ_Q);
     let r443: ShiftedT = (tmp_6809 + SHIFT).try_into().unwrap();
-    let (_, r443_rem) = bounded_int_div_rem(r443, nz_q);
-    let r443: felt252 = upcast(r443_rem);
+    let (_, r443) = bounded_int_div_rem(r443, NZ_Q);
     let r444: ShiftedT = (tmp_6811 + SHIFT).try_into().unwrap();
-    let (_, r444_rem) = bounded_int_div_rem(r444, nz_q);
-    let r444: felt252 = upcast(r444_rem);
+    let (_, r444) = bounded_int_div_rem(r444, NZ_Q);
     let r445: ShiftedT = (tmp_6812 + SHIFT).try_into().unwrap();
-    let (_, r445_rem) = bounded_int_div_rem(r445, nz_q);
-    let r445: felt252 = upcast(r445_rem);
+    let (_, r445) = bounded_int_div_rem(r445, NZ_Q);
     let r446: ShiftedT = (tmp_6814 + SHIFT).try_into().unwrap();
-    let (_, r446_rem) = bounded_int_div_rem(r446, nz_q);
-    let r446: felt252 = upcast(r446_rem);
+    let (_, r446) = bounded_int_div_rem(r446, NZ_Q);
     let r447: ShiftedT = (tmp_6815 + SHIFT).try_into().unwrap();
-    let (_, r447_rem) = bounded_int_div_rem(r447, nz_q);
-    let r447: felt252 = upcast(r447_rem);
+    let (_, r447) = bounded_int_div_rem(r447, NZ_Q);
     let r448: ShiftedT = (tmp_6817 + SHIFT).try_into().unwrap();
-    let (_, r448_rem) = bounded_int_div_rem(r448, nz_q);
-    let r448: felt252 = upcast(r448_rem);
+    let (_, r448) = bounded_int_div_rem(r448, NZ_Q);
     let r449: ShiftedT = (tmp_6818 + SHIFT).try_into().unwrap();
-    let (_, r449_rem) = bounded_int_div_rem(r449, nz_q);
-    let r449: felt252 = upcast(r449_rem);
+    let (_, r449) = bounded_int_div_rem(r449, NZ_Q);
     let r450: ShiftedT = (tmp_6820 + SHIFT).try_into().unwrap();
-    let (_, r450_rem) = bounded_int_div_rem(r450, nz_q);
-    let r450: felt252 = upcast(r450_rem);
+    let (_, r450) = bounded_int_div_rem(r450, NZ_Q);
     let r451: ShiftedT = (tmp_6821 + SHIFT).try_into().unwrap();
-    let (_, r451_rem) = bounded_int_div_rem(r451, nz_q);
-    let r451: felt252 = upcast(r451_rem);
+    let (_, r451) = bounded_int_div_rem(r451, NZ_Q);
     let r452: ShiftedT = (tmp_6823 + SHIFT).try_into().unwrap();
-    let (_, r452_rem) = bounded_int_div_rem(r452, nz_q);
-    let r452: felt252 = upcast(r452_rem);
+    let (_, r452) = bounded_int_div_rem(r452, NZ_Q);
     let r453: ShiftedT = (tmp_6824 + SHIFT).try_into().unwrap();
-    let (_, r453_rem) = bounded_int_div_rem(r453, nz_q);
-    let r453: felt252 = upcast(r453_rem);
+    let (_, r453) = bounded_int_div_rem(r453, NZ_Q);
     let r454: ShiftedT = (tmp_6826 + SHIFT).try_into().unwrap();
-    let (_, r454_rem) = bounded_int_div_rem(r454, nz_q);
-    let r454: felt252 = upcast(r454_rem);
+    let (_, r454) = bounded_int_div_rem(r454, NZ_Q);
     let r455: ShiftedT = (tmp_6827 + SHIFT).try_into().unwrap();
-    let (_, r455_rem) = bounded_int_div_rem(r455, nz_q);
-    let r455: felt252 = upcast(r455_rem);
+    let (_, r455) = bounded_int_div_rem(r455, NZ_Q);
     let r456: ShiftedT = (tmp_6829 + SHIFT).try_into().unwrap();
-    let (_, r456_rem) = bounded_int_div_rem(r456, nz_q);
-    let r456: felt252 = upcast(r456_rem);
+    let (_, r456) = bounded_int_div_rem(r456, NZ_Q);
     let r457: ShiftedT = (tmp_6830 + SHIFT).try_into().unwrap();
-    let (_, r457_rem) = bounded_int_div_rem(r457, nz_q);
-    let r457: felt252 = upcast(r457_rem);
+    let (_, r457) = bounded_int_div_rem(r457, NZ_Q);
     let r458: ShiftedT = (tmp_6832 + SHIFT).try_into().unwrap();
-    let (_, r458_rem) = bounded_int_div_rem(r458, nz_q);
-    let r458: felt252 = upcast(r458_rem);
+    let (_, r458) = bounded_int_div_rem(r458, NZ_Q);
     let r459: ShiftedT = (tmp_6833 + SHIFT).try_into().unwrap();
-    let (_, r459_rem) = bounded_int_div_rem(r459, nz_q);
-    let r459: felt252 = upcast(r459_rem);
+    let (_, r459) = bounded_int_div_rem(r459, NZ_Q);
     let r460: ShiftedT = (tmp_6835 + SHIFT).try_into().unwrap();
-    let (_, r460_rem) = bounded_int_div_rem(r460, nz_q);
-    let r460: felt252 = upcast(r460_rem);
+    let (_, r460) = bounded_int_div_rem(r460, NZ_Q);
     let r461: ShiftedT = (tmp_6836 + SHIFT).try_into().unwrap();
-    let (_, r461_rem) = bounded_int_div_rem(r461, nz_q);
-    let r461: felt252 = upcast(r461_rem);
+    let (_, r461) = bounded_int_div_rem(r461, NZ_Q);
     let r462: ShiftedT = (tmp_6838 + SHIFT).try_into().unwrap();
-    let (_, r462_rem) = bounded_int_div_rem(r462, nz_q);
-    let r462: felt252 = upcast(r462_rem);
+    let (_, r462) = bounded_int_div_rem(r462, NZ_Q);
     let r463: ShiftedT = (tmp_6839 + SHIFT).try_into().unwrap();
-    let (_, r463_rem) = bounded_int_div_rem(r463, nz_q);
-    let r463: felt252 = upcast(r463_rem);
+    let (_, r463) = bounded_int_div_rem(r463, NZ_Q);
     let r464: ShiftedT = (tmp_6841 + SHIFT).try_into().unwrap();
-    let (_, r464_rem) = bounded_int_div_rem(r464, nz_q);
-    let r464: felt252 = upcast(r464_rem);
+    let (_, r464) = bounded_int_div_rem(r464, NZ_Q);
     let r465: ShiftedT = (tmp_6842 + SHIFT).try_into().unwrap();
-    let (_, r465_rem) = bounded_int_div_rem(r465, nz_q);
-    let r465: felt252 = upcast(r465_rem);
+    let (_, r465) = bounded_int_div_rem(r465, NZ_Q);
     let r466: ShiftedT = (tmp_6844 + SHIFT).try_into().unwrap();
-    let (_, r466_rem) = bounded_int_div_rem(r466, nz_q);
-    let r466: felt252 = upcast(r466_rem);
+    let (_, r466) = bounded_int_div_rem(r466, NZ_Q);
     let r467: ShiftedT = (tmp_6845 + SHIFT).try_into().unwrap();
-    let (_, r467_rem) = bounded_int_div_rem(r467, nz_q);
-    let r467: felt252 = upcast(r467_rem);
+    let (_, r467) = bounded_int_div_rem(r467, NZ_Q);
     let r468: ShiftedT = (tmp_6847 + SHIFT).try_into().unwrap();
-    let (_, r468_rem) = bounded_int_div_rem(r468, nz_q);
-    let r468: felt252 = upcast(r468_rem);
+    let (_, r468) = bounded_int_div_rem(r468, NZ_Q);
     let r469: ShiftedT = (tmp_6848 + SHIFT).try_into().unwrap();
-    let (_, r469_rem) = bounded_int_div_rem(r469, nz_q);
-    let r469: felt252 = upcast(r469_rem);
+    let (_, r469) = bounded_int_div_rem(r469, NZ_Q);
     let r470: ShiftedT = (tmp_6850 + SHIFT).try_into().unwrap();
-    let (_, r470_rem) = bounded_int_div_rem(r470, nz_q);
-    let r470: felt252 = upcast(r470_rem);
+    let (_, r470) = bounded_int_div_rem(r470, NZ_Q);
     let r471: ShiftedT = (tmp_6851 + SHIFT).try_into().unwrap();
-    let (_, r471_rem) = bounded_int_div_rem(r471, nz_q);
-    let r471: felt252 = upcast(r471_rem);
+    let (_, r471) = bounded_int_div_rem(r471, NZ_Q);
     let r472: ShiftedT = (tmp_6853 + SHIFT).try_into().unwrap();
-    let (_, r472_rem) = bounded_int_div_rem(r472, nz_q);
-    let r472: felt252 = upcast(r472_rem);
+    let (_, r472) = bounded_int_div_rem(r472, NZ_Q);
     let r473: ShiftedT = (tmp_6854 + SHIFT).try_into().unwrap();
-    let (_, r473_rem) = bounded_int_div_rem(r473, nz_q);
-    let r473: felt252 = upcast(r473_rem);
+    let (_, r473) = bounded_int_div_rem(r473, NZ_Q);
     let r474: ShiftedT = (tmp_6856 + SHIFT).try_into().unwrap();
-    let (_, r474_rem) = bounded_int_div_rem(r474, nz_q);
-    let r474: felt252 = upcast(r474_rem);
+    let (_, r474) = bounded_int_div_rem(r474, NZ_Q);
     let r475: ShiftedT = (tmp_6857 + SHIFT).try_into().unwrap();
-    let (_, r475_rem) = bounded_int_div_rem(r475, nz_q);
-    let r475: felt252 = upcast(r475_rem);
+    let (_, r475) = bounded_int_div_rem(r475, NZ_Q);
     let r476: ShiftedT = (tmp_6859 + SHIFT).try_into().unwrap();
-    let (_, r476_rem) = bounded_int_div_rem(r476, nz_q);
-    let r476: felt252 = upcast(r476_rem);
+    let (_, r476) = bounded_int_div_rem(r476, NZ_Q);
     let r477: ShiftedT = (tmp_6860 + SHIFT).try_into().unwrap();
-    let (_, r477_rem) = bounded_int_div_rem(r477, nz_q);
-    let r477: felt252 = upcast(r477_rem);
+    let (_, r477) = bounded_int_div_rem(r477, NZ_Q);
     let r478: ShiftedT = (tmp_6862 + SHIFT).try_into().unwrap();
-    let (_, r478_rem) = bounded_int_div_rem(r478, nz_q);
-    let r478: felt252 = upcast(r478_rem);
+    let (_, r478) = bounded_int_div_rem(r478, NZ_Q);
     let r479: ShiftedT = (tmp_6863 + SHIFT).try_into().unwrap();
-    let (_, r479_rem) = bounded_int_div_rem(r479, nz_q);
-    let r479: felt252 = upcast(r479_rem);
+    let (_, r479) = bounded_int_div_rem(r479, NZ_Q);
     let r480: ShiftedT = (tmp_6865 + SHIFT).try_into().unwrap();
-    let (_, r480_rem) = bounded_int_div_rem(r480, nz_q);
-    let r480: felt252 = upcast(r480_rem);
+    let (_, r480) = bounded_int_div_rem(r480, NZ_Q);
     let r481: ShiftedT = (tmp_6866 + SHIFT).try_into().unwrap();
-    let (_, r481_rem) = bounded_int_div_rem(r481, nz_q);
-    let r481: felt252 = upcast(r481_rem);
+    let (_, r481) = bounded_int_div_rem(r481, NZ_Q);
     let r482: ShiftedT = (tmp_6868 + SHIFT).try_into().unwrap();
-    let (_, r482_rem) = bounded_int_div_rem(r482, nz_q);
-    let r482: felt252 = upcast(r482_rem);
+    let (_, r482) = bounded_int_div_rem(r482, NZ_Q);
     let r483: ShiftedT = (tmp_6869 + SHIFT).try_into().unwrap();
-    let (_, r483_rem) = bounded_int_div_rem(r483, nz_q);
-    let r483: felt252 = upcast(r483_rem);
+    let (_, r483) = bounded_int_div_rem(r483, NZ_Q);
     let r484: ShiftedT = (tmp_6871 + SHIFT).try_into().unwrap();
-    let (_, r484_rem) = bounded_int_div_rem(r484, nz_q);
-    let r484: felt252 = upcast(r484_rem);
+    let (_, r484) = bounded_int_div_rem(r484, NZ_Q);
     let r485: ShiftedT = (tmp_6872 + SHIFT).try_into().unwrap();
-    let (_, r485_rem) = bounded_int_div_rem(r485, nz_q);
-    let r485: felt252 = upcast(r485_rem);
+    let (_, r485) = bounded_int_div_rem(r485, NZ_Q);
     let r486: ShiftedT = (tmp_6874 + SHIFT).try_into().unwrap();
-    let (_, r486_rem) = bounded_int_div_rem(r486, nz_q);
-    let r486: felt252 = upcast(r486_rem);
+    let (_, r486) = bounded_int_div_rem(r486, NZ_Q);
     let r487: ShiftedT = (tmp_6875 + SHIFT).try_into().unwrap();
-    let (_, r487_rem) = bounded_int_div_rem(r487, nz_q);
-    let r487: felt252 = upcast(r487_rem);
+    let (_, r487) = bounded_int_div_rem(r487, NZ_Q);
     let r488: ShiftedT = (tmp_6877 + SHIFT).try_into().unwrap();
-    let (_, r488_rem) = bounded_int_div_rem(r488, nz_q);
-    let r488: felt252 = upcast(r488_rem);
+    let (_, r488) = bounded_int_div_rem(r488, NZ_Q);
     let r489: ShiftedT = (tmp_6878 + SHIFT).try_into().unwrap();
-    let (_, r489_rem) = bounded_int_div_rem(r489, nz_q);
-    let r489: felt252 = upcast(r489_rem);
+    let (_, r489) = bounded_int_div_rem(r489, NZ_Q);
     let r490: ShiftedT = (tmp_6880 + SHIFT).try_into().unwrap();
-    let (_, r490_rem) = bounded_int_div_rem(r490, nz_q);
-    let r490: felt252 = upcast(r490_rem);
+    let (_, r490) = bounded_int_div_rem(r490, NZ_Q);
     let r491: ShiftedT = (tmp_6881 + SHIFT).try_into().unwrap();
-    let (_, r491_rem) = bounded_int_div_rem(r491, nz_q);
-    let r491: felt252 = upcast(r491_rem);
+    let (_, r491) = bounded_int_div_rem(r491, NZ_Q);
     let r492: ShiftedT = (tmp_6883 + SHIFT).try_into().unwrap();
-    let (_, r492_rem) = bounded_int_div_rem(r492, nz_q);
-    let r492: felt252 = upcast(r492_rem);
+    let (_, r492) = bounded_int_div_rem(r492, NZ_Q);
     let r493: ShiftedT = (tmp_6884 + SHIFT).try_into().unwrap();
-    let (_, r493_rem) = bounded_int_div_rem(r493, nz_q);
-    let r493: felt252 = upcast(r493_rem);
+    let (_, r493) = bounded_int_div_rem(r493, NZ_Q);
     let r494: ShiftedT = (tmp_6886 + SHIFT).try_into().unwrap();
-    let (_, r494_rem) = bounded_int_div_rem(r494, nz_q);
-    let r494: felt252 = upcast(r494_rem);
+    let (_, r494) = bounded_int_div_rem(r494, NZ_Q);
     let r495: ShiftedT = (tmp_6887 + SHIFT).try_into().unwrap();
-    let (_, r495_rem) = bounded_int_div_rem(r495, nz_q);
-    let r495: felt252 = upcast(r495_rem);
+    let (_, r495) = bounded_int_div_rem(r495, NZ_Q);
     let r496: ShiftedT = (tmp_6889 + SHIFT).try_into().unwrap();
-    let (_, r496_rem) = bounded_int_div_rem(r496, nz_q);
-    let r496: felt252 = upcast(r496_rem);
+    let (_, r496) = bounded_int_div_rem(r496, NZ_Q);
     let r497: ShiftedT = (tmp_6890 + SHIFT).try_into().unwrap();
-    let (_, r497_rem) = bounded_int_div_rem(r497, nz_q);
-    let r497: felt252 = upcast(r497_rem);
+    let (_, r497) = bounded_int_div_rem(r497, NZ_Q);
     let r498: ShiftedT = (tmp_6892 + SHIFT).try_into().unwrap();
-    let (_, r498_rem) = bounded_int_div_rem(r498, nz_q);
-    let r498: felt252 = upcast(r498_rem);
+    let (_, r498) = bounded_int_div_rem(r498, NZ_Q);
     let r499: ShiftedT = (tmp_6893 + SHIFT).try_into().unwrap();
-    let (_, r499_rem) = bounded_int_div_rem(r499, nz_q);
-    let r499: felt252 = upcast(r499_rem);
+    let (_, r499) = bounded_int_div_rem(r499, NZ_Q);
     let r500: ShiftedT = (tmp_6895 + SHIFT).try_into().unwrap();
-    let (_, r500_rem) = bounded_int_div_rem(r500, nz_q);
-    let r500: felt252 = upcast(r500_rem);
+    let (_, r500) = bounded_int_div_rem(r500, NZ_Q);
     let r501: ShiftedT = (tmp_6896 + SHIFT).try_into().unwrap();
-    let (_, r501_rem) = bounded_int_div_rem(r501, nz_q);
-    let r501: felt252 = upcast(r501_rem);
+    let (_, r501) = bounded_int_div_rem(r501, NZ_Q);
     let r502: ShiftedT = (tmp_6898 + SHIFT).try_into().unwrap();
-    let (_, r502_rem) = bounded_int_div_rem(r502, nz_q);
-    let r502: felt252 = upcast(r502_rem);
+    let (_, r502) = bounded_int_div_rem(r502, NZ_Q);
     let r503: ShiftedT = (tmp_6899 + SHIFT).try_into().unwrap();
-    let (_, r503_rem) = bounded_int_div_rem(r503, nz_q);
-    let r503: felt252 = upcast(r503_rem);
+    let (_, r503) = bounded_int_div_rem(r503, NZ_Q);
     let r504: ShiftedT = (tmp_6901 + SHIFT).try_into().unwrap();
-    let (_, r504_rem) = bounded_int_div_rem(r504, nz_q);
-    let r504: felt252 = upcast(r504_rem);
+    let (_, r504) = bounded_int_div_rem(r504, NZ_Q);
     let r505: ShiftedT = (tmp_6902 + SHIFT).try_into().unwrap();
-    let (_, r505_rem) = bounded_int_div_rem(r505, nz_q);
-    let r505: felt252 = upcast(r505_rem);
+    let (_, r505) = bounded_int_div_rem(r505, NZ_Q);
     let r506: ShiftedT = (tmp_6904 + SHIFT).try_into().unwrap();
-    let (_, r506_rem) = bounded_int_div_rem(r506, nz_q);
-    let r506: felt252 = upcast(r506_rem);
+    let (_, r506) = bounded_int_div_rem(r506, NZ_Q);
     let r507: ShiftedT = (tmp_6905 + SHIFT).try_into().unwrap();
-    let (_, r507_rem) = bounded_int_div_rem(r507, nz_q);
-    let r507: felt252 = upcast(r507_rem);
+    let (_, r507) = bounded_int_div_rem(r507, NZ_Q);
     let r508: ShiftedT = (tmp_6907 + SHIFT).try_into().unwrap();
-    let (_, r508_rem) = bounded_int_div_rem(r508, nz_q);
-    let r508: felt252 = upcast(r508_rem);
+    let (_, r508) = bounded_int_div_rem(r508, NZ_Q);
     let r509: ShiftedT = (tmp_6908 + SHIFT).try_into().unwrap();
-    let (_, r509_rem) = bounded_int_div_rem(r509, nz_q);
-    let r509: felt252 = upcast(r509_rem);
+    let (_, r509) = bounded_int_div_rem(r509, NZ_Q);
     let r510: ShiftedT = (tmp_6910 + SHIFT).try_into().unwrap();
-    let (_, r510_rem) = bounded_int_div_rem(r510, nz_q);
-    let r510: felt252 = upcast(r510_rem);
+    let (_, r510) = bounded_int_div_rem(r510, NZ_Q);
     let r511: ShiftedT = (tmp_6911 + SHIFT).try_into().unwrap();
-    let (_, r511_rem) = bounded_int_div_rem(r511, nz_q);
-    let r511: felt252 = upcast(r511_rem);
+    let (_, r511) = bounded_int_div_rem(r511, NZ_Q);
 
     (
         r0,
@@ -10521,8 +10006,8 @@ pub fn ntt_512_inner(
         r511,
     )
 }
-/// NTT of size 512 using Array<felt252> interface.
-pub fn ntt_512(mut f: Span<felt252>) -> Array<felt252> {
+/// NTT of size 512 — accepts Span<felt252>, returns Array<Zq>.
+pub fn ntt_512(mut f: Span<felt252>) -> Array<Zq> {
     let boxed = f.multi_pop_front::<512>().expect('expected 512 elements');
     let [
         f0,

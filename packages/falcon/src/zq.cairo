@@ -9,9 +9,6 @@ use corelib_imports::bounded_int::{
     AddHelper, BoundedInt, DivRemHelper, MulHelper, UnitInt, bounded_int_div_rem, downcast, upcast,
 };
 
-/// The ring modulus Q = 12289
-pub const Q: u16 = 12289;
-
 /// BoundedInt type for elements in Z_q: [0, Q-1] = [0, 12288]
 pub type Zq = BoundedInt<0, 12288>;
 
@@ -21,11 +18,8 @@ pub type QConst = UnitInt<12289>;
 /// Constant Q as BoundedInt
 pub const Q_CONST: QConst = 12289;
 
-/// Get Q as a NonZero constant for division
-#[inline(always)]
-pub fn nz_q() -> NonZero<QConst> {
-    12289
-}
+/// Q as a NonZero constant for division
+pub const NZ_Q: NonZero<QConst> = 12289;
 
 // =============================================================================
 // Type conversion utilities
@@ -35,12 +29,6 @@ pub fn nz_q() -> NonZero<QConst> {
 #[inline(always)]
 pub fn from_u16(x: u16) -> Zq {
     downcast(x).expect('value exceeds Q-1')
-}
-
-/// Convert Zq back to u16 (free upcast)
-#[inline(always)]
-pub fn to_u16(x: Zq) -> u16 {
-    upcast(x)
 }
 
 // =============================================================================
@@ -111,7 +99,7 @@ impl DivRemZqDiffOffsetImpl of DivRemHelper<ZqDiffOffset, QConst> {
 #[inline(always)]
 pub fn add_mod(a: Zq, b: Zq) -> Zq {
     let sum: ZqSum = add(a, b);
-    let (_q, rem) = bounded_int_div_rem(sum, nz_q());
+    let (_q, rem) = bounded_int_div_rem(sum, NZ_Q);
     rem
 }
 
@@ -121,7 +109,7 @@ pub fn add_mod(a: Zq, b: Zq) -> Zq {
 pub fn sub_mod(a: Zq, b: Zq) -> Zq {
     let a_plus_q: BoundedInt<12289, 24577> = add(a, Q_CONST);
     let diff: ZqDiffOffset = sub(a_plus_q, b);
-    let (_q, rem) = bounded_int_div_rem(diff, nz_q());
+    let (_q, rem) = bounded_int_div_rem(diff, NZ_Q);
     rem
 }
 
@@ -129,6 +117,22 @@ pub fn sub_mod(a: Zq, b: Zq) -> Zq {
 #[inline(always)]
 pub fn mul_mod(a: Zq, b: Zq) -> Zq {
     let prod: ZqProd = mul(a, b);
-    let (_q, rem) = bounded_int_div_rem(prod, nz_q());
+    let (_q, rem) = bounded_int_div_rem(prod, NZ_Q);
     rem
+}
+
+// =============================================================================
+// Serde implementation for Zq (felt252 <-> Zq conversion for JSON test data)
+// =============================================================================
+
+impl ZqSerde of Serde<Zq> {
+    fn serialize(self: @Zq, ref output: Array<felt252>) {
+        let wide: u32 = upcast(*self);
+        output.append(wide.into());
+    }
+    fn deserialize(ref serialized: Span<felt252>) -> Option<Zq> {
+        let felt_val: felt252 = Serde::deserialize(ref serialized)?;
+        let u: u16 = felt_val.try_into()?;
+        downcast(u)
+    }
 }

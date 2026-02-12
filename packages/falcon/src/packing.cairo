@@ -9,7 +9,7 @@ use corelib_imports::bounded_int::bounded_int::{add, mul};
 use corelib_imports::bounded_int::{
     AddHelper, BoundedInt, DivRemHelper, MulHelper, bounded_int_div_rem, downcast, upcast,
 };
-use falcon::zq::{Zq, QConst, Q_CONST, nz_q};
+use falcon::zq::{Zq, QConst, Q_CONST, NZ_Q};
 
 // =============================================================================
 // Constants
@@ -177,15 +177,15 @@ impl DivRemAcc8Impl of DivRemHelper<Acc8, QConst> {
 // Packing functions
 // =============================================================================
 
-/// Helper: get a Zq value from a u16 span (downcast at boundary only)
+/// Helper: get a Zq value from a Zq span
 #[inline(always)]
-fn v(vals: Span<u16>, i: usize) -> Zq {
-    downcast(*vals.at(i)).expect('overflow')
+fn v(vals: Span<Zq>, i: usize) -> Zq {
+    *vals.at(i)
 }
 
 /// Horner-encode up to 9 Zq values into a u128.
 /// Encoding: v0 + Q*(v1 + Q*(v2 + ... + Q*v8))
-fn pack_9(vals: Span<u16>) -> u128 {
+fn pack_9(vals: Span<Zq>) -> u128 {
     let n = vals.len();
     match n {
         0 => 0_u128,
@@ -257,58 +257,58 @@ fn pack_9(vals: Span<u16>) -> u128 {
     }
 }
 
-/// Unpack a u128 into `count` u16 values using iterated DivRem by Q.
-fn unpack_9(packed: u128, count: usize, ref output: Array<u16>) {
+/// Unpack a u128 into `count` Zq values using iterated DivRem by Q.
+fn unpack_9(packed: u128, count: usize, ref output: Array<Zq>) {
     if count == 0 {
         return;
     }
     let acc8: Acc8 = downcast(packed).expect('invalid packed value');
-    let (acc7, r0) = bounded_int_div_rem(acc8, nz_q());
-    output.append(upcast::<Zq, u16>(r0));
+    let (acc7, r0) = bounded_int_div_rem(acc8, NZ_Q);
+    output.append(r0);
     if count == 1 {
         return;
     }
-    let (acc6, r1) = bounded_int_div_rem(acc7, nz_q());
-    output.append(upcast::<Zq, u16>(r1));
+    let (acc6, r1) = bounded_int_div_rem(acc7, NZ_Q);
+    output.append(r1);
     if count == 2 {
         return;
     }
-    let (acc5, r2) = bounded_int_div_rem(acc6, nz_q());
-    output.append(upcast::<Zq, u16>(r2));
+    let (acc5, r2) = bounded_int_div_rem(acc6, NZ_Q);
+    output.append(r2);
     if count == 3 {
         return;
     }
-    let (acc4, r3) = bounded_int_div_rem(acc5, nz_q());
-    output.append(upcast::<Zq, u16>(r3));
+    let (acc4, r3) = bounded_int_div_rem(acc5, NZ_Q);
+    output.append(r3);
     if count == 4 {
         return;
     }
-    let (acc3, r4) = bounded_int_div_rem(acc4, nz_q());
-    output.append(upcast::<Zq, u16>(r4));
+    let (acc3, r4) = bounded_int_div_rem(acc4, NZ_Q);
+    output.append(r4);
     if count == 5 {
         return;
     }
-    let (acc2, r5) = bounded_int_div_rem(acc3, nz_q());
-    output.append(upcast::<Zq, u16>(r5));
+    let (acc2, r5) = bounded_int_div_rem(acc3, NZ_Q);
+    output.append(r5);
     if count == 6 {
         return;
     }
-    let (acc1, r6) = bounded_int_div_rem(acc2, nz_q());
-    output.append(upcast::<Zq, u16>(r6));
+    let (acc1, r6) = bounded_int_div_rem(acc2, NZ_Q);
+    output.append(r6);
     if count == 7 {
         return;
     }
-    let (acc0, r7) = bounded_int_div_rem(acc1, nz_q());
-    output.append(upcast::<Zq, u16>(r7));
+    let (acc0, r7) = bounded_int_div_rem(acc1, NZ_Q);
+    output.append(r7);
     if count == 8 {
         return;
     }
-    output.append(upcast::<Zq, u16>(acc0));
+    output.append(acc0);
 }
 
-/// Pack 512 u16 values into 29 felt252 slots.
+/// Pack 512 Zq values into 29 felt252 slots.
 /// Each slot encodes up to 18 values: pack_9(lo) + pack_9(hi) * 2^128.
-pub fn pack_public_key(values: Span<u16>) -> Array<felt252> {
+pub fn pack_public_key(values: Span<Zq>) -> Array<felt252> {
     assert!(values.len() == 512, "expected 512 values");
     let mut result: Array<felt252> = array![];
     let mut offset: usize = 0;
@@ -347,9 +347,9 @@ pub fn pack_public_key(values: Span<u16>) -> Array<felt252> {
     result
 }
 
-/// Unpack 29 felt252 slots back to 512 u16 values.
-pub fn unpack_public_key(packed: Span<felt252>) -> Array<u16> {
-    let mut output: Array<u16> = array![];
+/// Unpack 29 felt252 slots back to 512 Zq values.
+pub fn unpack_public_key(packed: Span<felt252>) -> Array<Zq> {
+    let mut output: Array<Zq> = array![];
     let mut remaining: usize = 512;
     let mut i: usize = 0;
     let slot_count = packed.len();

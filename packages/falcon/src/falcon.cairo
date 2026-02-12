@@ -4,12 +4,14 @@
 
 use core::num::traits::{CheckedAdd, CheckedMul};
 use crate::ntt::{sub_zq, ntt_fast, mul_ntt, intt_with_hint};
+use crate::zq::Zq;
 use falcon::types::{FalconPublicKey, FalconSignatureWithHint, HashToPoint};
+use corelib_imports::bounded_int::upcast;
 
 /// Half of the base ring modulus
-const HALF_Q: u16 = 6145;
+const HALF_Q: u32 = 6145;
 /// Base ring modulus
-const Q: u16 = 12289;
+const Q_U32: u32 = 12289;
 
 #[derive(Drop, Debug)]
 pub enum FalconVerificationError {
@@ -17,7 +19,7 @@ pub enum FalconVerificationError {
 }
 
 /// Compute the Euclidean norm of a polynomial and add it to the accumulator
-fn extend_euclidean_norm(mut acc: u32, mut f: Span<u16>) -> Result<u32, FalconVerificationError> {
+fn extend_euclidean_norm(mut acc: u32, mut f: Span<Zq>) -> Result<u32, FalconVerificationError> {
     let mut res = Ok(0);
     while let Some(f_coeff) = f.pop_front() {
         match norm_square_and_add(acc, *f_coeff) {
@@ -35,13 +37,14 @@ fn extend_euclidean_norm(mut acc: u32, mut f: Span<u16>) -> Result<u32, FalconVe
 }
 
 /// Normalize the value square to be in the range [0, Q^2/4] and add it to an accumulator
-fn norm_square_and_add(acc: u32, x: u16) -> Option<u32> {
-    let x: u32 = if x < HALF_Q {
-        x.into()
+fn norm_square_and_add(acc: u32, x: Zq) -> Option<u32> {
+    let x_u32: u32 = upcast(x);
+    let x_centered: u32 = if x_u32 < HALF_Q {
+        x_u32
     } else {
-        (Q - x).into()
+        Q_U32 - x_u32
     };
-    match x.checked_mul(x) {
+    match x_centered.checked_mul(x_centered) {
         Some(x_sq) => acc.checked_add(x_sq),
         None => None,
     }
@@ -64,7 +67,7 @@ pub fn verify<H, +HashToPoint<H>, +Drop<H>>(
 pub fn verify_with_msg_point(
     pk: @FalconPublicKey,
     sig_with_hint: FalconSignatureWithHint,
-    msg_point: Span<u16>,
+    msg_point: Span<Zq>,
 ) -> bool {
     let s1 = sig_with_hint.signature.s1.span();
     let pk_ntt = pk.h_ntt.span();
@@ -79,17 +82,17 @@ pub fn verify_with_msg_point(
     let s1_ntt = ntt_fast(s1);
 
     // 2. product_ntt = s1_ntt * pk_ntt (pointwise mod Q)
-    let product_ntt = mul_ntt(s1_ntt, pk_ntt);
+    let product_ntt = mul_ntt(s1_ntt.span(), pk_ntt);
 
     // 3. Verify hint: checks that NTT(mul_hint) == product_ntt (costs 1 NTT)
-    let product = intt_with_hint(product_ntt, mul_hint);
+    let product = intt_with_hint(product_ntt.span(), mul_hint);
 
     // 4. s0 = msg_point - product (coefficient-wise mod Q)
     let s0 = sub_zq(msg_point, product);
 
     // 5. Norm check: ||s0||^2 + ||s1||^2 <= SIG_BOUND
     let mut norm: u32 = 0;
-    match extend_euclidean_norm(norm, s0) {
+    match extend_euclidean_norm(norm, s0.span()) {
         Result::Ok(n) => norm = n,
         Result::Err(_) => { return false; },
     }

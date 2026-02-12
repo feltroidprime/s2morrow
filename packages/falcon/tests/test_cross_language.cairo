@@ -2,18 +2,19 @@ use falcon::falcon::{verify};
 use falcon::hash_to_point::{PoseidonHashToPoint, PoseidonHashToPointImpl};
 use falcon::packing::{pack_public_key, unpack_public_key};
 use falcon::types::{FalconPublicKey, FalconSignature, FalconVerificationHint, FalconSignatureWithHint};
+use falcon::zq::Zq;
 use snforge_std::fs::{FileTrait, read_json};
 
 #[derive(Drop, Serde)]
 struct HashToPointTest {
     message: Array<felt252>,
     salt: Array<felt252>,
-    expected: Array<u16>,
+    expected: Array<Zq>,
 }
 
 #[derive(Drop, Serde)]
 struct PackingTest {
-    values: Array<u16>,
+    values: Array<Zq>,
     packed: Array<felt252>,
 }
 
@@ -21,9 +22,9 @@ struct PackingTest {
 struct VerifyTest {
     message: Array<felt252>,
     salt: Array<felt252>,
-    pk_ntt: Array<u16>,
-    s1: Array<u16>,
-    mul_hint: Array<u16>,
+    pk_ntt: Array<Zq>,
+    s1: Array<Zq>,
+    mul_hint: Array<Zq>,
 }
 
 fn load_hash_to_point_test() -> HashToPointTest {

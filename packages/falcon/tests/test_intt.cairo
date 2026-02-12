@@ -1,4 +1,5 @@
 use falcon::ntt::intt_with_hint;
+use falcon::zq::{Zq, from_u16};
 use falcon_zknox::ntt_zknox::zknox_nttFW_reduced;
 use falcon_zknox::intt_zknox::zknox_inttFW_reduced;
 use snforge_std::fs::{FileTrait, read_json};
@@ -19,6 +20,16 @@ fn load_json_input(path: ByteArray) -> Span<felt252> {
     data.input.span()
 }
 
+/// Convert felt252 span to Zq array (for test interop)
+fn felt_to_zq(input: Span<felt252>) -> Array<Zq> {
+    let mut result: Array<Zq> = array![];
+    for v in input {
+        let u: u16 = (*v).try_into().unwrap();
+        result.append(from_u16(u));
+    };
+    result
+}
+
 fn load_ntt_input() -> Span<felt252> {
     load_json_input("tests/data/ntt_input_512_int.json")
 }
@@ -36,23 +47,17 @@ fn test_intt_with_hint_512() {
     let ntt_input = load_intt_input();
     let hint = load_intt_expected();
 
-    // Convert to u16
-    let mut ntt_u16: Array<u16> = array![];
-    for v in ntt_input {
-        ntt_u16.append((*v).try_into().unwrap());
-    };
-    let mut hint_u16: Array<u16> = array![];
-    for v in hint {
-        hint_u16.append((*v).try_into().unwrap());
-    };
+    // Convert to Zq
+    let ntt_zq = felt_to_zq(ntt_input);
+    let hint_zq = felt_to_zq(hint);
 
-    let result = intt_with_hint(ntt_u16.span(), hint_u16.span());
+    let result = intt_with_hint(ntt_zq.span(), hint_zq.span());
     assert_eq!(result.len(), 512);
 
     // Verify result matches expected
     let mut j: usize = 0;
     while j < 512 {
-        assert_eq!(*result.at(j), *hint_u16.at(j), "mismatch at index {}", j);
+        assert_eq!(*result.at(j), *hint_zq.at(j), "mismatch at index {}", j);
         j += 1;
     };
 }

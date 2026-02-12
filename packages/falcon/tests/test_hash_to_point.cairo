@@ -6,15 +6,8 @@ fn test_hash_to_point_length_and_range() {
     let salt: Array<felt252> = array![1, 2];
 
     let result = PoseidonHashToPointImpl::hash_to_point(message.span(), salt.span());
+    // Zq type guarantees [0, 12288] — no runtime range check needed
     assert_eq!(result.len(), 512);
-
-    let span = result.span();
-    let mut i: usize = 0;
-    while i != 512 {
-        let v: u16 = *span.at(i);
-        assert!(v < 12289, "value out of range: {}", v);
-        i += 1;
-    };
 }
 
 #[test]
