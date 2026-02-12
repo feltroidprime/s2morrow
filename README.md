@@ -62,21 +62,21 @@ cd ../falcon-rs && cargo test generate_ -- --nocapture
 
 ## Performance
 
-Profiled at commit `68680dc` with `cairo-profiler` (cumulative steps):
+Profiled at commit `a1f5ed9` with `cairo-profiler` (cumulative steps):
 
 | Function | Steps | Description |
 |----------|-------|-------------|
-| `verify` (e2e) | 76,295 | Full verification including hash-to-point |
-| `verify_with_msg_point` | 39,419 | Single fused loop: hint check + norm computation |
+| `verify` (e2e) | 63,177 | Full verification including hash-to-point |
+| `verify_with_msg_point` | 26,301 | K=8 unrolled loop: hint check + norm computation |
 | `hash_to_point` | 5,988 | Poseidon XOF squeeze (22 permutations) |
 
-**Total test cost:** 132,152 steps (includes deserialization overhead).
+**Total test cost:** 119,034 steps (includes deserialization overhead).
 
 `verify_with_msg_point` does everything in one pass over 512 coefficients:
 - 2x `ntt_fast` (unrolled, no loops): NTT of s1 + NTT of mul_hint
-- 1 fused loop: `mul_mod` hint check + `sub_mod` + 2x `center_and_square` norm accumulation
+- 1 fused loop (K=8 `multi_pop_front` unrolling): `mul_mod` hint check + `sub_mod` + 2x `center_and_square` norm accumulation
 
-L2 gas: `verify` ~28.2M | `verify_with_msg_point` ~57.9M
+L2 gas: `verify` ~13.2M | `verify_with_msg_point` ~56.6M
 
 ## References
 
