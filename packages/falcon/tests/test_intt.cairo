@@ -1,8 +1,8 @@
+use corelib_imports::bounded_int::downcast;
 use falcon::ntt::intt_with_hint;
 use falcon::zq::Zq;
-use corelib_imports::bounded_int::downcast;
-use falcon_zknox::ntt_zknox::zknox_nttFW_reduced;
 use falcon_zknox::intt_zknox::zknox_inttFW_reduced;
+use falcon_zknox::ntt_zknox::zknox_nttFW_reduced;
 use snforge_std::fs::{FileTrait, read_json};
 
 #[derive(Drop, Serde)]
@@ -26,7 +26,7 @@ fn felt_to_zq(input: Span<felt252>) -> Array<Zq> {
     let mut result: Array<Zq> = array![];
     for v in input {
         result.append(downcast(*v).expect('value exceeds Q-1'));
-    };
+    }
     result
 }
 
@@ -72,7 +72,7 @@ fn test_intt_zknox_roundtrip() {
     while i < input.len() {
         input_clone.append(*input.at(i));
         i += 1;
-    };
+    }
 
     // NTT forward (zknox)
     let ntt_result = zknox_nttFW_reduced(input_clone.span());

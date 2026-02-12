@@ -9779,7 +9779,7 @@ pub fn red256_vector(a: Span<felt252>) -> Span<felt252> {
     let mut result: Array<felt252> = array![];
     for val in a {
         result.append(reduc256(*val));
-    };
+    }
     result.span()
 }
 

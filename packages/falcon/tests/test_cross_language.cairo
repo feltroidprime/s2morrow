@@ -1,7 +1,9 @@
-use falcon::falcon::{verify};
+use falcon::falcon::verify;
 use falcon::hash_to_point::{PoseidonHashToPoint, PoseidonHashToPointImpl};
 use falcon::packing::{pack_public_key, unpack_public_key};
-use falcon::types::{FalconPublicKey, FalconSignature, FalconVerificationHint, FalconSignatureWithHint};
+use falcon::types::{
+    FalconPublicKey, FalconSignature, FalconSignatureWithHint, FalconVerificationHint,
+};
 use falcon::zq::Zq;
 use snforge_std::fs::{FileTrait, read_json};
 
@@ -71,7 +73,7 @@ fn test_packing_matches_rust() {
     while i != packed_span.len() {
         assert_eq!(*packed_span.at(i), *test_packed_span.at(i), "pack mismatch at slot {}", i);
         i += 1;
-    };
+    }
 
     // Test unpack: unpack Rust-generated packed values
     let unpacked = unpack_public_key(test.packed.span());

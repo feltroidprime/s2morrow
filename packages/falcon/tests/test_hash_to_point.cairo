@@ -46,6 +46,6 @@ fn test_hash_to_point_different_inputs() {
             break;
         }
         i += 1;
-    };
+    }
     assert!(differ, "different messages produced identical output");
 }

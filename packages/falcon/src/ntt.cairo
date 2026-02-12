@@ -17,7 +17,7 @@ pub fn mul_ntt(mut f: Span<Zq>, mut g: Span<Zq>) -> Array<Zq> {
     while let Some(f_coeff) = f.pop_front() {
         let g_coeff = g.pop_front().unwrap();
         res.append(mul_mod(*f_coeff, *g_coeff));
-    };
+    }
     res
 }
 
@@ -38,6 +38,6 @@ pub fn intt_with_hint(f_ntt: Span<Zq>, result_hint: Span<Zq>) -> Span<Zq> {
     let mut r_iter = roundtrip.span();
     while let Some(f_val) = f_iter.pop_front() {
         assert(f_val == r_iter.pop_front().unwrap(), 'intt hint mismatch');
-    };
+    }
     result_hint
 }

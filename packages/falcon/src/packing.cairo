@@ -9,7 +9,7 @@ use corelib_imports::bounded_int::bounded_int::{add, mul};
 use corelib_imports::bounded_int::{
     AddHelper, BoundedInt, DivRemHelper, MulHelper, bounded_int_div_rem, downcast, upcast,
 };
-use falcon::zq::{Zq, QConst, Q_CONST, NZ_Q};
+use falcon::zq::{NZ_Q, QConst, Q_CONST, Zq};
 
 // =============================================================================
 // Constants
@@ -342,7 +342,7 @@ pub fn pack_public_key(values: Span<Zq>) -> Array<felt252> {
 
         result.append(slot);
         offset += chunk;
-    };
+    }
     assert!(result.len() == PACKED_SLOTS, "packing produced wrong slot count");
     result
 }
@@ -378,6 +378,6 @@ pub fn unpack_public_key(packed: Span<felt252>) -> Array<Zq> {
         }
 
         i += 1;
-    };
+    }
     output
 }

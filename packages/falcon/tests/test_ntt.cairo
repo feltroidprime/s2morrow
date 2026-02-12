@@ -1,8 +1,8 @@
-use falcon_old::ntt::ntt;
+use corelib_imports::bounded_int::upcast;
 use falcon::ntt_felt252::ntt_512;
 use falcon::zq::{Zq, from_u16};
+use falcon_old::ntt::ntt;
 use falcon_zknox::ntt_zknox::zknox_nttFW_reduced;
-use corelib_imports::bounded_int::upcast;
 use snforge_std::fs::{FileTrait, read_json};
 
 #[derive(Drop, Serde)]
@@ -28,7 +28,7 @@ fn test_ntt_recursive_512() {
     let mut u16_input: Array<u16> = array![];
     for val in input.span() {
         u16_input.append(upcast(*val));
-    };
+    }
 
     let result = ntt(u16_input.span());
     assert_eq!(result.len(), 512);
@@ -59,7 +59,7 @@ fn test_ntt_zknox_vs_felt252() {
     let mut input_zknox: Array<felt252> = array![];
     for val in input.span() {
         input_zknox.append(upcast(*val));
-    };
+    }
 
     // Run zknox NTT (unreduced + reduce combined)
     let zknox_result = zknox_nttFW_reduced(input_zknox.span());
@@ -88,7 +88,7 @@ fn test_ntt_zknox_vs_felt252() {
         sum_sq_z += z * z;
         sum_sq_f += f * f;
         j += 1;
-    };
+    }
     assert_eq!(sum_z, sum_f, "sum mismatch");
     assert_eq!(sum_sq_z, sum_sq_f, "sum of squares mismatch");
 }

@@ -7,10 +7,10 @@
 //! Security: each coefficient comes from reducing a >=50-bit value mod Q.
 //! Per Renyi analysis (scripts/renyi.md), this gives <=0.37 bits security loss.
 
-use corelib_imports::bounded_int::{BoundedInt, DivRemHelper, bounded_int_div_rem, downcast};
 use core::poseidon::{hades_permutation, poseidon_hash_span};
-use falcon::zq::{Zq, QConst, NZ_Q};
+use corelib_imports::bounded_int::{BoundedInt, DivRemHelper, bounded_int_div_rem, downcast};
 use falcon::types::HashToPoint;
+use falcon::zq::{NZ_Q, QConst, Zq};
 
 // =============================================================================
 // LOW extraction chain (from u128, 128 bits -> 6 Zq)
@@ -175,10 +175,10 @@ pub impl PoseidonHashToPointImpl of HashToPoint<PoseidonHashToPoint> {
         let mut input: Array<felt252> = array![];
         for m in message {
             input.append(*m);
-        };
+        }
         for s in salt {
             input.append(*s);
-        };
+        }
         let seed = poseidon_hash_span(input.span());
 
         // Squeeze: 21 full rounds (504 coefficients) + 1 partial round (8 coefficients)
@@ -195,7 +195,7 @@ pub impl PoseidonHashToPointImpl of HashToPoint<PoseidonHashToPoint> {
             extract_12_from_felt252(s0, ref coeffs);
             extract_12_from_felt252(s1, ref coeffs);
             round += 1;
-        };
+        }
 
         // Final round: extract 8 from s0 only (6 from low + 2 from high)
         let (ns0, _, _) = hades_permutation(s0, s1, s2);

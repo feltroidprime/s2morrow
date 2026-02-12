@@ -1,11 +1,11 @@
+use corelib_imports::bounded_int::upcast;
 use falcon::falcon::verify_with_msg_point;
+use falcon::ntt::{mul_ntt, ntt_fast};
 use falcon::types::{
     FalconPublicKey, FalconSignature, FalconSignatureWithHint, FalconVerificationHint,
 };
-use falcon::ntt::{ntt_fast, mul_ntt};
 use falcon::zq::{Zq, from_u16};
 use falcon_old::ntt::intt;
-use corelib_imports::bounded_int::upcast;
 use snforge_std::fs::{FileTrait, read_json};
 
 #[derive(Drop, Serde)]
@@ -34,7 +34,7 @@ fn to_zq_array(s: Span<u16>) -> Array<Zq> {
     let mut r: Array<Zq> = array![];
     for v in s {
         r.append(from_u16(*v));
-    };
+    }
     r
 }
 
@@ -43,7 +43,7 @@ fn to_u16_array(s: Span<Zq>) -> Array<u16> {
     let mut r: Array<u16> = array![];
     for v in s {
         r.append(upcast(*v));
-    };
+    }
     r
 }
 
@@ -73,11 +73,11 @@ fn test_verify_with_msg_point() {
     let mut s1_arr: Array<Zq> = array![];
     for v in s1_zq.span() {
         s1_arr.append(*v);
-    };
+    }
     let mut pk_ntt_arr: Array<Zq> = array![];
     for v in pk_ntt.span() {
         pk_ntt_arr.append(*v);
-    };
+    }
 
     let msg_point_zq = to_zq_array(att.msg_point.span());
 
@@ -106,13 +106,13 @@ fn test_verify_bad_hint_panics() {
     while i != 512 {
         bad_hint.append(zero);
         i += 1;
-    };
+    }
 
     let s1_arr = to_zq_array(att.s1.span());
     let mut pk_ntt_arr: Array<Zq> = array![];
     for v in pk_ntt.span() {
         pk_ntt_arr.append(*v);
-    };
+    }
 
     let msg_point_zq = to_zq_array(att.msg_point.span());
 
