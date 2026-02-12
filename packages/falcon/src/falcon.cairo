@@ -27,23 +27,17 @@ fn center_and_square(coeff: Zq) -> felt252 {
     }
 }
 
-/// Compute sum of squared centered coefficients: sum(min(x, Q-x)^2 for x in f)
-fn norm_squared(mut f: Span<Zq>) -> felt252 {
+/// Compute ||msg_point - product||^2 + ||s1||^2 in a single pass.
+/// Fuses subtraction, centering, and norm accumulation for both s0 and s1.
+fn compute_norm(
+    mut msg_point: Span<Zq>, mut product: Span<Zq>, mut s1: Span<Zq>,
+) -> felt252 {
     let mut acc: felt252 = 0;
-    while let Some(coeff) = f.pop_front() {
-        acc += center_and_square(*coeff);
-    };
-    acc
-}
-
-/// Subtract two polynomials (coefficient-wise mod Q) and compute the squared
-/// centered norm of the difference in a single pass. Avoids allocating s0.
-fn sub_and_norm_squared(mut f: Span<Zq>, mut g: Span<Zq>) -> felt252 {
-    let mut acc: felt252 = 0;
-    while let Some(f_coeff) = f.pop_front() {
-        let g_coeff = g.pop_front().unwrap();
+    while let Some(f_coeff) = msg_point.pop_front() {
+        let g_coeff = product.pop_front().unwrap();
+        let s1_coeff = s1.pop_front().unwrap();
         let diff = sub_mod(*f_coeff, *g_coeff);
-        acc += center_and_square(diff);
+        acc += center_and_square(diff) + center_and_square(*s1_coeff);
     };
     acc
 }
@@ -85,8 +79,8 @@ pub fn verify_with_msg_point(
     // 3. Verify hint: checks that NTT(mul_hint) == product_ntt (costs 1 NTT)
     let product = intt_with_hint(product_ntt.span(), mul_hint);
 
-    // 4+5. s0 = msg_point - product, then ||s0||^2 + ||s1||^2 <= SIG_BOUND
-    let norm = sub_and_norm_squared(msg_point, product) + norm_squared(s1);
+    // 4+5. ||s0||^2 + ||s1||^2 in one pass (s0 = msg_point - product)
+    let norm = compute_norm(msg_point, product, s1);
     let norm_u64: u64 = norm.try_into().unwrap();
     norm_u64 <= SIG_BOUND_512
 }
