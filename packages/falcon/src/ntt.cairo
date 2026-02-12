@@ -8,18 +8,7 @@
 //! No recursive NTT or INTT — verification uses hint-based approach.
 
 use crate::ntt_felt252::ntt_512;
-use crate::zq::{Zq, mul_mod, sub_mod};
-
-/// Subtract coefficients of two polynomials modulo Q
-pub fn sub_zq(mut f: Span<Zq>, mut g: Span<Zq>) -> Array<Zq> {
-    assert(f.len() == g.len(), 'f.len() != g.len()');
-    let mut res: Array<Zq> = array![];
-    while let Some(f_coeff) = f.pop_front() {
-        let g_coeff = g.pop_front().unwrap();
-        res.append(sub_mod(*f_coeff, *g_coeff));
-    };
-    res
-}
+use crate::zq::{Zq, mul_mod};
 
 /// Multiply coefficients of two polynomials modulo Q (pointwise in NTT domain)
 pub fn mul_ntt(mut f: Span<Zq>, mut g: Span<Zq>) -> Array<Zq> {

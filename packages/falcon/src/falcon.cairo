@@ -2,32 +2,48 @@
 //
 // SPDX-License-Identifier: MIT
 
-use crate::ntt::{sub_zq, ntt_fast, mul_ntt, intt_with_hint};
-use crate::zq::Zq;
+use crate::ntt::{ntt_fast, mul_ntt, intt_with_hint};
+use crate::zq::{Zq, sub_mod};
 use falcon::types::{FalconPublicKey, FalconSignatureWithHint, HashToPoint};
 use corelib_imports::bounded_int::{BoundedInt, downcast, upcast};
 
 /// Zq value in the low half: [0, (Q-1)/2] = [0, 6144]
 type ZqLow = BoundedInt<0, 6144>;
 const Q_felt252: felt252 = 12289;
+
+/// Compute the squared centered norm of a single Zq element.
+#[inline(always)]
+fn center_and_square(coeff: Zq) -> felt252 {
+    match downcast::<Zq, ZqLow>(coeff) {
+        Option::Some(low) => {
+            let x: felt252 = upcast(low);
+            x * x
+        },
+        Option::None => {
+            let x: felt252 = upcast(coeff);
+            let centered = Q_felt252 - x;
+            centered * centered
+        },
+    }
+}
+
 /// Compute sum of squared centered coefficients: sum(min(x, Q-x)^2 for x in f)
-/// Uses downcast to split at Q/2 (1 range check per element), then felt252
-/// arithmetic for squaring and accumulation (no overflow, no range checks).
 fn norm_squared(mut f: Span<Zq>) -> felt252 {
     let mut acc: felt252 = 0;
     while let Some(coeff) = f.pop_front() {
-        let sq: felt252 = match downcast::<Zq, ZqLow>(*coeff) {
-            Option::Some(low) => {
-                let x: felt252 = upcast(low);
-                x * x
-            },
-            Option::None => {
-                let x: felt252 = upcast(*coeff);
-                let centered = Q_felt252 - x;
-                centered * centered
-            },
-        };
-        acc += sq;
+        acc += center_and_square(*coeff);
+    };
+    acc
+}
+
+/// Subtract two polynomials (coefficient-wise mod Q) and compute the squared
+/// centered norm of the difference in a single pass. Avoids allocating s0.
+fn sub_and_norm_squared(mut f: Span<Zq>, mut g: Span<Zq>) -> felt252 {
+    let mut acc: felt252 = 0;
+    while let Some(f_coeff) = f.pop_front() {
+        let g_coeff = g.pop_front().unwrap();
+        let diff = sub_mod(*f_coeff, *g_coeff);
+        acc += center_and_square(diff);
     };
     acc
 }
@@ -69,11 +85,8 @@ pub fn verify_with_msg_point(
     // 3. Verify hint: checks that NTT(mul_hint) == product_ntt (costs 1 NTT)
     let product = intt_with_hint(product_ntt.span(), mul_hint);
 
-    // 4. s0 = msg_point - product (coefficient-wise mod Q)
-    let s0 = sub_zq(msg_point, product);
-
-    // 5. Norm check: ||s0||^2 + ||s1||^2 <= SIG_BOUND
-    let norm = norm_squared(s0.span()) + norm_squared(s1);
+    // 4+5. s0 = msg_point - product, then ||s0||^2 + ||s1||^2 <= SIG_BOUND
+    let norm = sub_and_norm_squared(msg_point, product) + norm_squared(s1);
     let norm_u64: u64 = norm.try_into().unwrap();
     norm_u64 <= SIG_BOUND_512
 }

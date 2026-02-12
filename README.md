@@ -62,26 +62,25 @@ cd ../falcon-rs && cargo test generate_ -- --nocapture
 
 ## Performance
 
-Profiled at commit `c0e7510` with `cairo-profiler` (cumulative steps):
+Profiled at commit `027e3a9` with `cairo-profiler` (cumulative steps):
 
 | Function | Steps | Description |
 |----------|-------|-------------|
-| `verify` (e2e) | 154,776 | Full verification including hash-to-point |
-| `norm_squared` | ~22K | Norm check (downcast split + felt252 squaring) |
-| `sub_zq` | 15,376 | Coefficient subtraction (512 elements) |
+| `verify` (e2e) | 147,070 | Full verification including hash-to-point |
+| `sub_and_norm_squared` | 18,698 | Fused subtraction + norm (s0 = msg - product, then ‖s0‖²) |
 | `mul_ntt` | 14,864 | Pointwise multiply (512 elements) |
-| `ntt_fast` | ~15K | NTT wrapper (delegates to ntt_512) |
+| `norm_squared` | 10,998 | Norm check on s1 (downcast split + felt252 squaring) |
 | `intt_with_hint` | 9,742 | Hint verification (forward NTT + compare) |
 | `hash_to_point` | 5,988 | Poseidon XOF squeeze (22 permutations) |
 
 **Verification cost breakdown** (`verify_with_msg_point`):
 - 2x `ntt_fast`: ~30K steps (NTT of s1 + NTT of mul_hint)
-- `norm_squared`: ~22K steps (2x 512 coefficients, downcast + felt252 sq)
+- `sub_and_norm_squared`: ~19K steps (fused: sub s0 + ‖s0‖², no s0 array allocation)
 - `mul_ntt`: ~15K steps (pointwise s1_ntt * pk_ntt)
-- `sub_zq`: ~15K steps (s0 = msg_point - product)
+- `norm_squared`: ~11K steps (‖s1‖² only)
 - `intt_with_hint`: ~10K steps (verify hint correctness)
 
-L2 gas: `verify` ~16.9M | `verify_with_msg_point` ~60.3M (includes 2 NTTs)
+L2 gas: `verify` ~30.7M | `verify_with_msg_point` ~59.5M
 
 ## References
 
