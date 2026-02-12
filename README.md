@@ -62,25 +62,21 @@ cd ../falcon-rs && cargo test generate_ -- --nocapture
 
 ## Performance
 
-Profiled at commit `027e3a9` with `cairo-profiler` (cumulative steps):
+Profiled at commit `68680dc` with `cairo-profiler` (cumulative steps):
 
 | Function | Steps | Description |
 |----------|-------|-------------|
-| `verify` (e2e) | 147,070 | Full verification including hash-to-point |
-| `sub_and_norm_squared` | 18,698 | Fused subtraction + norm (s0 = msg - product, then ‖s0‖²) |
-| `mul_ntt` | 14,864 | Pointwise multiply (512 elements) |
-| `norm_squared` | 10,998 | Norm check on s1 (downcast split + felt252 squaring) |
-| `intt_with_hint` | 9,742 | Hint verification (forward NTT + compare) |
+| `verify` (e2e) | 76,295 | Full verification including hash-to-point |
+| `verify_with_msg_point` | 39,419 | Single fused loop: hint check + norm computation |
 | `hash_to_point` | 5,988 | Poseidon XOF squeeze (22 permutations) |
 
-**Verification cost breakdown** (`verify_with_msg_point`):
-- 2x `ntt_fast`: ~30K steps (NTT of s1 + NTT of mul_hint)
-- `sub_and_norm_squared`: ~19K steps (fused: sub s0 + ‖s0‖², no s0 array allocation)
-- `mul_ntt`: ~15K steps (pointwise s1_ntt * pk_ntt)
-- `norm_squared`: ~11K steps (‖s1‖² only)
-- `intt_with_hint`: ~10K steps (verify hint correctness)
+**Total test cost:** 132,152 steps (includes deserialization overhead).
 
-L2 gas: `verify` ~30.7M | `verify_with_msg_point` ~59.5M
+`verify_with_msg_point` does everything in one pass over 512 coefficients:
+- 2x `ntt_fast` (unrolled, no loops): NTT of s1 + NTT of mul_hint
+- 1 fused loop: `mul_mod` hint check + `sub_mod` + 2x `center_and_square` norm accumulation
+
+L2 gas: `verify` ~28.2M | `verify_with_msg_point` ~57.9M
 
 ## References
 
