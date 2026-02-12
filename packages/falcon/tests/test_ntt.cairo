@@ -85,8 +85,7 @@ fn test_ntt_zknox_vs_felt252() {
     let mut j: usize = 0;
     while j < 512 {
         let z = *zknox_result.at(j);
-        let f_u32: u32 = upcast(*felt252_result.at(j));
-        let f: felt252 = f_u32.into();
+        let f: felt252 = upcast(*felt252_result.at(j));
         sum_z += z;
         sum_f += f;
         sum_sq_z += z * z;

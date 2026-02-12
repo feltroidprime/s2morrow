@@ -1,5 +1,6 @@
 use falcon::ntt::intt_with_hint;
-use falcon::zq::{Zq, from_u16};
+use falcon::zq::Zq;
+use corelib_imports::bounded_int::downcast;
 use falcon_zknox::ntt_zknox::zknox_nttFW_reduced;
 use falcon_zknox::intt_zknox::zknox_inttFW_reduced;
 use snforge_std::fs::{FileTrait, read_json};
@@ -24,8 +25,7 @@ fn load_json_input(path: ByteArray) -> Span<felt252> {
 fn felt_to_zq(input: Span<felt252>) -> Array<Zq> {
     let mut result: Array<Zq> = array![];
     for v in input {
-        let u: u16 = (*v).try_into().unwrap();
-        result.append(from_u16(u));
+        result.append(downcast(*v).expect('value exceeds Q-1'));
     };
     result
 }

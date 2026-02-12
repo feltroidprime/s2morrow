@@ -127,12 +127,10 @@ pub fn mul_mod(a: Zq, b: Zq) -> Zq {
 
 impl ZqSerde of Serde<Zq> {
     fn serialize(self: @Zq, ref output: Array<felt252>) {
-        let wide: u32 = upcast(*self);
-        output.append(wide.into());
+        output.append(upcast(*self));
     }
     fn deserialize(ref serialized: Span<felt252>) -> Option<Zq> {
         let felt_val: felt252 = Serde::deserialize(ref serialized)?;
-        let u: u16 = felt_val.try_into()?;
-        downcast(u)
+        downcast(felt_val)
     }
 }

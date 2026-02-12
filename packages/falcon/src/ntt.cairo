@@ -38,8 +38,7 @@ pub fn ntt_fast(f: Span<Zq>) -> Array<Zq> {
     assert(f.len() == 512, 'ntt_fast requires n=512');
     let mut felt_input: Array<felt252> = array![];
     for val in f {
-        let wide: u32 = upcast(*val);
-        felt_input.append(wide.into());
+        felt_input.append(upcast(*val));
     };
     ntt_512(felt_input.span())
 }
