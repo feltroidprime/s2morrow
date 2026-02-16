@@ -16,7 +16,6 @@ type ZqLow = BoundedInt<0, 6144>;
 const Q_felt252: felt252 = 12289;
 
 /// Compute the squared centered norm of a single Zq element.
-#[inline(always)]
 fn center_and_square(coeff: Zq) -> felt252 {
     match downcast::<Zq, ZqLow>(coeff) {
         Option::Some(low) => {
