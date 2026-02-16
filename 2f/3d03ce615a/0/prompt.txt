@@ -328,3 +328,15 @@ fn bench_my_function() {
 ```
 
 **Known limitation:** Syscall execution costs (secp256r1, keccak, etc.) are not attributed in the l2 gas profile. Use snforge test output for total gas; use profiler for relative hotspot analysis within Cairo code.
+
+---
+
+can you add previous costs well (from the first time we had this verify function)
+
+---
+
+[Request interrupted by user for tool use]
+
+---
+
+continue

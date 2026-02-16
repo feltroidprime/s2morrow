@@ -80,3 +80,15 @@ If tools are missing, see `installation.md` in this skill directory. The CLI scr
 
 **Alwa...
 
+### Prompt 15
+
+can you add previous costs well (from the first time we had this verify function)
+
+### Prompt 16
+
+[Request interrupted by user for tool use]
+
+### Prompt 17
+
+continue
+
