@@ -704,6 +704,7 @@ use corelib_imports::bounded_int::bounded_int::{SubHelper, add, sub, mul};"""
         """Generate Cairo imports for felt252 mode."""
         return """// Auto-generated felt252 mode - DO NOT EDIT
 use corelib_imports::bounded_int::{BoundedInt, DivRemHelper, bounded_int_div_rem, upcast};
+use corelib_imports::integer::{U128sFromFelt252Result, u128s_from_felt252};
 use crate::zq::{Zq, QConst, NZ_Q};
 """
 
@@ -722,14 +723,26 @@ use crate::zq::{Zq, QConst, NZ_Q};
 
         # Reduction machinery — QConst and NZ_Q come from crate::zq
         lines.append(f"const SHIFT: felt252 = {shift};")
-        lines.append(f"type ShiftedT = BoundedInt<0, {shifted_max}>;")
 
-        # DivRemHelper impl
-        div_max = shifted_max // self.modulus
+        u128_max = 2**128 - 1
+        lines.append(f"type U128AsBounded = BoundedInt<0, {u128_max}>;")
+
+        # DivRemHelper for u128-bounded / Q
+        div_max = u128_max // self.modulus
         lines.append("")
-        lines.append("impl DivRem_ShiftedT_QConst of DivRemHelper<ShiftedT, QConst> {")
+        lines.append("impl DivRem_U128_QConst of DivRemHelper<U128AsBounded, QConst> {")
         lines.append(f"    type DivT = BoundedInt<0, {div_max}>;")
         lines.append("    type RemT = Zq;")
+        lines.append("}")
+
+        # Wrapper: extract low u128 from felt252 (both branches return low, no panic)
+        lines.append("")
+        lines.append("#[inline(always)]")
+        lines.append("fn felt252_as_u128(x: felt252) -> u128 {")
+        lines.append("    match u128s_from_felt252(x) {")
+        lines.append("        U128sFromFelt252Result::Narrow(low) => low,")
+        lines.append("        U128sFromFelt252Result::Wide((_, low)) => low,")
+        lines.append("    }")
         lines.append("}")
 
         return "\n".join(lines)
@@ -859,7 +872,7 @@ use crate::zq::{Zq, QConst, NZ_Q};
                         # No shift, REDUCE directly on the variable
                         src_name = shifted_var.name
 
-            lines.append(f"    let {out_name}: ShiftedT = ({src_name} + SHIFT).try_into().unwrap();")
+            lines.append(f"    let {out_name}: U128AsBounded = upcast(felt252_as_u128({src_name} + SHIFT));")
             lines.append(f"    let (_, {out_name}) = bounded_int_div_rem({out_name}, NZ_Q);")
 
         lines.append("")
