@@ -3,22 +3,10 @@
   "checkpoint_id": "2f3d03ce615a",
   "strategy": "manual-commit",
   "branch": "master",
-  "checkpoints_count": 5,
+  "checkpoints_count": 2,
   "files_touched": [
-    ".claude/settings.json",
-    ".claude/settings.local.json",
-    ".claude/skills/benchmarking-cairo",
-    ".claude/skills/build-in-public/SKILL.md",
-    ".claude/skills/cairo-coding",
-    "docs/plans/2026-02-11-eliminate-u16-use-zq-everywhere.md",
-    "docs/plans/2026-02-11-falcon-prod-ready-design.md",
-    "docs/plans/2026-02-11-falcon-prod-ready-impl.md",
-    "docs/plans/2026-02-12-eliminate-u16-use-zq-everywhere.md",
-    "docs/plans/2026-02-12-unrolled-jit-verification.md",
     "docs/plans/2026-02-16-falcon-account-abstraction-design.md",
     "docs/plans/2026-02-16-falcon-account-abstraction.md",
-    "scripts/thread/CLAUDE.md",
-    "scripts/thread/thread.py",
     "scripts/thread/threads/day5/thread.md",
     "scripts/thread/visuals/day5_visuals.py"
   ],
@@ -39,10 +27,10 @@
     }
   ],
   "token_usage": {
-    "input_tokens": 983,
-    "cache_creation_tokens": 178171,
-    "cache_read_tokens": 6385641,
-    "output_tokens": 3936,
-    "api_call_count": 93
+    "input_tokens": 986,
+    "cache_creation_tokens": 127779,
+    "cache_read_tokens": 8461277,
+    "output_tokens": 4422,
+    "api_call_count": 95
   }
 }

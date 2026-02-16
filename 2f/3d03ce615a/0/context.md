@@ -36,3 +36,47 @@ create a claude.md for @falcon_py/scripts/thread
 
 The first tweet is a response to day 4, but we want to quote the day 4 in the first tweet, like previous threads. Fix t
 
+### Prompt 7
+
+On typefully web there is a "converet to quote" button when we paste link. Are you sure it's not in the API ?
+
+### Prompt 8
+
+keep it in the text, it's fine
+
+### Prompt 9
+
+For the optimization sprint, let's focus exactly on the costs in steps of the verify function, not the global test cost. You can find out in each profile at each commit to adapt the numbers.
+
+### Prompt 10
+
+[Request interrupted by user for tool use]
+
+### Prompt 11
+
+Never check in the readme. USe exact source of truth from @profiles/ .
+
+### Prompt 12
+
+[Request interrupted by user for tool use]
+
+### Prompt 13
+
+use terminal based step cost extraction for this, see /benchmarking-cairo  skill for ref
+
+### Prompt 14
+
+Base directory for this skill: /home/felt/PycharmProjects/s2morrow/.claude/skills/benchmarking-cairo
+
+# Benchmarking Cairo
+
+## Overview
+
+Profile Cairo function execution to identify hotspots by steps, calls, range checks, and other builtins. Works with both `scarb execute` (standalone programs) and `snforge test` (Starknet Foundry tests).
+
+If tools are missing, see `installation.md` in this skill directory. The CLI script is `profile.py` in this skill directory.
+
+## REQUIRED: Use the CLI
+
+**Alwa...
+
