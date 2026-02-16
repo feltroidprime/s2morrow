@@ -381,3 +381,98 @@ pub fn unpack_public_key(packed: Span<felt252>) -> Array<Zq> {
     }
     output
 }
+
+// =============================================================================
+// PackedPolynomial512: storage-friendly struct for 512 Zq coefficients
+// =============================================================================
+
+/// A polynomial of 512 Zq coefficients packed into 29 felt252 fields.
+/// Suitable for Starknet storage (each field maps to a single storage slot).
+#[derive(Drop, Copy, Serde)]
+pub struct PackedPolynomial512 {
+    pub s0: felt252,
+    pub s1: felt252,
+    pub s2: felt252,
+    pub s3: felt252,
+    pub s4: felt252,
+    pub s5: felt252,
+    pub s6: felt252,
+    pub s7: felt252,
+    pub s8: felt252,
+    pub s9: felt252,
+    pub s10: felt252,
+    pub s11: felt252,
+    pub s12: felt252,
+    pub s13: felt252,
+    pub s14: felt252,
+    pub s15: felt252,
+    pub s16: felt252,
+    pub s17: felt252,
+    pub s18: felt252,
+    pub s19: felt252,
+    pub s20: felt252,
+    pub s21: felt252,
+    pub s22: felt252,
+    pub s23: felt252,
+    pub s24: felt252,
+    pub s25: felt252,
+    pub s26: felt252,
+    pub s27: felt252,
+    pub s28: felt252,
+}
+
+#[generate_trait]
+pub impl PackedPolynomial512Impl of PackedPolynomial512Trait {
+    /// Pack 512 Zq coefficients into a `PackedPolynomial512`.
+    fn from_coeffs(values: Span<Zq>) -> PackedPolynomial512 {
+        let packed = pack_public_key(values);
+        let s = packed.span();
+        PackedPolynomial512 {
+            s0: *s.at(0),
+            s1: *s.at(1),
+            s2: *s.at(2),
+            s3: *s.at(3),
+            s4: *s.at(4),
+            s5: *s.at(5),
+            s6: *s.at(6),
+            s7: *s.at(7),
+            s8: *s.at(8),
+            s9: *s.at(9),
+            s10: *s.at(10),
+            s11: *s.at(11),
+            s12: *s.at(12),
+            s13: *s.at(13),
+            s14: *s.at(14),
+            s15: *s.at(15),
+            s16: *s.at(16),
+            s17: *s.at(17),
+            s18: *s.at(18),
+            s19: *s.at(19),
+            s20: *s.at(20),
+            s21: *s.at(21),
+            s22: *s.at(22),
+            s23: *s.at(23),
+            s24: *s.at(24),
+            s25: *s.at(25),
+            s26: *s.at(26),
+            s27: *s.at(27),
+            s28: *s.at(28),
+        }
+    }
+
+    /// Unpack back to 512 Zq coefficients.
+    fn to_coeffs(self: @PackedPolynomial512) -> Array<Zq> {
+        unpack_public_key(self.to_span())
+    }
+
+    /// Return the 29 packed felt252 values as a span.
+    fn to_span(self: @PackedPolynomial512) -> Span<felt252> {
+        array![
+            *self.s0, *self.s1, *self.s2, *self.s3, *self.s4, *self.s5, *self.s6, *self.s7,
+            *self.s8, *self.s9, *self.s10, *self.s11, *self.s12, *self.s13, *self.s14, *self.s15,
+            *self.s16, *self.s17, *self.s18, *self.s19, *self.s20, *self.s21, *self.s22, *self.s23,
+            *self.s24, *self.s25, *self.s26, *self.s27, *self.s28,
+        ]
+            .span()
+    }
+}

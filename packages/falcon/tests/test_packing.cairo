@@ -1,4 +1,4 @@
-use falcon::packing::{pack_public_key, unpack_public_key};
+use falcon::packing::{PackedPolynomial512Trait, pack_public_key, unpack_public_key};
 use falcon::zq::{Zq, from_u16};
 
 #[test]
@@ -57,6 +57,52 @@ fn test_packing_edge_cases() {
     j = 0;
     while j != 512 {
         assert_eq!(*unpacked_max.at(j), max_val, "max mismatch at {}", j);
+        j += 1;
+    };
+}
+
+#[test]
+fn test_packed_polynomial_roundtrip() {
+    // Build 512 Zq values: i mod 12289
+    let mut values: Array<Zq> = array![];
+    let mut i: usize = 0;
+    while i != 512 {
+        values.append(from_u16((i % 12289).try_into().unwrap()));
+        i += 1;
+    }
+
+    let packed = PackedPolynomial512Trait::from_coeffs(values.span());
+    let unpacked = packed.to_coeffs();
+
+    assert_eq!(unpacked.len(), 512);
+    let mut j: usize = 0;
+    while j != 512 {
+        assert_eq!(*unpacked.at(j), *values.at(j), "roundtrip mismatch at index {}", j);
+        j += 1;
+    };
+}
+
+#[test]
+fn test_packed_polynomial_to_span() {
+    // Build 512 Zq values: i mod 12289
+    let mut values: Array<Zq> = array![];
+    let mut i: usize = 0;
+    while i != 512 {
+        values.append(from_u16((i % 12289).try_into().unwrap()));
+        i += 1;
+    }
+
+    let packed = PackedPolynomial512Trait::from_coeffs(values.span());
+    let span = packed.to_span();
+
+    assert_eq!(span.len(), 29);
+
+    // Unpack via the raw function and verify equality
+    let unpacked = unpack_public_key(span);
+    assert_eq!(unpacked.len(), 512);
+    let mut j: usize = 0;
+    while j != 512 {
+        assert_eq!(*unpacked.at(j), *values.at(j), "to_span roundtrip mismatch at index {}", j);
         j += 1;
     };
 }
