@@ -18,6 +18,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "falcon_account"
+version = "0.1.0"
+dependencies = [
+ "falcon",
+ "openzeppelin_interfaces",
+ "openzeppelin_introspection",
+ "openzeppelin_utils",
+ "snforge_std",
+]
+
+[[package]]
 name = "falcon_old"
 version = "0.1.0"
 dependencies = [
@@ -29,6 +40,27 @@ name = "falcon_zknox"
 version = "0.1.0"
 dependencies = [
  "corelib_imports",
+]
+
+[[package]]
+name = "openzeppelin_interfaces"
+version = "2.1.0"
+source = "git+https://github.com/OpenZeppelin/cairo-contracts.git?tag=v4.0.0-alpha.0#5382abed7ec8a3e9741ff0092fdb8d92cd8423b8"
+
+[[package]]
+name = "openzeppelin_introspection"
+version = "4.0.0-alpha.0"
+source = "git+https://github.com/OpenZeppelin/cairo-contracts.git?tag=v4.0.0-alpha.0#5382abed7ec8a3e9741ff0092fdb8d92cd8423b8"
+dependencies = [
+ "openzeppelin_interfaces",
+]
+
+[[package]]
+name = "openzeppelin_utils"
+version = "2.1.0"
+source = "git+https://github.com/OpenZeppelin/cairo-contracts.git?tag=v4.0.0-alpha.0#5382abed7ec8a3e9741ff0092fdb8d92cd8423b8"
+dependencies = [
+ "openzeppelin_interfaces",
 ]
 
 [[package]]
