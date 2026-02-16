@@ -25,3 +25,21 @@ pub struct FalconSignatureWithHint {
 pub trait HashToPoint<H> {
     fn hash_to_point(message: Span<felt252>, salt: Span<felt252>) -> Array<Zq>;
 }
+use falcon::packing::PackedPolynomial512;
+
+#[derive(Drop, Serde)]
+pub struct PackedFalconSignature {
+    pub s1: PackedPolynomial512,
+    pub salt: Array<felt252>,
+}
+
+#[derive(Drop, Serde)]
+pub struct PackedFalconVerificationHint {
+    pub mul_hint: PackedPolynomial512,
+}
+
+#[derive(Drop, Serde)]
+pub struct PackedFalconSignatureWithHint {
+    pub signature: PackedFalconSignature,
+    pub hint: PackedFalconVerificationHint,
+}

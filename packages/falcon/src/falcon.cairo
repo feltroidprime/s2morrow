@@ -3,8 +3,12 @@
 // SPDX-License-Identifier: MIT
 
 use corelib_imports::bounded_int::{BoundedInt, downcast, upcast};
-use falcon::types::{FalconPublicKey, FalconSignatureWithHint, HashToPoint};
+use falcon::types::{
+    FalconPublicKey, FalconSignature, FalconSignatureWithHint, FalconVerificationHint, HashToPoint,
+    PackedFalconSignatureWithHint,
+};
 use crate::ntt::ntt_fast;
+use crate::packing::{PackedPolynomial512, PackedPolynomial512Trait};
 use crate::zq::{Zq, mul_mod, sub_mod};
 
 /// Zq value in the low half: [0, (Q-1)/2] = [0, 6144]
@@ -125,4 +129,20 @@ pub fn verify_with_msg_point(
 
     let norm_u64: u64 = acc.try_into().unwrap();
     norm_u64 <= SIG_BOUND_512
+}
+
+/// Verify a Falcon signature from packed (29 felt252) inputs.
+/// Unpacks PK, s1, and mul_hint, then delegates to verify.
+pub fn verify_packed<H, +HashToPoint<H>, +Drop<H>>(
+    pk: @PackedPolynomial512, sig: PackedFalconSignatureWithHint, message: Span<felt252>,
+) -> bool {
+    let pk_coeffs = pk.to_coeffs();
+    let s1_coeffs = sig.signature.s1.to_coeffs();
+    let mul_hint_coeffs = sig.hint.mul_hint.to_coeffs();
+    let falcon_pk = FalconPublicKey { h_ntt: pk_coeffs };
+    let sig_with_hint = FalconSignatureWithHint {
+        signature: FalconSignature { s1: s1_coeffs, salt: sig.signature.salt },
+        hint: FalconVerificationHint { mul_hint: mul_hint_coeffs },
+    };
+    verify::<H>(@falcon_pk, sig_with_hint, message)
 }

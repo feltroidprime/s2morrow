@@ -1,8 +1,9 @@
-use falcon::falcon::verify;
+use falcon::falcon::{verify, verify_packed};
 use falcon::hash_to_point::{PoseidonHashToPoint, PoseidonHashToPointImpl};
-use falcon::packing::{pack_public_key, unpack_public_key};
+use falcon::packing::{PackedPolynomial512Trait, pack_public_key, unpack_public_key};
 use falcon::types::{
     FalconPublicKey, FalconSignature, FalconSignatureWithHint, FalconVerificationHint,
+    PackedFalconSignature, PackedFalconSignatureWithHint, PackedFalconVerificationHint,
 };
 use falcon::zq::Zq;
 use snforge_std::fs::{FileTrait, read_json};
@@ -106,4 +107,21 @@ fn test_verify_matches_rust() {
 
     let result = verify::<PoseidonHashToPoint>(@pk, sig_with_hint, test.message.span());
     assert!(result, "Falcon verify with Poseidon hash should pass");
+}
+
+#[test]
+fn test_verify_packed_matches_rust() {
+    let test = load_verify_test();
+
+    let pk_packed = PackedPolynomial512Trait::from_coeffs(test.pk_ntt.span());
+    let s1_packed = PackedPolynomial512Trait::from_coeffs(test.s1.span());
+    let mul_hint_packed = PackedPolynomial512Trait::from_coeffs(test.mul_hint.span());
+
+    let sig = PackedFalconSignatureWithHint {
+        signature: PackedFalconSignature { s1: s1_packed, salt: test.salt },
+        hint: PackedFalconVerificationHint { mul_hint: mul_hint_packed },
+    };
+
+    let result = verify_packed::<PoseidonHashToPoint>(@pk_packed, sig, test.message.span());
+    assert!(result, "verify_packed with Poseidon hash should pass");
 }
