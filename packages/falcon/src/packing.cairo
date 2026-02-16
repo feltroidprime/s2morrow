@@ -306,79 +306,81 @@ fn unpack_9(packed: u128, count: usize, ref output: Array<Zq>) {
     output.append(acc0);
 }
 
+/// Unpack a u128 into exactly 9 Zq values. No count checks.
+fn unpack_9_full(packed: u128, ref output: Array<Zq>) {
+    let acc8: Acc8 = downcast(packed).expect('bad pack');
+    let (acc7, r0) = bounded_int_div_rem(acc8, NZ_Q);
+    output.append(r0);
+    let (acc6, r1) = bounded_int_div_rem(acc7, NZ_Q);
+    output.append(r1);
+    let (acc5, r2) = bounded_int_div_rem(acc6, NZ_Q);
+    output.append(r2);
+    let (acc4, r3) = bounded_int_div_rem(acc5, NZ_Q);
+    output.append(r3);
+    let (acc3, r4) = bounded_int_div_rem(acc4, NZ_Q);
+    output.append(r4);
+    let (acc2, r5) = bounded_int_div_rem(acc3, NZ_Q);
+    output.append(r5);
+    let (acc1, r6) = bounded_int_div_rem(acc2, NZ_Q);
+    output.append(r6);
+    let (acc0, r7) = bounded_int_div_rem(acc1, NZ_Q);
+    output.append(r7);
+    output.append(acc0);
+}
+
+/// Unpack a u128 into exactly 8 Zq values (7 div_rems + final quotient).
+fn unpack_8(packed: u128, ref output: Array<Zq>) {
+    let acc7: Acc7 = downcast(packed).expect('bad pack');
+    let (acc6, r0) = bounded_int_div_rem(acc7, NZ_Q);
+    output.append(r0);
+    let (acc5, r1) = bounded_int_div_rem(acc6, NZ_Q);
+    output.append(r1);
+    let (acc4, r2) = bounded_int_div_rem(acc5, NZ_Q);
+    output.append(r2);
+    let (acc3, r3) = bounded_int_div_rem(acc4, NZ_Q);
+    output.append(r3);
+    let (acc2, r4) = bounded_int_div_rem(acc3, NZ_Q);
+    output.append(r4);
+    let (acc1, r5) = bounded_int_div_rem(acc2, NZ_Q);
+    output.append(r5);
+    let (acc0, r6) = bounded_int_div_rem(acc1, NZ_Q);
+    output.append(r6);
+    output.append(acc0);
+}
+
 /// Pack 512 Zq values into 29 felt252 slots.
 /// Each slot encodes up to 18 values: pack_9(lo) + pack_9(hi) * 2^128.
 pub fn pack_public_key(values: Span<Zq>) -> Array<felt252> {
     assert!(values.len() == 512, "expected 512 values");
     let mut result: Array<felt252> = array![];
     let mut offset: usize = 0;
-    // 28 full slots of 18 values each = 504 values
-    // 1 final slot with 8 remaining values
-    let total = 512;
-    while offset != total {
-        let remaining = total - offset;
-        let chunk = if remaining >= VALS_PER_FELT {
-            VALS_PER_FELT
-        } else {
-            remaining
-        };
-        let lo_count = if chunk >= VALS_PER_U128 {
-            VALS_PER_U128
-        } else {
-            chunk
-        };
-        let hi_count = chunk - lo_count;
-
-        let lo_packed = pack_9(values.slice(offset, lo_count));
-        let lo_felt: felt252 = lo_packed.into();
-
-        let slot = if hi_count != 0 {
-            let hi_packed = pack_9(values.slice(offset + lo_count, hi_count));
-            let hi_felt: felt252 = hi_packed.into();
-            lo_felt + hi_felt * TWO_POW_128
-        } else {
-            lo_felt
-        };
-
-        result.append(slot);
-        offset += chunk;
+    // 28 full slots: 9 lo + 9 hi = 18 values each (504 total)
+    while offset != 504 {
+        let lo_felt: felt252 = pack_9(values.slice(offset, 9)).into();
+        let hi_felt: felt252 = pack_9(values.slice(offset + 9, 9)).into();
+        result.append(lo_felt + hi_felt * TWO_POW_128);
+        offset += 18;
     }
-    assert!(result.len() == PACKED_SLOTS, "packing produced wrong slot count");
+    // Last slot: 8 remaining values in low half only
+    result.append(pack_9(values.slice(504, 8)).into());
     result
 }
 
 /// Unpack 29 felt252 slots back to 512 Zq values.
 pub fn unpack_public_key(packed: Span<felt252>) -> Array<Zq> {
     let mut output: Array<Zq> = array![];
-    let mut remaining: usize = 512;
+    let mut packed = packed;
+    // 28 full slots: 9 lo + 9 hi = 18 values each (504 total)
     let mut i: usize = 0;
-    let slot_count = packed.len();
-    while i != slot_count {
-        let value: felt252 = *packed.at(i);
-        let val_u256: u256 = value.into();
-        let low: u128 = val_u256.low;
-        let high: u128 = val_u256.high;
-
-        let lo_count = if remaining >= VALS_PER_U128 {
-            VALS_PER_U128
-        } else {
-            remaining
-        };
-        unpack_9(low, lo_count, ref output);
-        remaining -= lo_count;
-
-        let hi_count = if remaining >= VALS_PER_U128 {
-            VALS_PER_U128
-        } else {
-            remaining
-        };
-        if hi_count != 0 {
-            unpack_9(high, hi_count, ref output);
-            remaining -= hi_count;
-        }
-
+    while i != 28 {
+        let val_u256: u256 = (*packed.pop_front().unwrap()).into();
+        unpack_9_full(val_u256.low, ref output);
+        unpack_9_full(val_u256.high, ref output);
         i += 1;
     }
+    // Last slot: 8 remaining values in low half
+    let val_u256: u256 = (*packed.pop_front().unwrap()).into();
+    unpack_8(val_u256.low, ref output);
     output
 }
 
