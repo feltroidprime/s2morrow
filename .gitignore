@@ -51,6 +51,6 @@ profiles/*.log
 *.pb.gz
 *.png
 
-scripts
+scripts/
 snfoundry_trace
 .snfoundry_cache

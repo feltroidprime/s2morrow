@@ -18,3 +18,8 @@ assert_macros = "2.15.1"
 allowed-libfuncs-list.name = "experimental"
 sierra = true
 casm = false
+
+[target-defaults.test]
+build-external-contracts = [
+    "falcon_account::preset::FalconAccount",
+]
