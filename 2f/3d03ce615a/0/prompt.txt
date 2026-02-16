@@ -1,0 +1,159 @@
+Implement the following plan:
+
+# Plan: Write Day 5 Thread + Sync to Typefully
+
+## Context
+
+Day 5 covers Feb 11-12: full Falcon verification pipeline, then an optimization sprint (210k → 132k, -37%). User wants focus on **hash function design** and **Cairo optimizations**, told as a discovery story matching Days 1-4 voice. New images — don't reuse existing ones.
+
+Day 4 ended: "The NTT costs 15k steps and the hash pipeline is ready. Next I'm wiring them into an actual account contract."
+
+## Step 1: Create New Day 5 Visuals
+
+New Python script: `scripts/thread/visuals/day5_visuals.py` — reuses the Tokyo Night palette from existing scripts.
+
+**Image 1: `day5_verify_flow.png`** — For Post 6 (hint trick)
+Two-row flow diagram (same style as `ntt_shift_diagram.png`):
+- Top row: **Standard** → NTT(s1) → Multiply → INTT → Norm check → ✓ (3 transforms)
+- Bottom row: **Hint-based** → NTT(s1) → Multiply → NTT(hint) → Compare → Norm check → ✓ (2 transforms, 0 INTTs)
+- Highlight: "INTT" box crossed out / replaced with "provided by signer"
+- Callout: "Saves ~15k steps by moving INTT off-chain"
+
+**Image 2: `day5_extraction_chain.png`** — For Post 4 (base-Q DivRem)
+Vertical flow diagram:
+- Top: `felt252 (251 bits)` → split → `u128 (128 bits)` + `FeltHigh (124 bits)`
+- Left branch: 6 DivRem-by-q steps → 6 Zq coefficients, remainder discarded (47 bits)
+- Right branch: 6 DivRem-by-q steps → 6 Zq coefficients, remainder discarded (42 bits)
+- Bottom: "12 coefficients per felt252 × 22 permutations = 512+ coefficients"
+- Red zone highlight on the discarded remainders: "< 50 bits: don't extract"
+
+**Image 3: `day5_optimization_waterfall.png`** — For Post 8 (optimization sprint)
+Waterfall/cascade bar chart showing each optimization step:
+```
+Start:           210,888
+-u16→Zq:         189,102  (-10.3%)
+-felt252 alloc:  173,693  (-8.1%)
+-BInt norm:      154,776  (-10.9%)
+-fuse sub+norm:  147,070  (-5.0%)
+-fuse compute:   143,463  (-2.4%)
+-fuse all:       132,152  (-7.9%)
+```
+Color gradient from red (start) to green (final). Horizontal dashed line at 230k (Day 1 target).
+
+## Step 2: Thread Draft (10 posts)
+
+File: `scripts/thread/threads/day5/thread.md`
+
+```markdown
+# Day 5 Thread
+reply_to: https://x.com/feltroidPrime/status/2021250459210743914
+
+## Post 1
+[DAY 5] of building a Quantum wallet for @Starknet. I built the full Falcon-512 verification in one afternoon — types, hash function, signature checking, cross-language tests. Then spent the next afternoon cutting it by 37%.
+
+132k Cairo steps. The 230k target from Day 1 is beaten.
+
+## Post 2
+The hash function was the interesting design problem. Falcon needs to hash a message into 512 coefficients mod 12289. The spec uses SHAKE256 with rejection sampling: extract 16 bits, reject if biased, retry. That's branching and variable-length loops, expensive in a ZK VM.
+
+Blake2s would be ideal — native opcode, 2-3x cheaper than Poseidon — but I asked @Starkware and it won't be available to contracts until 0.14.2 in April. Poseidon it is.
+
+## Post 3
+I looked at how @0xMiden does their Falcon with Poseidon2. They skip rejection entirely and extract more bits per coefficient instead. The trick is in the Falcon spec itself (page 31): if your hash output is much larger than q, the modular bias becomes negligible.
+
+With 16-bit inputs some residues get 25% more pre-images than others. With 128-bit inputs the bias is parts per 10^38. A Rényi divergence argument makes it formal. Minimum safe is ~50 bits; we extract from 128. Overkill.
+
+## Post 4
+So I built base-Q extraction chains. Each Poseidon output is a felt252 — 251 bits. Split into a low u128 and a high 124-bit part, then extract coefficients with repeated DivRem-by-q: divide, take remainder, repeat. 6 from each half. 12 coefficients per felt252.
+
+22 Poseidon permutations for all 512 coefficients. No rejection, no branching, no variable-length loops.
+
+> ATTACH: day5_extraction_chain.png
+
+## Post 5
+The BoundedInt type chains for this are painful though. Each DivRem step needs exact quotient and remainder types. Two separate chains because u128 and FeltHigh have different upper bounds. 40+ type definitions just for the extraction logic.
+
+But the compiler uses those bounds to skip every overflow check. Without BoundedInt each division needs a u256 intermediate and a try_into cast back down — doubling the cost. Same lesson from Day 2: the pain pays for itself.
+
+## Post 6
+I also moved the INTT off-chain. Standard Falcon: NTT the signature, multiply by public key, INTT back, check norm. Three transforms. Instead, the signer computes mul_hint = INTT(NTT(s1) * pk_ntt) and sends it alongside the signature. The verifier just re-checks the forward direction: NTT(mul_hint) == NTT(s1) * pk_ntt.
+
+Two NTTs, zero INTTs.
+
+> ATTACH: day5_verify_flow.png
+
+## Post 7
+Then I found a free optimization 😆. I originally wrote a custom absorb function for the Poseidon sponge — rate-2 absorption, padding, domain separation, the whole thing. Then I realized Cairo's built-in poseidon_hash_span does the exact same thing. Replaced 20 lines with one function call. 33% gas reduction on hash_to_point.
+
+## Post 8
+The next day I went on an optimization sprint. 7 commits in one afternoon.
+
+The verification had three separate 512-element loops: multiply and check the hint, subtract to get s0, compute both norms. I fused them into a single pass. Then unrolled with multi_pop_front K=8. 210k → 132k steps.
+
+> ATTACH: day5_optimization_waterfall.png
+
+## Post 9
+I also built a companion Rust crate (falcon-rs) with a generic hash trait — swap SHAKE256 for Poseidon. It passes NIST's 100 known-answer test vectors for standard Falcon. Same keygen and signing; only the hash changes.
+
+Rust generates all the Cairo test data. Cairo deserializes and checks element-by-element. 27 Cairo tests, 61 Rust tests. https://github.com/feltroidprime/falcon-rs
+
+## Post 10
+132k steps, down from 800k on Day 1. -83.5%.
+
+Next: wiring this into an actual account contract. __validate__ calls verify, public key in storage packed into 29 felt252 slots, signature + hint in calldata. When Blake2s ships in 0.14.2, @zknoxhq's hash-to-point drops in and we move toward spec-compliant Falcon on a live network. Let's see.
+```
+
+## Step 3: Push to Typefully
+
+```bash
+# Preview
+python3 scripts/thread/thread.py push scripts/thread/threads/day5/thread.md --dry-run
+
+# Create draft (saves state file for 1:1 sync)
+python3 scripts/thread/thread.py push scripts/thread/threads/day5/thread.md
+
+# After any edit, re-push to update same draft
+python3 scripts/thread/thread.py push scripts/thread/threads/day5/thread.md
+```
+
+## Files
+
+| Action | File |
+|--------|------|
+| Create | `scripts/thread/visuals/day5_visuals.py` |
+| Create | `scripts/thread/threads/day5/thread.md` |
+| Auto-generated | `scripts/thread/threads/day5/thread.typefully_state.json` (gitignored) |
+| Generated images | `scripts/thread/visuals/day5_output/day5_verify_flow.png` |
+| Generated images | `scripts/thread/visuals/day5_output/day5_extraction_chain.png` |
+| Generated images | `scripts/thread/visuals/day5_output/day5_optimization_waterfall.png` |
+
+## Verification
+
+1. Run `python3 scripts/thread/visuals/day5_visuals.py` — generates 3 PNGs
+2. `--dry-run` push to check character counts per post
+3. Push to Typefully, open `private_url` to review
+4. Add images manually in Typefully UI (posts 4, 6, 8)
+5. Edit a word in `thread.md`, re-push → confirm 1:1 sync
+
+
+If you need specific details from before exiting plan mode (like exact code snippets, error messages, or content you generated), read the full transcript at: /home/felt/.REDACTED.jsonl
+
+---
+
+Can't you attach the images autmatically with the api ?
+
+---
+
+[Request interrupted by user for tool use]
+
+---
+
+Can't you attach the images autmatically with the api ? https://typefully.com/docs/api.md
+
+---
+
+create a claude.md for @falcon_py/scripts/thread
+
+---
+
+The first tweet is a response to day 4, but we want to quote the day 4 in the first tweet, like previous threads. Fix t
