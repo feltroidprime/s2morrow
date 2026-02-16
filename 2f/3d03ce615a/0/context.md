@@ -92,3 +92,27 @@ can you add previous costs well (from the first time we had this verify function
 
 continue
 
+### Prompt 18
+
+This session is being continued from a previous conversation that ran out of context. The summary below covers the earlier portion of the conversation.
+
+Analysis:
+Let me carefully analyze the entire conversation chronologically:
+
+1. **Initial Plan**: User provided a detailed plan for creating Day 5 thread content + visuals + Typefully push. The plan specified 3 images, 10 posts, and a push workflow.
+
+2. **Exploration Phase**: I explored existing files to understand patterns:
+   - `scripts/thread...
+
+### Prompt 19
+
+review the full thread now relatively to previous days, update it to 10x accuracy, interesting technical facts, storytelling and engagement (hook)
+
+### Prompt 20
+
+[Request interrupted by user]
+
+### Prompt 21
+
+we don't care about poseidon_hash_span, the thing i dit without it was non starndard / stupid from claude, we should have used poseidon hash span from the start, there's nothing to say about it, remove from thread
+
