@@ -98,3 +98,15 @@ As...
 
 We want to create a PRD for Super-ralph
 
+### Prompt 9
+
+yes, initialize super-ralph
+
+### Prompt 10
+
+[Request interrupted by user]
+
+### Prompt 11
+
+jj installed. Can use it now.
+

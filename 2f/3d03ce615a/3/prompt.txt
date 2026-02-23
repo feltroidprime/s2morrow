@@ -1357,3 +1357,15 @@ After saving the plan, offer execution choice:
 ---
 
 We want to create a PRD for Super-ralph
+
+---
+
+yes, initialize super-ralph
+
+---
+
+[Request interrupted by user]
+
+---
+
+jj installed. Can use it now.
