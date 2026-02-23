@@ -1,0 +1,32 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "2f3d03ce615a",
+  "session_id": "5fcf33d0-f281-41f8-a535-fd1390d6ba47",
+  "strategy": "manual-commit",
+  "created_at": "2026-02-23T20:12:38.679486438Z",
+  "branch": "master",
+  "checkpoints_count": 3,
+  "files_touched": [
+    ".claude/skills/cairo-coding/SKILL.md",
+    "cairo_gen/circuit.py",
+    "packages/falcon/tests/bench_conversion.cairo"
+  ],
+  "agent": "Claude Code",
+  "token_usage": {
+    "input_tokens": 115,
+    "cache_creation_tokens": 97199,
+    "cache_read_tokens": 4827337,
+    "output_tokens": 4442,
+    "api_call_count": 69
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-02-23T20:12:38.368927723Z",
+    "agent_lines": 0,
+    "human_added": 3620,
+    "human_modified": 475,
+    "human_removed": 0,
+    "total_committed": 4094,
+    "agent_percentage": 0
+  },
+  "transcript_path": ".claude/projects/-home-felt-PycharmProjects-s2morrow/5fcf33d0-f281-41f8-a535-fd1390d6ba47.jsonl"
+}

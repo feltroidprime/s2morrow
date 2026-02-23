@@ -1,0 +1,1131 @@
+check the last commit where we changed from type ShiftedT = BoundedInt<0, 4612212885115823853836039849917814806>;
+// ... 512 times:
+let r: ShiftedT = (value + SHIFT).try_into().unwrap();
+let (_, r) = bounded_int_div_rem(r, NZ_Q); to #[inline(always)]
+fn felt252_as_u128(x: felt252) -> u128 {
+    match u128s_from_felt252(x) {
+        U128sFromFelt252Result::Narrow(low) => low,
+        U128sFromFelt252Result::Wide((_, low)) => low,
+    }
+}
+// ... 512 times:
+let r: U128AsBounded = upcast(felt252_as_u128(value + SHIFT));
+let (_, r) = bounded_int_div_rem(r, NZ_Q); , i want to change that by using the match pattern on the option returned by try_into() so that in case of OptionNone we return a constant bounded int (like 1)
+
+---
+
+Profile `test_verify_packed_matches_rust` by steps using the benchmarking CLI, then view the PNG.
+
+Run this command:
+
+```bash
+cd /home/felt/PycharmProjects/s2morrow && python3 .claude/skills/benchmarking-cairo/profile.py profile \
+  --mode snforge \
+  --package falcon \
+  --test test_verify_packed_matches_rust \
+  --name verify-e2e \
+  --metric steps
+```
+
+After the command completes:
+1. Read the generated PNG file (path printed at the end of output)
+2. Show the user the profile image and summarize the top functions by steps
+3. If the user provided a previous profile to compare against, show a comparison table of total steps and top functions
+
+---
+
+confirm by total L2 gas the previous way cheaper (check the pb.gz of the last two profiles) , for the verify_packed function . restore the previous way with u128 from felt252 if yes
+
+---
+
+update relevant cairo skill with this information
+
+---
+
+Base directory for this skill: /home/felt/PycharmProjects/s2morrow/.claude/skills/cairo-coding
+
+# Coding Cairo
+
+Rules and patterns for writing efficient Cairo code. Sourced from audit findings and production profiling.
+
+## When to Use
+
+- Implementing arithmetic (modular, parity checks, quotient/remainder)
+- Optimizing loops (slow iteration, repeated `.len()` calls, index-based access)
+- Splitting or assembling integer limbs (u256 → u128, u32s → u128, felt252 → u96)
+- Packing struct fields into storage slots
+- Using `BoundedInt` for zero-overhead arithmetic with compile-time bounds
+- Choosing integer types (u128 vs u256, BoundedInt vs native types)
+
+**Not for:** Profiling/benchmarking (use benchmarking-cairo)
+
+## Quick Reference — All Rules
+
+| # | Rule | Instead of | Use |
+|---|------|-----------|-----|
+| 1 | Combined quotient+remainder | `x / m` + `x % m` | `DivRem::div_rem(x, m)` |
+| 2 | Cheap loop conditions | `while i < n` | `while i != n` |
+| 3 | Constant powers of 2 | `2_u32.pow(k)` | `match`-based lookup table |
+| 4 | Pointer-based iteration | `*data.at(i)` in index loop | `pop_front` / `for` / `multi_pop_front` |
+| 5 | Cache array length | `.len()` in loop condition | `let n = data.len();` before loop |
+| 6 | Pointer-based slicing | Manual loop extraction | `span.slice(start, length)` |
+| 7 | Cheap parity/halving | `index & 1`, `index / 2` | `DivRem::div_rem(index, 2)` |
+| 8 | Smallest integer type | `u256` when range < 2^128 | `u128` (type encodes constraint) |
+| 9 | Storage slot packing | One slot per field | `StorePacking` trait |
+| 10 | BoundedInt for limbs | Bitwise ops / raw u128 math | `bounded_int::{div_rem, mul, add}` |
+| 11 | Fast 2-input Poseidon | `poseidon_hash_span([x,y])` | `hades_permutation(x, y, 2)` |
+
+## Always / Never Rules
+
+### 1. Always use `DivRem::div_rem` — never separate `%` and `/`
+
+Cairo computes quotient and remainder in a single operation. Using both `%` and `/` on the same value doubles the cost.
+
+```cairo
+// BAD
+let q = x / m;
+let r = x % m;
+
+// GOOD
+let (q, r) = DivRem::div_rem(x, m);
+```
+
+### 2. Never use `<` or `>` in while loop conditions — use `!=`
+
+Equality checks are cheaper than comparisons in Cairo.
+
+```cairo
+// BAD
+while i < n { ... i += 1; }
+
+// GOOD
+while i != n { ... i += 1; }
+```
+
+### 3. Never compute `2^k` with `pow()` — use a lookup table
+
+`u32::pow()` is expensive. Use a `match` lookup for known ranges.
+
+```cairo
+// BAD
+let p = 2_u32.pow(depth.into());
+
+// GOOD — match-based lookup
+fn pow2(n: u32) -> u32 {
+    match n {
+        0 => 1, 1 => 2, 2 => 4, 3 => 8, 4 => 16, 5 => 32,
+        6 => 64, 7 => 128, 8 => 256, 9 => 512, 10 => 1024,
+        // extend as needed
+        _ => core::panic_with_felt252('pow2 out of range'),
+    }
+}
+```
+
+### 4. Always iterate arrays with `pop_front` / `for` / `multi_pop_front` — never index-loop
+
+Index-based access (`array.at(i)`) is more expensive than pointer-based iteration.
+
+```cairo
+// BAD
+let mut i = 0;
+while i != data.len() {
+    let val = *data.at(i);
+    i += 1;
+}
+
+// GOOD — pop_front
+while let Option::Some(val) = data.pop_front() { ... }
+
+// GOOD — for loop (equivalent)
+for val in data { ... }
+
+// GOOD — batch iteration
+while let Option::Some(chunk) = data.multi_pop_front::<4>() { ... }
+```
+
+### 5. Never call `.len()` inside a loop condition — cache it
+
+`.len()` recomputes every iteration. Store it once.
+
+```cairo
+// BAD
+while i != data.len() { ... i += 1; }
+
+// GOOD
+let n = data.len();
+while i != n { ... i += 1; }
+```
+
+### 6. Always use `span.slice()` instead of manual loop extraction
+
+`slice()` manipulates pointers directly — no element-by-element copying.
+
+```cairo
+// BAD
+let mut result: Array<felt252> = array![];
+let mut i = 0;
+while i != length {
+    result.append(*data.at(start + i));
+    i += 1;
+}
+
+// GOOD
+let result = data.slice(start, length);
+```
+
+### 7. Always use `DivRem` for parity checks — never use bitwise ops
+
+Bitwise AND is more expensive than `div_rem` in Cairo. Use `DivRem::div_rem(x, 2)` to get both the halved value and parity in one operation.
+
+```cairo
+// BAD
+let is_odd = (index & 1) == 1;
+index = index / 2;
+
+// GOOD
+let (q, r) = DivRem::div_rem(index, 2);
+if r == 1 { /* odd branch */ }
+index = q;
+```
+
+### 8. Always use the smallest integer type that fits the value range
+
+`u128` instead of `u256` when the range is known. Adds clarity, prevents intermediate overflow.
+
+```cairo
+// BAD — u256 for a value known to be < 2^128
+fn deposit(value: u256) { assert(value < MAX_U128, '...'); ... }
+
+// GOOD — type encodes the constraint
+fn deposit(value: u128) { ... }
+```
+
+### 9. Always use `StorePacking` to pack small fields into one storage slot
+
+Multiple small fields (basis points, flags, bounded amounts) can share a single `felt252` slot.
+
+```cairo
+use starknet::storage_access::StorePacking;
+
+const POW_2_128: felt252 = 0x100000000000000000000000000000000;
+
+impl MyStorePacking of StorePacking<MyStruct, felt252> {
+    fn pack(value: MyStruct) -> felt252 {
+        value.amount.into() + value.fee_bps.into() * POW_2_128
+    }
+    fn unpack(value: felt252) -> MyStruct {
+        let u256 { low, high } = value.into();
+        MyStruct { amount: low, fee_bps: high.try_into().unwrap() }
+    }
+}
+```
+
+### 10. Always use BoundedInt for byte cutting, limb assembly, and type conversions
+
+Never use bitwise ops (`&`, `|`, shifts) or raw `u128`/`u256` arithmetic for splitting or combining integer limbs. Use `bounded_int::div_rem` to extract parts and `bounded_int::mul` + `bounded_int::add` to assemble them. BoundedInt tracks bounds at compile time, eliminating overflow checks.
+
+**Assembling limbs** (e.g., 4 x u32 → u128):
+
+```cairo
+// BAD — direct u128 arithmetic (28,340 gas)
+fn u32s_to_u128(d0: u32, d1: u32, d2: u32, d3: u32) -> u128 {
+    d0.into() + d1.into() * POW_2_32 + d2.into() * POW_2_64 + d3.into() * POW_2_96
+}
+
+// GOOD — BoundedInt (13,840 gas, 2x faster)
+fn u32s_to_u128(d0: u32, d1: u32, d2: u32, d3: u32) -> u128 {
+    let d0_bi: u32_bi = upcast(d0);
+    let d1_bi: u32_bi = upcast(d1);
+    let d2_bi: u32_bi = upcast(d2);
+    let d3_bi: u32_bi = upcast(d3);
+    let r: u128_bi = add(add(add(d0_bi, mul(d1_bi, POW_32_UI)), mul(d2_bi, POW_64_UI)), mul(d3_bi, POW_96_UI));
+    upcast(r)
+}
+```
+
+**Splitting values** (e.g., felt252 → two u96 limbs):
+
+```cairo
+// GOOD — div_rem to split, mul+add to reassemble
+fn felt252_to_two_u96(value: felt252) -> (u96, u96) {
+    match u128s_from_felt252(value) {
+        U128sFromFelt252Result::Narrow(low) => {
+            let (hi32, lo96) = bounded_int::div_rem(low, NZ_POW96_TYPED);
+            (lo96, upcast(hi32))
+        },
+        U128sFromFelt252Result::Wide((high, low)) => {
+            let (lo_hi32, lo96) = bounded_int::div_rem(low, NZ_POW96_TYPED);
+            let hi64: BoundedInt<0, { POW64 - 1 }> = downcast(high).unwrap();
+            (lo96, bounded_int::add(bounded_int::mul(hi64, POW32_TYPED), lo_hi32))
+        },
+    }
+}
+```
+
+**Extracting bits** (e.g., building a 4-bit selector):
+
+```cairo
+// GOOD — div_rem by 2 extracts LSB, quotient is right-shifted value
+let (qu1, bit0) = bounded_int::div_rem(u1, TWO_NZ);  // bit0 in {0,1}
+let (qu2, bit1) = bounded_int::div_rem(u2, TWO_NZ);
+let selector = add(bit0, mul(bit1, TWO_UI));  // selector in {0..3}
+```
+
+See [garaga/selectors.cairo](https://github.com/keep-starknet-strange/garaga/blob/main/src/src/ec/selectors.cairo) and [cairo-perfs-snippets](https://github.com/feltroidprime/cairo-perfs-snippets) for production examples.
+
+## Code Quality
+
+- **DRY:** Extract repeated validation into helper functions. If two functions validate-then-write the same struct, extract a shared `_set_config()`.
+- **`scarb fmt`:** Run before every commit.
+- **`.tool-versions`:** Pin Scarb and Starknet Foundry versions with ASDF for reproducible builds.
+- **Keep dependencies updated:** Newer Scarb/Foundry versions include gas optimizations and compiler improvements.
+
+---
+
+## BoundedInt Optimization
+
+`BoundedInt<MIN, MAX>` encodes value constraints in the type system, eliminating runtime overflow checks. Use the CLI tool to compute bounds — do NOT calculate manually.
+
+### Critical Architecture Decision: Avoid Downcast
+
+**The #1 optimization pitfall:** Converting between `u16`/`u32`/`u64` and `BoundedInt` at function boundaries.
+
+#### The Problem
+
+If your functions take `u16` and return `u16`, you must:
+1. `downcast` input to `BoundedInt` (expensive — requires range check)
+2. Do bounded arithmetic (cheap)
+3. `upcast` result back to `u16` (cheap but wasteful)
+
+The `downcast` operation adds a range check that **dominates the savings** from bounded arithmetic. In profiling:
+- `downcast`: 161,280 steps (18.86%)
+- `bounded_int_div_rem`: 204,288 steps (23.89%)
+- Total bounded approach: worse than original!
+
+#### The Solution: BoundedInt Throughout
+
+**Use `BoundedInt` types as function inputs AND outputs.** This eliminates downcast entirely.
+
+```cairo
+// BAD: Converts at every call (downcast overhead kills performance)
+pub fn add_mod(a: u16, b: u16) -> u16 {
+    let a: Zq = downcast(a).expect('overflow');  // EXPENSIVE
+    let b: Zq = downcast(b).expect('overflow');  // EXPENSIVE
+    let sum: ZqSum = add(a, b);
+    let (_q, rem) = bounded_int_div_rem(sum, nz_q);
+    upcast(rem)
+}
+
+// GOOD: BoundedInt in, BoundedInt out (no downcast)
+pub fn add_mod(a: Zq, b: Zq) -> Zq {
+    let sum: ZqSum = add(a, b);
+    let (_q, rem) = bounded_int_div_rem(sum, nz_q);
+    rem
+}
+```
+
+#### Refactoring Strategy
+
+When optimizing existing code:
+1. **Identify the hot path** — profile to find which functions use modular arithmetic heavily
+2. **Change signatures** — update function inputs/outputs to use `BoundedInt` types
+3. **Propagate types outward** — callers must also use `BoundedInt`
+4. **Downcast only at boundaries** — convert from u16/u32 only at system entry points (e.g., deserialization)
+
+#### Type Conversion Rules
+
+| From | To | Operation | Cost |
+|------|-----|-----------|------|
+| `u16` | `BoundedInt<0, 65535>` | `upcast` | Free (superset) |
+| `u16` | `BoundedInt<0, 12288>` | `downcast` | **Expensive** (range check) |
+| `BoundedInt<0, 12288>` | `u16` | `upcast` | Free (subset) |
+| `BoundedInt<A, B>` | `BoundedInt<C, D>` where [A,B] ⊆ [C,D] | `upcast` | Free |
+| `BoundedInt<A, B>` | `BoundedInt<C, D>` where [A,B] ⊄ [C,D] | `downcast` | **Expensive** |
+
+**Key insight:** `upcast` only works when target range is a **superset** of source range. You cannot upcast `u32` to `BoundedInt<0, 150994944>` because `u32` max (4294967295) > 150994944.
+
+### Prerequisites
+
+```toml
+# Scarb.toml
+[dependencies]
+corelib_imports = "0.1.2"
+```
+
+```cairo
+// CORRECT imports — copy exactly
+use corelib_imports::bounded_int::{
+    BoundedInt, upcast, downcast, bounded_int_div_rem,
+    AddHelper, MulHelper, DivRemHelper, UnitInt,
+};
+use corelib_imports::bounded_int::bounded_int::{SubHelper, add, sub, mul};
+```
+
+### Copy-Paste Template
+
+Working example for modular arithmetic mod 100:
+
+```cairo
+use corelib_imports::bounded_int::{
+    BoundedInt, upcast, downcast, bounded_int_div_rem,
+    AddHelper, MulHelper, DivRemHelper, UnitInt,
+};
+use corelib_imports::bounded_int::bounded_int::{SubHelper, add, sub, mul};
+
+type Val = BoundedInt<0, 99>;           // [0, 99]
+type ValSum = BoundedInt<0, 198>;       // [0, 198]
+type ValConst = UnitInt<100>;           // singleton {100}
+
+impl AddValImpl of AddHelper<Val, Val> {
+    type Result = ValSum;
+}
+
+impl DivRemValImpl of DivRemHelper<ValSum, ValConst> {
+    type DivT = BoundedInt<0, 1>;
+    type RemT = Val;
+}
+
+fn add_mod_100(a: Val, b: Val) -> Val {
+    let sum: ValSum = add(a, b);
+    let nz_100: NonZero<ValConst> = 100;
+    let (_q, rem) = bounded_int_div_rem(sum, nz_100);
+    rem
+}
+```
+
+### CLI Tool
+
+Use `bounded_int_calc.py` in this skill directory. **Always use CLI — never calculate manually.**
+
+```bash
+# Addition: [a_lo, a_hi] + [b_lo, b_hi]
+python3 bounded_int_calc.py add 0 12288 0 12288
+# -> BoundedInt<0, 24576>
+
+# Subtraction: [a_lo, a_hi] - [b_lo, b_hi]
+python3 bounded_int_calc.py sub 0 12288 0 12288
+# -> BoundedInt<-12288, 12288>
+
+# Multiplication
+python3 bounded_int_calc.py mul 0 12288 0 12288
+# -> BoundedInt<0, 150994944>
+
+# Division: quotient and remainder bounds
+python3 bounded_int_calc.py div 0 24576 12289 12289
+# -> DivT: BoundedInt<0, 1>, RemT: BoundedInt<0, 12288>
+
+# Custom impl name
+python3 bounded_int_calc.py mul 0 12288 0 12288 --name MulZqImpl
+```
+
+### BoundedInt Bounds Quick Reference
+
+| Operation | Formula |
+|-----------|---------|
+| Add | `[a_lo + b_lo, a_hi + b_hi]` |
+| Sub | `[a_lo - b_hi, a_hi - b_lo]` |
+| Mul (unsigned) | `[a_lo * b_lo, a_hi * b_hi]` |
+| Div quotient | `[a_lo / b_hi, a_hi / b_lo]` |
+| Div remainder | `[0, b_hi - 1]` |
+
+### Negative Dividends: SHIFT Pattern
+
+`bounded_int_div_rem` doesn't support negative lower bounds. When a subtraction produces a negative-bounded result that needs reduction, add a multiple of the modulus first:
+
+```cairo
+// sub_mod: (a - b) mod Q via SHIFT
+pub fn sub_mod(a: Zq, b: Zq) -> Zq {
+    let a_plus_q: BoundedInt<12289, 24577> = add(a, Q_CONST);  // shift by +Q
+    let diff: BoundedInt<1, 24577> = sub(a_plus_q, b);           // now non-negative
+    let (_q, rem) = bounded_int_div_rem(diff, nz_q());
+    rem
+}
+
+// fused_sub_mul_mod: a - (b*c) mod Q via large SHIFT
+// OFFSET = 12288 * Q = 151007232 (smallest multiple of Q >= max product)
+pub fn fused_sub_mul_mod(a: Zq, b: Zq, c: Zq) -> Zq {
+    let prod: ZqProd = mul(b, c);
+    let a_offset: BoundedInt<151007232, 151019520> = add(a, OFFSET_CONST);
+    let diff: BoundedInt<12288, 151019520> = sub(a_offset, prod);
+    let (_q, rem) = bounded_int_div_rem(diff, nz_q());
+    rem
+}
+```
+
+Rule: SHIFT = `ceil(|min_possible_value| / modulus) * modulus`. Adding SHIFT preserves the result mod Q (since SHIFT ≡ 0 mod Q) while making all values non-negative.
+
+### Common BoundedInt Mistakes
+
+- **Downcast at every function call** — the biggest performance killer. Use `BoundedInt` types throughout, not just inside arithmetic functions.
+- **Trying to upcast to a narrower type** — `upcast(val: u32)` to `BoundedInt<0, 150994944>` fails because u32 max > 150994944.
+- **Wrong imports** — use exact imports from Prerequisites section above.
+- **Wrong subtraction bounds** — it's `[a_lo - b_hi, a_hi - b_lo]`, NOT `[a_lo - b_lo, a_hi - b_hi]`.
+- **Negative dividend in `bounded_int_div_rem`** — div_rem doesn't support negative lower bounds. Add a SHIFT (multiple of modulus) before reducing. See SHIFT pattern above.
+- **Missing intermediate types** — always annotate: `let sum: ZqSum = add(a, b);`
+- **Division quotient off-by-one** — integer division floors: `24576 / 12289 = 1`, not 2.
+- **Using `UnitInt` vs `BoundedInt` for constants** — use `UnitInt<N>` for singleton constants like divisors.
+- **Using `div_rem` vs `bounded_int_div_rem`** — the function is `bounded_int_div_rem`, not `div_rem`.
+- **Bounds exceed u128::max** — BoundedInt bounds are hard-capped at 2^128. Larger values crash the Sierra specializer: 'Provided generic argument is unsupported.'
+
+---
+
+Base directory for this skill: /home/felt/.claude/plugins/cache/claude-plugins-official/superpowers/4.3.0/skills/writing-skills
+
+# Writing Skills
+
+## Overview
+
+**Writing skills IS Test-Driven Development applied to process documentation.**
+
+**Personal skills live in agent-specific directories (`~/.claude/skills` for Claude Code, `~/.agents/skills/` for Codex)** 
+
+You write test cases (pressure scenarios with subagents), watch them fail (baseline behavior), write the skill (documentation), watch tests pass (agents comply), and refactor (close loopholes).
+
+**Core principle:** If you didn't watch an agent fail without the skill, you don't know if the skill teaches the right thing.
+
+**REQUIRED BACKGROUND:** You MUST understand superpowers:test-driven-development before using this skill. That skill defines the fundamental RED-GREEN-REFACTOR cycle. This skill adapts TDD to documentation.
+
+**Official guidance:** For Anthropic's official skill authoring best practices, see anthropic-best-practices.md. This document provides additional patterns and guidelines that complement the TDD-focused approach in this skill.
+
+## What is a Skill?
+
+A **skill** is a reference guide for proven techniques, patterns, or tools. Skills help future Claude instances find and apply effective approaches.
+
+**Skills are:** Reusable techniques, patterns, tools, reference guides
+
+**Skills are NOT:** Narratives about how you solved a problem once
+
+## TDD Mapping for Skills
+
+| TDD Concept | Skill Creation |
+|-------------|----------------|
+| **Test case** | Pressure scenario with subagent |
+| **Production code** | Skill document (SKILL.md) |
+| **Test fails (RED)** | Agent violates rule without skill (baseline) |
+| **Test passes (GREEN)** | Agent complies with skill present |
+| **Refactor** | Close loopholes while maintaining compliance |
+| **Write test first** | Run baseline scenario BEFORE writing skill |
+| **Watch it fail** | Document exact rationalizations agent uses |
+| **Minimal code** | Write skill addressing those specific violations |
+| **Watch it pass** | Verify agent now complies |
+| **Refactor cycle** | Find new rationalizations → plug → re-verify |
+
+The entire skill creation process follows RED-GREEN-REFACTOR.
+
+## When to Create a Skill
+
+**Create when:**
+- Technique wasn't intuitively obvious to you
+- You'd reference this again across projects
+- Pattern applies broadly (not project-specific)
+- Others would benefit
+
+**Don't create for:**
+- One-off solutions
+- Standard practices well-documented elsewhere
+- Project-specific conventions (put in CLAUDE.md)
+- Mechanical constraints (if it's enforceable with regex/validation, automate it—save documentation for judgment calls)
+
+## Skill Types
+
+### Technique
+Concrete method with steps to follow (condition-based-waiting, root-cause-tracing)
+
+### Pattern
+Way of thinking about problems (flatten-with-flags, test-invariants)
+
+### Reference
+API docs, syntax guides, tool documentation (office docs)
+
+## Directory Structure
+
+
+```
+skills/
+  skill-name/
+    SKILL.md              # Main reference (required)
+    supporting-file.*     # Only if needed
+```
+
+**Flat namespace** - all skills in one searchable namespace
+
+**Separate files for:**
+1. **Heavy reference** (100+ lines) - API docs, comprehensive syntax
+2. **Reusable tools** - Scripts, utilities, templates
+
+**Keep inline:**
+- Principles and concepts
+- Code patterns (< 50 lines)
+- Everything else
+
+## SKILL.md Structure
+
+**Frontmatter (YAML):**
+- Only two fields supported: `name` and `description`
+- Max 1024 characters total
+- `name`: Use letters, numbers, and hyphens only (no parentheses, special chars)
+- `description`: Third-person, describes ONLY when to use (NOT what it does)
+  - Start with "Use when..." to focus on triggering conditions
+  - Include specific symptoms, situations, and contexts
+  - **NEVER summarize the skill's process or workflow** (see CSO section for why)
+  - Keep under 500 characters if possible
+
+```markdown
+---
+name: Skill-Name-With-Hyphens
+description: Use when [specific triggering conditions and symptoms]
+---
+
+# Skill Name
+
+## Overview
+What is this? Core principle in 1-2 sentences.
+
+## When to Use
+[Small inline flowchart IF decision non-obvious]
+
+Bullet list with SYMPTOMS and use cases
+When NOT to use
+
+## Core Pattern (for techniques/patterns)
+Before/after code comparison
+
+## Quick Reference
+Table or bullets for scanning common operations
+
+## Implementation
+Inline code for simple patterns
+Link to file for heavy reference or reusable tools
+
+## Common Mistakes
+What goes wrong + fixes
+
+## Real-World Impact (optional)
+Concrete results
+```
+
+
+## Claude Search Optimization (CSO)
+
+**Critical for discovery:** Future Claude needs to FIND your skill
+
+### 1. Rich Description Field
+
+**Purpose:** Claude reads description to decide which skills to load for a given task. Make it answer: "Should I read this skill right now?"
+
+**Format:** Start with "Use when..." to focus on triggering conditions
+
+**CRITICAL: Description = When to Use, NOT What the Skill Does**
+
+The description should ONLY describe triggering conditions. Do NOT summarize the skill's process or workflow in the description.
+
+**Why this matters:** Testing revealed that when a description summarizes the skill's workflow, Claude may follow the description instead of reading the full skill content. A description saying "code review between tasks" caused Claude to do ONE review, even though the skill's flowchart clearly showed TWO reviews (spec compliance then code quality).
+
+When the description was changed to just "Use when executing implementation plans with independent tasks" (no workflow summary), Claude correctly read the flowchart and followed the two-stage review process.
+
+**The trap:** Descriptions that summarize workflow create a shortcut Claude will take. The skill body becomes documentation Claude skips.
+
+```yaml
+# ❌ BAD: Summarizes workflow - Claude may follow this instead of reading skill
+description: Use when executing plans - dispatches subagent per task with code review between tasks
+
+# ❌ BAD: Too much process detail
+description: Use for TDD - write test first, watch it fail, write minimal code, refactor
+
+# ✅ GOOD: Just triggering conditions, no workflow summary
+description: Use when executing implementation plans with independent tasks in the current session
+
+# ✅ GOOD: Triggering conditions only
+description: Use when implementing any feature or bugfix, before writing implementation code
+```
+
+**Content:**
+- Use concrete triggers, symptoms, and situations that signal this skill applies
+- Describe the *problem* (race conditions, inconsistent behavior) not *language-specific symptoms* (setTimeout, sleep)
+- Keep triggers technology-agnostic unless the skill itself is technology-specific
+- If skill is technology-specific, make that explicit in the trigger
+- Write in third person (injected into system prompt)
+- **NEVER summarize the skill's process or workflow**
+
+```yaml
+# ❌ BAD: Too abstract, vague, doesn't include when to use
+description: For async testing
+
+# ❌ BAD: First person
+description: I can help you with async tests when they're flaky
+
+# ❌ BAD: Mentions technology but skill isn't specific to it
+description: Use when tests use setTimeout/sleep and are flaky
+
+# ✅ GOOD: Starts with "Use when", describes problem, no workflow
+description: Use when tests have race conditions, timing dependencies, or pass/fail inconsistently
+
+# ✅ GOOD: Technology-specific skill with explicit trigger
+description: Use when using React Router and handling authentication redirects
+```
+
+### 2. Keyword Coverage
+
+Use words Claude would search for:
+- Error messages: "Hook timed out", "ENOTEMPTY", "race condition"
+- Symptoms: "flaky", "hanging", "zombie", "pollution"
+- Synonyms: "timeout/hang/freeze", "cleanup/teardown/afterEach"
+- Tools: Actual commands, library names, file types
+
+### 3. Descriptive Naming
+
+**Use active voice, verb-first:**
+- ✅ `creating-skills` not `skill-creation`
+- ✅ `condition-based-waiting` not `async-test-helpers`
+
+### 4. Token Efficiency (Critical)
+
+**Problem:** getting-started and frequently-referenced skills load into EVERY conversation. Every token counts.
+
+**Target word counts:**
+- getting-started workflows: <150 words each
+- Frequently-loaded skills: <200 words total
+- Other skills: <500 words (still be concise)
+
+**Techniques:**
+
+**Move details to tool help:**
+```bash
+# ❌ BAD: Document all flags in SKILL.md
+search-conversations supports --text, --both, --after DATE, --before DATE, --limit N
+
+# ✅ GOOD: Reference --help
+search-conversations supports multiple modes and filters. Run --help for details.
+```
+
+**Use cross-references:**
+```markdown
+# ❌ BAD: Repeat workflow details
+When searching, dispatch subagent with template...
+[20 lines of repeated instructions]
+
+# ✅ GOOD: Reference other skill
+Always use subagents (50-100x context savings). REQUIRED: Use [other-skill-name] for workflow.
+```
+
+**Compress examples:**
+```markdown
+# ❌ BAD: Verbose example (42 words)
+your human partner: "How did we handle authentication errors in React Router before?"
+You: I'll search past conversations for React Router authentication patterns.
+[Dispatch subagent with search query: "React Router authentication error handling 401"]
+
+# ✅ GOOD: Minimal example (20 words)
+Partner: "How did we handle auth errors in React Router?"
+You: Searching...
+[Dispatch subagent → synthesis]
+```
+
+**Eliminate redundancy:**
+- Don't repeat what's in cross-referenced skills
+- Don't explain what's obvious from command
+- Don't include multiple examples of same pattern
+
+**Verification:**
+```bash
+wc -w skills/path/SKILL.md
+# getting-started workflows: aim for <150 each
+# Other frequently-loaded: aim for <200 total
+```
+
+**Name by what you DO or core insight:**
+- ✅ `condition-based-waiting` > `async-test-helpers`
+- ✅ `using-skills` not `skill-usage`
+- ✅ `flatten-with-flags` > `data-structure-refactoring`
+- ✅ `root-cause-tracing` > `debugging-techniques`
+
+**Gerunds (-ing) work well for processes:**
+- `creating-skills`, `testing-skills`, `debugging-with-logs`
+- Active, describes the action you're taking
+
+### 4. Cross-Referencing Other Skills
+
+**When writing documentation that references other skills:**
+
+Use skill name only, with explicit requirement markers:
+- ✅ Good: `**REQUIRED SUB-SKILL:** Use superpowers:test-driven-development`
+- ✅ Good: `**REQUIRED BACKGROUND:** You MUST understand superpowers:systematic-debugging`
+- ❌ Bad: `See skills/testing/test-driven-development` (unclear if required)
+- ❌ Bad: `@skills/testing/test-driven-development/SKILL.md` (force-loads, burns context)
+
+**Why no @ links:** `@` syntax force-loads files immediately, consuming 200k+ context before you need them.
+
+## Flowchart Usage
+
+```dot
+digraph when_flowchart {
+    "Need to show information?" [shape=diamond];
+    "Decision where I might go wrong?" [shape=diamond];
+    "Use markdown" [shape=box];
+    "Small inline flowchart" [shape=box];
+
+    "Need to show information?" -> "Decision where I might go wrong?" [label="yes"];
+    "Decision where I might go wrong?" -> "Small inline flowchart" [label="yes"];
+    "Decision where I might go wrong?" -> "Use markdown" [label="no"];
+}
+```
+
+**Use flowcharts ONLY for:**
+- Non-obvious decision points
+- Process loops where you might stop too early
+- "When to use A vs B" decisions
+
+**Never use flowcharts for:**
+- Reference material → Tables, lists
+- Code examples → Markdown blocks
+- Linear instructions → Numbered lists
+- Labels without semantic meaning (step1, helper2)
+
+See @graphviz-conventions.dot for graphviz style rules.
+
+**Visualizing for your human partner:** Use `render-graphs.js` in this directory to render a skill's flowcharts to SVG:
+```bash
+./render-graphs.js ../some-skill           # Each diagram separately
+./render-graphs.js ../some-skill --combine # All diagrams in one SVG
+```
+
+## Code Examples
+
+**One excellent example beats many mediocre ones**
+
+Choose most relevant language:
+- Testing techniques → TypeScript/JavaScript
+- System debugging → Shell/Python
+- Data processing → Python
+
+**Good example:**
+- Complete and runnable
+- Well-commented explaining WHY
+- From real scenario
+- Shows pattern clearly
+- Ready to adapt (not generic template)
+
+**Don't:**
+- Implement in 5+ languages
+- Create fill-in-the-blank templates
+- Write contrived examples
+
+You're good at porting - one great example is enough.
+
+## File Organization
+
+### Self-Contained Skill
+```
+defense-in-depth/
+  SKILL.md    # Everything inline
+```
+When: All content fits, no heavy reference needed
+
+### Skill with Reusable Tool
+```
+condition-based-waiting/
+  SKILL.md    # Overview + patterns
+  example.ts  # Working helpers to adapt
+```
+When: Tool is reusable code, not just narrative
+
+### Skill with Heavy Reference
+```
+pptx/
+  SKILL.md       # Overview + workflows
+  pptxgenjs.md   # 600 lines API reference
+  ooxml.md       # 500 lines XML structure
+  scripts/       # Executable tools
+```
+When: Reference material too large for inline
+
+## The Iron Law (Same as TDD)
+
+```
+NO SKILL WITHOUT A FAILING TEST FIRST
+```
+
+This applies to NEW skills AND EDITS to existing skills.
+
+Write skill before testing? Delete it. Start over.
+Edit skill without testing? Same violation.
+
+**No exceptions:**
+- Not for "simple additions"
+- Not for "just adding a section"
+- Not for "documentation updates"
+- Don't keep untested changes as "reference"
+- Don't "adapt" while running tests
+- Delete means delete
+
+**REQUIRED BACKGROUND:** The superpowers:test-driven-development skill explains why this matters. Same principles apply to documentation.
+
+## Testing All Skill Types
+
+Different skill types need different test approaches:
+
+### Discipline-Enforcing Skills (rules/requirements)
+
+**Examples:** TDD, verification-before-completion, designing-before-coding
+
+**Test with:**
+- Academic questions: Do they understand the rules?
+- Pressure scenarios: Do they comply under stress?
+- Multiple pressures combined: time + sunk cost + exhaustion
+- Identify rationalizations and add explicit counters
+
+**Success criteria:** Agent follows rule under maximum pressure
+
+### Technique Skills (how-to guides)
+
+**Examples:** condition-based-waiting, root-cause-tracing, defensive-programming
+
+**Test with:**
+- Application scenarios: Can they apply the technique correctly?
+- Variation scenarios: Do they handle edge cases?
+- Missing information tests: Do instructions have gaps?
+
+**Success criteria:** Agent successfully applies technique to new scenario
+
+### Pattern Skills (mental models)
+
+**Examples:** reducing-complexity, information-hiding concepts
+
+**Test with:**
+- Recognition scenarios: Do they recognize when pattern applies?
+- Application scenarios: Can they use the mental model?
+- Counter-examples: Do they know when NOT to apply?
+
+**Success criteria:** Agent correctly identifies when/how to apply pattern
+
+### Reference Skills (documentation/APIs)
+
+**Examples:** API documentation, command references, library guides
+
+**Test with:**
+- Retrieval scenarios: Can they find the right information?
+- Application scenarios: Can they use what they found correctly?
+- Gap testing: Are common use cases covered?
+
+**Success criteria:** Agent finds and correctly applies reference information
+
+## Common Rationalizations for Skipping Testing
+
+| Excuse | Reality |
+|--------|---------|
+| "Skill is obviously clear" | Clear to you ≠ clear to other agents. Test it. |
+| "It's just a reference" | References can have gaps, unclear sections. Test retrieval. |
+| "Testing is overkill" | Untested skills have issues. Always. 15 min testing saves hours. |
+| "I'll test if problems emerge" | Problems = agents can't use skill. Test BEFORE deploying. |
+| "Too tedious to test" | Testing is less tedious than debugging bad skill in production. |
+| "I'm confident it's good" | Overconfidence guarantees issues. Test anyway. |
+| "Academic review is enough" | Reading ≠ using. Test application scenarios. |
+| "No time to test" | Deploying untested skill wastes more time fixing it later. |
+
+**All of these mean: Test before deploying. No exceptions.**
+
+## Bulletproofing Skills Against Rationalization
+
+Skills that enforce discipline (like TDD) need to resist rationalization. Agents are smart and will find loopholes when under pressure.
+
+**Psychology note:** Understanding WHY persuasion techniques work helps you apply them systematically. See persuasion-principles.md for research foundation (Cialdini, 2021; Meincke et al., 2025) on authority, commitment, scarcity, social proof, and unity principles.
+
+### Close Every Loophole Explicitly
+
+Don't just state the rule - forbid specific workarounds:
+
+<Bad>
+```markdown
+Write code before test? Delete it.
+```
+</Bad>
+
+<Good>
+```markdown
+Write code before test? Delete it. Start over.
+
+**No exceptions:**
+- Don't keep it as "reference"
+- Don't "adapt" it while writing tests
+- Don't look at it
+- Delete means delete
+```
+</Good>
+
+### Address "Spirit vs Letter" Arguments
+
+Add foundational principle early:
+
+```markdown
+**Violating the letter of the rules is violating the spirit of the rules.**
+```
+
+This cuts off entire class of "I'm following the spirit" rationalizations.
+
+### Build Rationalization Table
+
+Capture rationalizations from baseline testing (see Testing section below). Every excuse agents make goes in the table:
+
+```markdown
+| Excuse | Reality |
+|--------|---------|
+| "Too simple to test" | Simple code breaks. Test takes 30 seconds. |
+| "I'll test after" | Tests passing immediately prove nothing. |
+| "Tests after achieve same goals" | Tests-after = "what does this do?" Tests-first = "what should this do?" |
+```
+
+### Create Red Flags List
+
+Make it easy for agents to self-check when rationalizing:
+
+```markdown
+## Red Flags - STOP and Start Over
+
+- Code before test
+- "I already manually tested it"
+- "Tests after achieve the same purpose"
+- "It's about spirit not ritual"
+- "This is different because..."
+
+**All of these mean: Delete code. Start over with TDD.**
+```
+
+### Update CSO for Violation Symptoms
+
+Add to description: symptoms of when you're ABOUT to violate the rule:
+
+```yaml
+description: use when implementing any feature or bugfix, before writing implementation code
+```
+
+## RED-GREEN-REFACTOR for Skills
+
+Follow the TDD cycle:
+
+### RED: Write Failing Test (Baseline)
+
+Run pressure scenario with subagent WITHOUT the skill. Document exact behavior:
+- What choices did they make?
+- What rationalizations did they use (verbatim)?
+- Which pressures triggered violations?
+
+This is "watch the test fail" - you must see what agents naturally do before writing the skill.
+
+### GREEN: Write Minimal Skill
+
+Write skill that addresses those specific rationalizations. Don't add extra content for hypothetical cases.
+
+Run same scenarios WITH skill. Agent should now comply.
+
+### REFACTOR: Close Loopholes
+
+Agent found new rationalization? Add explicit counter. Re-test until bulletproof.
+
+**Testing methodology:** See @testing-skills-with-subagents.md for the complete testing methodology:
+- How to write pressure scenarios
+- Pressure types (time, sunk cost, authority, exhaustion)
+- Plugging holes systematically
+- Meta-testing techniques
+
+## Anti-Patterns
+
+### ❌ Narrative Example
+"In session 2025-10-03, we found empty projectDir caused..."
+**Why bad:** Too specific, not reusable
+
+### ❌ Multi-Language Dilution
+example-js.js, example-py.py, example-go.go
+**Why bad:** Mediocre quality, maintenance burden
+
+### ❌ Code in Flowcharts
+```dot
+step1 [label="import fs"];
+step2 [label="read file"];
+```
+**Why bad:** Can't copy-paste, hard to read
+
+### ❌ Generic Labels
+helper1, helper2, step3, pattern4
+**Why bad:** Labels should have semantic meaning
+
+## STOP: Before Moving to Next Skill
+
+**After writing ANY skill, you MUST STOP and complete the deployment process.**
+
+**Do NOT:**
+- Create multiple skills in batch without testing each
+- Move to next skill before current one is verified
+- Skip testing because "batching is more efficient"
+
+**The deployment checklist below is MANDATORY for EACH skill.**
+
+Deploying untested skills = deploying untested code. It's a violation of quality standards.
+
+## Skill Creation Checklist (TDD Adapted)
+
+**IMPORTANT: Use TodoWrite to create todos for EACH checklist item below.**
+
+**RED Phase - Write Failing Test:**
+- [ ] Create pressure scenarios (3+ combined pressures for discipline skills)
+- [ ] Run scenarios WITHOUT skill - document baseline behavior verbatim
+- [ ] Identify patterns in rationalizations/failures
+
+**GREEN Phase - Write Minimal Skill:**
+- [ ] Name uses only letters, numbers, hyphens (no parentheses/special chars)
+- [ ] YAML frontmatter with only name and description (max 1024 chars)
+- [ ] Description starts with "Use when..." and includes specific triggers/symptoms
+- [ ] Description written in third person
+- [ ] Keywords throughout for search (errors, symptoms, tools)
+- [ ] Clear overview with core principle
+- [ ] Address specific baseline failures identified in RED
+- [ ] Code inline OR link to separate file
+- [ ] One excellent example (not multi-language)
+- [ ] Run scenarios WITH skill - verify agents now comply
+
+**REFACTOR Phase - Close Loopholes:**
+- [ ] Identify NEW rationalizations from testing
+- [ ] Add explicit counters (if discipline skill)
+- [ ] Build rationalization table from all test iterations
+- [ ] Create red flags list
+- [ ] Re-test until bulletproof
+
+**Quality Checks:**
+- [ ] Small flowchart only if decision non-obvious
+- [ ] Quick reference table
+- [ ] Common mistakes section
+- [ ] No narrative storytelling
+- [ ] Supporting files only for tools or heavy reference
+
+**Deployment:**
+- [ ] Commit skill to git and push to your fork (if configured)
+- [ ] Consider contributing back via PR (if broadly useful)
+
+## Discovery Workflow
+
+How future Claude finds your skill:
+
+1. **Encounters problem** ("tests are flaky")
+3. **Finds SKILL** (description matches)
+4. **Scans overview** (is this relevant?)
+5. **Reads patterns** (quick reference table)
+6. **Loads example** (only when implementing)
+
+**Optimize for this flow** - put searchable terms early and often.
+
+## The Bottom Line
+
+**Creating skills IS TDD for process documentation.**
+
+Same Iron Law: No skill without failing test first.
+Same cycle: RED (baseline) → GREEN (write skill) → REFACTOR (close loopholes).
+Same benefits: Better quality, fewer surprises, bulletproof results.
+
+If you follow TDD for code, follow it for skills. It's the same discipline applied to documentation.
+
+---
+
+ok but verify actual costs, they're bullishit, use code snippets to benchmark them
+
+---
+
+push the skill update in the relevant repo
