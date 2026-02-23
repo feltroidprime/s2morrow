@@ -3,30 +3,33 @@
   "checkpoint_id": "2f3d03ce615a",
   "session_id": "34caffb7-517a-41d6-a20d-ea10622a94da",
   "strategy": "manual-commit",
-  "created_at": "2026-02-23T20:34:56.151319861Z",
+  "created_at": "2026-02-23T20:39:28.261441843Z",
   "branch": "master",
   "checkpoints_count": 1,
   "files_touched": [
     "docs/plans/2026-02-23-falcon-demo-website-design.md",
-    "docs/plans/2026-02-23-falcon-demo-website-impl.md"
+    "docs/plans/2026-02-23-falcon-demo-website-impl.md",
+    "docs/specs/falcon-demo-website.md"
   ],
   "agent": "Claude Code",
-  "transcript_identifier_at_start": "b93fdeca-6555-404e-bca5-2f1efecd25e9",
+  "transcript_identifier_at_start": "1d96990e-d329-4773-9094-b2544d86aa54",
+  "checkpoint_transcript_start": 380,
+  "transcript_lines_at_start": 380,
   "token_usage": {
-    "input_tokens": 46,
-    "cache_creation_tokens": 90634,
-    "cache_read_tokens": 2119681,
-    "output_tokens": 1440,
-    "api_call_count": 39
+    "input_tokens": 7,
+    "cache_creation_tokens": 6640,
+    "cache_read_tokens": 547816,
+    "output_tokens": 66,
+    "api_call_count": 5
   },
   "initial_attribution": {
-    "calculated_at": "2026-02-23T20:34:55.698783131Z",
-    "agent_lines": 241,
-    "human_added": 2887,
-    "human_modified": 1,
+    "calculated_at": "2026-02-23T20:39:27.687289583Z",
+    "agent_lines": 0,
+    "human_added": 385,
+    "human_modified": 0,
     "human_removed": 0,
-    "total_committed": 3129,
-    "agent_percentage": 7.702141259188239
+    "total_committed": 385,
+    "agent_percentage": 0
   },
   "transcript_path": ".claude/projects/-home-felt-PycharmProjects-s2morrow/34caffb7-517a-41d6-a20d-ea10622a94da.jsonl"
 }

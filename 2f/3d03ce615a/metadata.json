@@ -9,6 +9,7 @@
     "cairo_gen/circuit.py",
     "docs/plans/2026-02-23-falcon-demo-website-design.md",
     "docs/plans/2026-02-23-falcon-demo-website-impl.md",
+    "docs/specs/falcon-demo-website.md",
     "packages/falcon/tests/bench_conversion.cairo",
     "packages/falcon_account/src/account.cairo",
     "packages/falcon_account/src/preset.cairo",
@@ -49,10 +50,10 @@
     }
   ],
   "token_usage": {
-    "input_tokens": 436,
-    "cache_creation_tokens": 264904,
-    "cache_read_tokens": 8415963,
-    "output_tokens": 6303,
-    "api_call_count": 129
+    "input_tokens": 397,
+    "cache_creation_tokens": 180910,
+    "cache_read_tokens": 6844098,
+    "output_tokens": 4929,
+    "api_call_count": 95
   }
 }

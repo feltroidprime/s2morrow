@@ -94,3 +94,7 @@ Write comprehensive implementation plans assuming the engineer has zero context 
 
 As...
 
+### Prompt 8
+
+We want to create a PRD for Super-ralph
+
