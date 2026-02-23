@@ -6,7 +6,6 @@
   "checkpoints_count": 6,
   "files_touched": [
     ".claude/skills/cairo-coding/SKILL.md",
-    "apps/demo/.workflow/components/focuses.ts",
     "apps/demo/.workflow/components/workflow.tsx",
     "cairo_gen/circuit.py",
     "packages/falcon/Scarb.lock",
@@ -89,10 +88,10 @@
     }
   ],
   "token_usage": {
-    "input_tokens": 408,
-    "cache_creation_tokens": 185132,
-    "cache_read_tokens": 7971235,
-    "output_tokens": 5180,
-    "api_call_count": 104
+    "input_tokens": 403,
+    "cache_creation_tokens": 292655,
+    "cache_read_tokens": 7482512,
+    "output_tokens": 5003,
+    "api_call_count": 100
   }
 }

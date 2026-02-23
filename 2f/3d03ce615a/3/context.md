@@ -110,3 +110,23 @@ yes, initialize super-ralph
 
 jj installed. Can use it now.
 
+### Prompt 12
+
+How Do i handle agent management (which model for which task, and routing if error (limit cap reached)
+
+### Prompt 13
+
+Base directory for this skill: /home/felt/.claude/plugins/cache/eni-skills/personal-skills/1.0.0/skills/super-ralph
+
+# Super-Ralph Workflow
+
+Ticket-driven development with multi-agent review loops. Wraps the Smithers engine
+with a full pipeline: discover → research → plan → implement → test → review → land.
+
+Runtime: Bun >= 1.3. VCS: jj-colocated git. State: SQLite (resumable).
+
+## Init
+
+```bash
+uv run <skill-path>/scripts/init_super_ralph.py <target-dir> --root <relative-to-repo-roo...
+
