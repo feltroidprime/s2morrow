@@ -1479,3 +1479,7 @@ Discover (3–5 new tickets), IntegrationTest (per focus).
 See [references/customization.md](references/customization.md) for the full SuperRalph props
 reference, agent types, fallback chains, focus design guidelines, focusTestSuites/focusDirs
 configuration, custom step overrides, and merge queue tuning.
+
+---
+
+we have gemini-3.1-pro-preview available

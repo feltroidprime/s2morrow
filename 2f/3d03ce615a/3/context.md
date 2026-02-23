@@ -130,3 +130,7 @@ Runtime: Bun >= 1.3. VCS: jj-colocated git. State: SQLite (resumable).
 ```bash
 uv run <skill-path>/scripts/init_super_ralph.py <target-dir> --root <relative-to-repo-roo...
 
+### Prompt 14
+
+we have gemini-3.1-pro-preview available
+
