@@ -1,0 +1,61 @@
+IMPORTANT: After completing the task below, you MUST output a JSON object in a ```json code fence at the very end of your response. Do NOT forget this — the workflow fails without it.
+
+RESEARCH PHASE — Ticket: LANDING-003
+
+Title: Implement WhyPostQuantum RSC section with 4 explanation cards
+Description: Create apps/demo/src/components/landing/WhyPostQuantum.tsx as RSC. Must include 4 cards per PRD: (1) Quantum Threat — Shor&#x27;s algorithm breaking ECDSA, (2) Account Abstraction — Starknet AA allowing signature scheme upgrades, (3) Falcon-512 — NIST-standardized lattice-based scheme, (4) Hint-Based Verification — 2 NTTs instead of 4. Cards should use consistent rounded-xl border bg-falcon-surface p-6 pattern. Section should have an id attribute for deep-linking. Responsive: 2-column grid on sm+, single column on mobile.
+Category: landing
+
+Your job is to gather all reference materials needed to implement this ticket.
+
+## Reference Paths
+
+Read these reference paths:
+- docs/specs/
+- docs/specs/falcon-demo-website.md
+- docs/plans/2026-02-23-falcon-demo-website-design.md
+- docs/plans/2026-02-23-falcon-demo-website-impl.md
+- CLAUDE.md
+- apps/demo/src/
+## Steps
+
+- **Read the specs** — Review all relevant specification documents
+
+- **Read reference materials** — Browse reference documentation for patterns and examples
+
+- **Read existing implementation** — Read any files listed in the ticket&#x27;s relevantFiles
+
+- **Write context file** — Write docs/context/LANDING-003.md with all paths and summaries
+
+## Commit
+
+After writing the context file:
+
+`jj describe -m &quot;📝 docs({props.ticketCategory}): gather research for {props.ticketId}&quot;
+jj new
+jj bookmark set ticket/{props.ticketId} -r @
+jj git push --bookmark ticket/{props.ticketId}
+`
+
+
+**REQUIRED OUTPUT** — You MUST end your response with a JSON object in a code fence matching this schema:
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "contextFilePath": {
+      "type": "string"
+    },
+    "summary": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "contextFilePath",
+    "summary"
+  ],
+  "additionalProperties": false
+}
+```
+Output the JSON at the END of your response. The workflow will fail without it.
