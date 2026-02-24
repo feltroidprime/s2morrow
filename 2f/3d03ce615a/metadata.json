@@ -3,7 +3,7 @@
   "checkpoint_id": "2f3d03ce615a",
   "strategy": "manual-commit",
   "branch": "frontend",
-  "checkpoints_count": 59,
+  "checkpoints_count": 60,
   "files_touched": [
     ".claude/settings.local.json",
     ".claude/skills/benchmarking-cairo",
@@ -2619,6 +2619,7 @@
     "apps/demo/tests/atoms/starknet.test.ts",
     "apps/demo/tsconfig.tsbuildinfo",
     "cairo_gen/circuit.py",
+    "docs/context/DEPLOY-001.md",
     "docs/context/ES-001.md",
     "docs/context/ES-004.md",
     "docs/context/ES-005.md",
@@ -3100,13 +3101,20 @@
       "context": "/2f/3d03ce615a/57/context.md",
       "content_hash": "/2f/3d03ce615a/57/content_hash.txt",
       "prompt": "/2f/3d03ce615a/57/prompt.txt"
+    },
+    {
+      "metadata": "/2f/3d03ce615a/58/metadata.json",
+      "transcript": "/2f/3d03ce615a/58/full.jsonl",
+      "context": "/2f/3d03ce615a/58/context.md",
+      "content_hash": "/2f/3d03ce615a/58/content_hash.txt",
+      "prompt": "/2f/3d03ce615a/58/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 10688,
-    "cache_creation_tokens": 3412796,
-    "cache_read_tokens": 111033862,
-    "output_tokens": 22487,
-    "api_call_count": 1570
+    "input_tokens": 10708,
+    "cache_creation_tokens": 3469960,
+    "cache_read_tokens": 112107628,
+    "output_tokens": 22671,
+    "api_call_count": 1588
   }
 }
