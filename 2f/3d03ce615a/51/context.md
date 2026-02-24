@@ -1,0 +1,27 @@
+# Session Context
+
+## User Prompts
+
+### Prompt 1
+
+IMPORTANT: After completing the task below, you MUST output a JSON object in a ```json code fence at the very end of your response. Do NOT forget this — the workflow fails without it.
+
+RESEARCH PHASE — Ticket: VP-003
+
+Title: Create FalconService with Effect.fn methods wrapping WASM
+Description: Create apps/demo/src/services/FalconService.ts as Effect.Service with accessors:true. Methods: generateKeypair, sign, verify, createHint, packPublicKey. Each uses Effect.fn for tracing and Effect.try/...
+
+### Prompt 2
+
+Base directory for this skill: /home/felt/.claude/plugins/cache/eni-skills/personal-skills/1.0.0/skills/effect-best-practices
+
+# Effect-TS Best Practices
+
+This skill enforces opinionated, consistent patterns for Effect-TS codebases. These patterns optimize for type safety, testability, observability, and maintainability.
+
+## Quick Reference: Critical Rules
+
+| Category | DO | DON'T |
+|----------|-----|-------|
+| Services | `Effect.Service` with `accessors: true` | `Context.Tag` for business logic...
+
