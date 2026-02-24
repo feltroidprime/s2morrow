@@ -1,0 +1,31 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "2f3d03ce615a",
+  "session_id": "fc47cfa1-60f0-407d-9948-26c55a0649c4",
+  "strategy": "manual-commit",
+  "created_at": "2026-02-24T20:01:16.454493535Z",
+  "branch": "frontend",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/demo/src/__tests__/pipeline-viz.test.ts",
+    "apps/demo/src/atoms/pipeline.ts"
+  ],
+  "agent": "Claude Code",
+  "token_usage": {
+    "input_tokens": 122,
+    "cache_creation_tokens": 147262,
+    "cache_read_tokens": 12745402,
+    "output_tokens": 1547,
+    "api_call_count": 118
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-02-24T20:01:16.180053748Z",
+    "agent_lines": 0,
+    "human_added": 208,
+    "human_modified": 6,
+    "human_removed": 0,
+    "total_committed": 212,
+    "agent_percentage": 0
+  },
+  "transcript_path": ".claude/projects/-home-felt-PycharmProjects-s2morrow/fc47cfa1-60f0-407d-9948-26c55a0649c4.jsonl"
+}

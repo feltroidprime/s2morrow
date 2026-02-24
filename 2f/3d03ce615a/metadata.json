@@ -3,7 +3,7 @@
   "checkpoint_id": "2f3d03ce615a",
   "strategy": "manual-commit",
   "branch": "frontend",
-  "checkpoints_count": 65,
+  "checkpoints_count": 66,
   "files_touched": [
     ".claude/settings.local.json",
     ".claude/skills/benchmarking-cairo",
@@ -2580,6 +2580,7 @@
     "apps/demo/src/__tests__/account-deploy/account-deploy-flow.test.ts",
     "apps/demo/src/__tests__/effect-services/starknet-service.test.ts",
     "apps/demo/src/__tests__/effect-services/wasm-runtime.test.ts",
+    "apps/demo/src/__tests__/pipeline-viz.test.ts",
     "apps/demo/src/__tests__/providers/atom-provider.test.ts",
     "apps/demo/src/__tests__/verify-playground/atoms.test.ts",
     "apps/demo/src/__tests__/verify-playground/errors.test.ts",
@@ -2592,6 +2593,7 @@
     "apps/demo/src/app/providers.tsx",
     "apps/demo/src/atoms/falcon.ts",
     "apps/demo/src/atoms/index.ts",
+    "apps/demo/src/atoms/pipeline.ts",
     "apps/demo/src/components/ThemeToggle.tsx",
     "apps/demo/src/components/interactive/AccountDeployFlow.tsx",
     "apps/demo/src/components/interactive/InteractiveSections.tsx",
@@ -3159,13 +3161,20 @@
       "context": "/2f/3d03ce615a/63/context.md",
       "content_hash": "/2f/3d03ce615a/63/content_hash.txt",
       "prompt": "/2f/3d03ce615a/63/prompt.txt"
+    },
+    {
+      "metadata": "/2f/3d03ce615a/64/metadata.json",
+      "transcript": "/2f/3d03ce615a/64/full.jsonl",
+      "context": "/2f/3d03ce615a/64/context.md",
+      "content_hash": "/2f/3d03ce615a/64/content_hash.txt",
+      "prompt": "/2f/3d03ce615a/64/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 10938,
-    "cache_creation_tokens": 3827311,
-    "cache_read_tokens": 128663800,
-    "output_tokens": 25137,
-    "api_call_count": 1802
+    "input_tokens": 11060,
+    "cache_creation_tokens": 3974573,
+    "cache_read_tokens": 141409202,
+    "output_tokens": 26684,
+    "api_call_count": 1920
   }
 }
