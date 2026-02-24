@@ -1,0 +1,41 @@
+@import "tailwindcss";
+
+@theme {
+  /* Brand colors — shared across light/dark */
+  --color-falcon-primary: #6366f1;
+  --color-falcon-accent: #06b6d4;
+  --color-falcon-success: #10b981;
+  --color-falcon-error: #ef4444;
+
+  /* Dark theme defaults (applied via .dark class on <html>) */
+  --color-falcon-bg: #0f172a;
+  --color-falcon-surface: #1e293b;
+  --color-falcon-text: #f8fafc;
+  --color-falcon-muted: #94a3b8;
+}
+
+/* Dark mode: class strategy via .dark on <html> */
+.dark {
+  --color-falcon-bg: #0f172a;
+  --color-falcon-surface: #1e293b;
+  --color-falcon-text: #f8fafc;
+  --color-falcon-muted: #94a3b8;
+}
+
+/* Light mode: class strategy via .light on <html> */
+.light {
+  --color-falcon-bg: #ffffff;
+  --color-falcon-surface: #f1f5f9;
+  --color-falcon-text: #0f172a;
+  --color-falcon-muted: #64748b;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}

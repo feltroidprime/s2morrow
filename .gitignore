@@ -54,3 +54,4 @@ profiles/*.log
 scripts/
 snfoundry_trace
 .snfoundry_cache
+node_modules
