@@ -1,0 +1,83 @@
+IMPORTANT: After completing the task below, you MUST output a JSON object in a ```json code fence at the very end of your response. Do NOT forget this — the workflow fails without it.
+
+CODE QUALITY REVIEW — Ticket: atoms-002
+
+Title: Create AtomProvider and integrate in layout.tsx
+Category: atoms-state
+
+You are reviewing this ticket&#x27;s implementation for **code quality only**.
+Spec compliance is reviewed separately — focus here on quality, correctness patterns, and maintainability.
+
+## Files to Review
+
+Created:
+- apps/demo/src/providers/AtomProvider.tsx
+- apps/demo/src/tests/providers/atom-provider.test.ts
+- apps/demo/src/tests/providers/layout-atom-provider.integration.test.ts
+Modified:
+- apps/demo/src/app/layout.tsx
+## Review Checklist
+
+READ every file modified/created. Check:
+
+### Code quality
+- Check error handling
+- Check security
+- Check code style
+- Check test coverage
+- Check performance
+- Check architecture
+Severity levels:
+
+- &quot;critical&quot; — Security issue, data corruption risk, or missing error handling
+
+- &quot;major&quot; — Missing tests, architectural problems, or significant quality issues
+
+- &quot;minor&quot; — Style issues, minor refactoring opportunities
+
+- &quot;none&quot; — Code is production-quality
+
+Use severity &quot;none&quot; only if there are absolutely no quality issues.
+
+
+**REQUIRED OUTPUT** — You MUST end your response with a JSON object in a code fence matching this schema:
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "severity": {
+      "type": "string",
+      "enum": [
+        "none",
+        "minor",
+        "major",
+        "critical"
+      ]
+    },
+    "feedback": {
+      "type": "string"
+    },
+    "issues": {
+      "anyOf": [
+        {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "required": [
+    "severity",
+    "feedback",
+    "issues"
+  ],
+  "additionalProperties": false
+}
+```
+Output the JSON at the END of your response. The workflow will fail without it.
