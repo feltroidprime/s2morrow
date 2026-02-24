@@ -3,7 +3,7 @@
   "checkpoint_id": "2f3d03ce615a",
   "strategy": "manual-commit",
   "branch": "frontend",
-  "checkpoints_count": 46,
+  "checkpoints_count": 47,
   "files_touched": [
     ".claude/settings.local.json",
     ".claude/skills/benchmarking-cairo",
@@ -2459,20 +2459,25 @@
     "apps/demo/.next/diagnostics/build-diagnostics.json",
     "apps/demo/.next/diagnostics/framework.json",
     "apps/demo/.next/export-detail.json",
+    "apps/demo/.next/export-marker.json",
     "apps/demo/.next/fallback-build-manifest.json",
+    "apps/demo/.next/images-manifest.json",
     "apps/demo/.next/next-minimal-server.js.nft.json",
     "apps/demo/.next/next-server.js.nft.json",
     "apps/demo/.next/package.json",
+    "apps/demo/.next/prerender-manifest.json",
     "apps/demo/.next/react-loadable-manifest.json",
     "apps/demo/.next/required-server-files.json",
     "apps/demo/.next/routes-manifest.json",
     "apps/demo/.next/server/app-paths-manifest.json",
     "apps/demo/.next/server/app/_not-found.html",
+    "apps/demo/.next/server/app/_not-found.meta",
     "apps/demo/.next/server/app/_not-found.rsc",
     "apps/demo/.next/server/app/_not-found/page.js",
     "apps/demo/.next/server/app/_not-found/page.js.nft.json",
     "apps/demo/.next/server/app/_not-found/page_client-reference-manifest.js",
     "apps/demo/.next/server/app/index.html",
+    "apps/demo/.next/server/app/index.meta",
     "apps/demo/.next/server/app/index.rsc",
     "apps/demo/.next/server/app/page.js",
     "apps/demo/.next/server/app/page.js.nft.json",
@@ -2501,6 +2506,8 @@
     "apps/demo/.next/server/server-reference-manifest.js",
     "apps/demo/.next/server/server-reference-manifest.json",
     "apps/demo/.next/server/webpack-runtime.js",
+    "apps/demo/.next/static/OEyYE6cO8wqliBV12pWeQ/_buildManifest.js",
+    "apps/demo/.next/static/OEyYE6cO8wqliBV12pWeQ/_ssgManifest.js",
     "apps/demo/.next/static/QicZLe2nZVkOLgm3gFOAc/_buildManifest.js",
     "apps/demo/.next/static/QicZLe2nZVkOLgm3gFOAc/_ssgManifest.js",
     "apps/demo/.next/static/TMlFpDh21xnOo3wcxNdVq/_buildManifest.js",
@@ -2961,13 +2968,20 @@
       "context": "/2f/3d03ce615a/43/context.md",
       "content_hash": "/2f/3d03ce615a/43/content_hash.txt",
       "prompt": "/2f/3d03ce615a/43/prompt.txt"
+    },
+    {
+      "metadata": "/2f/3d03ce615a/44/metadata.json",
+      "transcript": "/2f/3d03ce615a/44/full.jsonl",
+      "context": "/2f/3d03ce615a/44/context.md",
+      "content_hash": "/2f/3d03ce615a/44/content_hash.txt",
+      "prompt": "/2f/3d03ce615a/44/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 3029,
-    "cache_creation_tokens": 2419558,
-    "cache_read_tokens": 68818495,
-    "output_tokens": 16455,
-    "api_call_count": 1050
+    "input_tokens": 3036,
+    "cache_creation_tokens": 2439719,
+    "cache_read_tokens": 68956898,
+    "output_tokens": 16498,
+    "api_call_count": 1055
   }
 }
