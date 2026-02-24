@@ -3,7 +3,7 @@
   "checkpoint_id": "2f3d03ce615a",
   "strategy": "manual-commit",
   "branch": "frontend",
-  "checkpoints_count": 49,
+  "checkpoints_count": 50,
   "files_touched": [
     ".claude/settings.local.json",
     ".claude/skills/benchmarking-cairo",
@@ -2558,6 +2558,8 @@
     "apps/demo/.workflow/.claude/settings.local.json",
     "apps/demo/.workflow/components/workflow.tsx",
     "apps/demo/next-env.d.ts",
+    "apps/demo/src/__tests__/account-deploy/account-deploy-flow.test.ts",
+    "apps/demo/src/__tests__/effect-services/starknet-service.test.ts",
     "apps/demo/src/__tests__/effect-services/wasm-runtime.test.ts",
     "apps/demo/src/__tests__/verify-playground/atoms.test.ts",
     "apps/demo/src/__tests__/verify-playground/errors.test.ts",
@@ -2577,8 +2579,10 @@
     "apps/demo/src/hooks/useFalcon.ts",
     "apps/demo/src/providers/AtomProvider.tsx",
     "apps/demo/src/services/FalconService.ts",
+    "apps/demo/src/services/StarknetService.ts",
     "apps/demo/src/services/WasmRuntime.ts",
     "apps/demo/src/services/__tests__/WasmRuntime.test.ts",
+    "apps/demo/src/tests/atoms.test.ts",
     "apps/demo/src/tests/landing/why-post-quantum.test.ts",
     "apps/demo/src/tests/scaffold/dev-server-smoke.test.ts",
     "apps/demo/src/tests/scaffold/providers.test.ts",
@@ -2991,13 +2995,20 @@
       "context": "/2f/3d03ce615a/46/context.md",
       "content_hash": "/2f/3d03ce615a/46/content_hash.txt",
       "prompt": "/2f/3d03ce615a/46/prompt.txt"
+    },
+    {
+      "metadata": "/2f/3d03ce615a/47/metadata.json",
+      "transcript": "/2f/3d03ce615a/47/full.jsonl",
+      "context": "/2f/3d03ce615a/47/context.md",
+      "content_hash": "/2f/3d03ce615a/47/content_hash.txt",
+      "prompt": "/2f/3d03ce615a/47/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 6788,
-    "cache_creation_tokens": 2581844,
-    "cache_read_tokens": 72963430,
-    "output_tokens": 17377,
-    "api_call_count": 1124
+    "input_tokens": 6973,
+    "cache_creation_tokens": 2810046,
+    "cache_read_tokens": 89942903,
+    "output_tokens": 19376,
+    "api_call_count": 1304
   }
 }
