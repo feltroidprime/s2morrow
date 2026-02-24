@@ -1,0 +1,51 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "2f3d03ce615a",
+  "session_id": "e31623b1-64db-48fd-aabb-3ab1a022b32d",
+  "strategy": "manual-commit",
+  "created_at": "2026-02-24T20:02:04.869282312Z",
+  "branch": "frontend",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/demo/.next/app-build-manifest.json",
+    "apps/demo/.next/build-manifest.json",
+    "apps/demo/.next/cache/.rscinfo",
+    "apps/demo/.next/fallback-build-manifest.json",
+    "apps/demo/.next/package.json",
+    "apps/demo/.next/prerender-manifest.json",
+    "apps/demo/.next/routes-manifest.json",
+    "apps/demo/.next/server/app-paths-manifest.json",
+    "apps/demo/.next/server/interception-route-rewrite-manifest.js",
+    "apps/demo/.next/server/middleware-build-manifest.js",
+    "apps/demo/.next/server/middleware-manifest.json",
+    "apps/demo/.next/server/next-font-manifest.js",
+    "apps/demo/.next/server/next-font-manifest.json",
+    "apps/demo/.next/server/pages-manifest.json",
+    "apps/demo/.next/server/server-reference-manifest.js",
+    "apps/demo/.next/server/server-reference-manifest.json",
+    "apps/demo/.next/static/development/_buildManifest.js",
+    "apps/demo/.next/static/development/_clientMiddlewareManifest.json",
+    "apps/demo/.next/static/development/_ssgManifest.js",
+    "apps/demo/.next/types/routes.d.ts",
+    "apps/demo/.next/types/validator.ts"
+  ],
+  "agent": "Claude Code",
+  "transcript_identifier_at_start": "fc3b4e69-c5f8-49c0-88c8-ac2d9d6e6657",
+  "token_usage": {
+    "input_tokens": 23,
+    "cache_creation_tokens": 45104,
+    "cache_read_tokens": 931395,
+    "output_tokens": 533,
+    "api_call_count": 21
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-02-24T20:02:04.790175094Z",
+    "agent_lines": 0,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 216,
+    "total_committed": 216,
+    "agent_percentage": 0
+  },
+  "transcript_path": ".claude/projects/-home-felt-PycharmProjects-s2morrow/e31623b1-64db-48fd-aabb-3ab1a022b32d.jsonl"
+}
