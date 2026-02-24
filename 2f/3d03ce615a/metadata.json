@@ -3,7 +3,7 @@
   "checkpoint_id": "2f3d03ce615a",
   "strategy": "manual-commit",
   "branch": "frontend",
-  "checkpoints_count": 30,
+  "checkpoints_count": 31,
   "files_touched": [
     ".claude/settings.local.json",
     ".claude/skills/benchmarking-cairo",
@@ -129,13 +129,16 @@
     "apps/demo/next-env.d.ts",
     "apps/demo/src/__tests__/verify-playground/atoms.test.ts",
     "apps/demo/src/__tests__/verify-playground/falcon-service-deserialize.test.ts",
+    "apps/demo/src/app/globals.css",
     "apps/demo/src/app/layout.tsx",
     "apps/demo/src/atoms/falcon.ts",
     "apps/demo/src/atoms/index.ts",
+    "apps/demo/src/components/ThemeToggle.tsx",
     "apps/demo/src/components/interactive/InteractiveSections.tsx",
     "apps/demo/src/providers/AtomProvider.tsx",
     "apps/demo/src/services/FalconService.ts",
     "apps/demo/src/tests/scaffold/dev-server-smoke.test.ts",
+    "apps/demo/src/tests/styling/theme-toggle.test.ts",
     "apps/demo/tests/atoms/falcon.test.ts",
     "apps/demo/tests/atoms/pipeline.test.ts",
     "apps/demo/tests/atoms/starknet.test.ts",
@@ -404,13 +407,20 @@
       "context": "/2f/3d03ce615a/27/context.md",
       "content_hash": "/2f/3d03ce615a/27/content_hash.txt",
       "prompt": "/2f/3d03ce615a/27/prompt.txt"
+    },
+    {
+      "metadata": "/2f/3d03ce615a/28/metadata.json",
+      "transcript": "/2f/3d03ce615a/28/full.jsonl",
+      "context": "/2f/3d03ce615a/28/context.md",
+      "content_hash": "/2f/3d03ce615a/28/content_hash.txt",
+      "prompt": "/2f/3d03ce615a/28/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 2678,
-    "cache_creation_tokens": 1688040,
-    "cache_read_tokens": 53621003,
-    "output_tokens": 13062,
-    "api_call_count": 746
+    "input_tokens": 2719,
+    "cache_creation_tokens": 1765163,
+    "cache_read_tokens": 56144691,
+    "output_tokens": 13493,
+    "api_call_count": 784
   }
 }
