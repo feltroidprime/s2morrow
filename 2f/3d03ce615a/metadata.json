@@ -3,7 +3,7 @@
   "checkpoint_id": "2f3d03ce615a",
   "strategy": "manual-commit",
   "branch": "frontend",
-  "checkpoints_count": 61,
+  "checkpoints_count": 62,
   "files_touched": [
     ".claude/settings.local.json",
     ".claude/skills/benchmarking-cairo",
@@ -2432,6 +2432,7 @@
     ".jjconflict-side-3/tests/compilable_circuits/test_ntt_felt252.py",
     ".smithers/executions/0d95bd92-0187-4580-925c-c64f3d5fd07d/logs/stream.ndjson",
     "README",
+    "apps/demo/.env.local",
     "apps/demo/.gitignore",
     "apps/demo/.next/BUILD_ID",
     "apps/demo/.next/_events.json",
@@ -2453,7 +2454,9 @@
     "apps/demo/.next/cache/webpack/edge-server-production/index.pack",
     "apps/demo/.next/cache/webpack/server-production/0.pack",
     "apps/demo/.next/cache/webpack/server-production/1.pack",
+    "apps/demo/.next/cache/webpack/server-production/1.pack_",
     "apps/demo/.next/cache/webpack/server-production/2.pack",
+    "apps/demo/.next/cache/webpack/server-production/2.pack_",
     "apps/demo/.next/cache/webpack/server-production/3.pack_",
     "apps/demo/.next/cache/webpack/server-production/index.pack",
     "apps/demo/.next/cache/webpack/server-production/index.pack.old",
@@ -2519,6 +2522,8 @@
     "apps/demo/.next/static/QicZLe2nZVkOLgm3gFOAc/_ssgManifest.js",
     "apps/demo/.next/static/TMlFpDh21xnOo3wcxNdVq/_buildManifest.js",
     "apps/demo/.next/static/TMlFpDh21xnOo3wcxNdVq/_ssgManifest.js",
+    "apps/demo/.next/static/_AztoACFNq2cfHzWmWARP/_buildManifest.js",
+    "apps/demo/.next/static/_AztoACFNq2cfHzWmWARP/_ssgManifest.js",
     "apps/demo/.next/static/chunks/255-ebd51be49873d76c.js",
     "apps/demo/.next/static/chunks/440.c30616db1c2c39fc.js",
     "apps/demo/.next/static/chunks/4bd1b696-c023c6e3521b1417.js",
@@ -2527,6 +2532,7 @@
     "apps/demo/.next/static/chunks/app/_not-found/page-28d6234186e03f38.js",
     "apps/demo/.next/static/chunks/app/layout-3b778bcc5e7bc8fd.js",
     "apps/demo/.next/static/chunks/app/layout-5d84557cf0cc8bcd.js",
+    "apps/demo/.next/static/chunks/app/layout-89220dfad53221d8.js",
     "apps/demo/.next/static/chunks/app/layout-fabc4ad387a17e9c.js",
     "apps/demo/.next/static/chunks/app/page-ac9f93fb1767097b.js",
     "apps/demo/.next/static/chunks/app/page-f47082ca351a8369.js",
@@ -2604,6 +2610,8 @@
     "apps/demo/src/services/StarknetService.ts",
     "apps/demo/src/services/WasmRuntime.ts",
     "apps/demo/src/services/__tests__/WasmRuntime.test.ts",
+    "apps/demo/src/services/__tests__/errors.test.ts",
+    "apps/demo/src/services/__tests__/types.test.ts",
     "apps/demo/src/tests/atoms.test.ts",
     "apps/demo/src/tests/landing/footer.page.integration.test.ts",
     "apps/demo/src/tests/landing/page-composition.test.tsx",
@@ -2612,7 +2620,10 @@
     "apps/demo/src/tests/providers/atom-provider.test.ts",
     "apps/demo/src/tests/providers/layout-atom-provider.integration.test.ts",
     "apps/demo/src/tests/scaffold/dev-server-smoke.test.ts",
+    "apps/demo/src/tests/scaffold/env-config.test.ts",
+    "apps/demo/src/tests/scaffold/package-scaffold.test.ts",
     "apps/demo/src/tests/scaffold/providers.test.ts",
+    "apps/demo/src/tests/styling/config-files.test.ts",
     "apps/demo/src/tests/styling/design-tokens.test.ts",
     "apps/demo/src/tests/styling/theme-toggle.test.ts",
     "apps/demo/src/types/falcon-rs-wasm.d.ts",
@@ -3118,13 +3129,20 @@
       "context": "/2f/3d03ce615a/59/context.md",
       "content_hash": "/2f/3d03ce615a/59/content_hash.txt",
       "prompt": "/2f/3d03ce615a/59/prompt.txt"
+    },
+    {
+      "metadata": "/2f/3d03ce615a/60/metadata.json",
+      "transcript": "/2f/3d03ce615a/60/full.jsonl",
+      "context": "/2f/3d03ce615a/60/context.md",
+      "content_hash": "/2f/3d03ce615a/60/content_hash.txt",
+      "prompt": "/2f/3d03ce615a/60/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 10846,
-    "cache_creation_tokens": 3640509,
-    "cache_read_tokens": 124922659,
-    "output_tokens": 24183,
-    "api_call_count": 1721
+    "input_tokens": 10880,
+    "cache_creation_tokens": 3681159,
+    "cache_read_tokens": 126327098,
+    "output_tokens": 24557,
+    "api_call_count": 1752
   }
 }
