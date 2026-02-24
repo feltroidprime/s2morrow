@@ -3,7 +3,7 @@
   "checkpoint_id": "2f3d03ce615a",
   "strategy": "manual-commit",
   "branch": "frontend",
-  "checkpoints_count": 20,
+  "checkpoints_count": 21,
   "files_touched": [
     ".claude/settings.local.json",
     ".claude/skills/benchmarking-cairo",
@@ -308,13 +308,20 @@
       "context": "/2f/3d03ce615a/17/context.md",
       "content_hash": "/2f/3d03ce615a/17/content_hash.txt",
       "prompt": "/2f/3d03ce615a/17/prompt.txt"
+    },
+    {
+      "metadata": "/2f/3d03ce615a/18/metadata.json",
+      "transcript": "/2f/3d03ce615a/18/full.jsonl",
+      "context": "/2f/3d03ce615a/18/context.md",
+      "content_hash": "/2f/3d03ce615a/18/content_hash.txt",
+      "prompt": "/2f/3d03ce615a/18/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 1065,
-    "cache_creation_tokens": 1132012,
-    "cache_read_tokens": 38708200,
-    "output_tokens": 9809,
-    "api_call_count": 501
+    "input_tokens": 1075,
+    "cache_creation_tokens": 1160609,
+    "cache_read_tokens": 38962023,
+    "output_tokens": 9926,
+    "api_call_count": 509
   }
 }
