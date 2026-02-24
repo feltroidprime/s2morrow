@@ -1,0 +1,30 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "2f3d03ce615a",
+  "session_id": "dc59bad6-47ec-43c9-bb70-acebc78905ae",
+  "strategy": "manual-commit",
+  "created_at": "2026-02-24T19:51:18.966263772Z",
+  "branch": "frontend",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/demo/next-env.d.ts"
+  ],
+  "agent": "Claude Code",
+  "token_usage": {
+    "input_tokens": 10,
+    "cache_creation_tokens": 20942,
+    "cache_read_tokens": 245722,
+    "output_tokens": 71,
+    "api_call_count": 8
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-02-24T19:51:18.916250754Z",
+    "agent_lines": 3,
+    "human_added": 187,
+    "human_modified": 3,
+    "human_removed": 0,
+    "total_committed": 193,
+    "agent_percentage": 1.5544041450777202
+  },
+  "transcript_path": ".claude/projects/-home-felt-PycharmProjects-s2morrow/dc59bad6-47ec-43c9-bb70-acebc78905ae.jsonl"
+}
