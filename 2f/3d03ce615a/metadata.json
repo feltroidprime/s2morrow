@@ -3,7 +3,7 @@
   "checkpoint_id": "2f3d03ce615a",
   "strategy": "manual-commit",
   "branch": "frontend",
-  "checkpoints_count": 22,
+  "checkpoints_count": 23,
   "files_touched": [
     ".claude/settings.local.json",
     ".claude/skills/benchmarking-cairo",
@@ -131,6 +131,7 @@
     "docs/plans/ES-002.md",
     "docs/plans/ES-004.md",
     "docs/plans/ES-005.md",
+    "docs/plans/LANDING-006.md",
     "docs/plans/PV-001.md",
     "docs/plans/STYLE-003.md",
     "docs/plans/STYLE-004.md",
@@ -325,13 +326,20 @@
       "context": "/2f/3d03ce615a/19/context.md",
       "content_hash": "/2f/3d03ce615a/19/content_hash.txt",
       "prompt": "/2f/3d03ce615a/19/prompt.txt"
+    },
+    {
+      "metadata": "/2f/3d03ce615a/20/metadata.json",
+      "transcript": "/2f/3d03ce615a/20/full.jsonl",
+      "context": "/2f/3d03ce615a/20/context.md",
+      "content_hash": "/2f/3d03ce615a/20/content_hash.txt",
+      "prompt": "/2f/3d03ce615a/20/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 1119,
-    "cache_creation_tokens": 1248371,
-    "cache_read_tokens": 42349714,
-    "output_tokens": 10415,
-    "api_call_count": 550
+    "input_tokens": 1140,
+    "cache_creation_tokens": 1297586,
+    "cache_read_tokens": 43208729,
+    "output_tokens": 10650,
+    "api_call_count": 568
   }
 }
