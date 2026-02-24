@@ -3,7 +3,7 @@
   "checkpoint_id": "2f3d03ce615a",
   "strategy": "manual-commit",
   "branch": "frontend",
-  "checkpoints_count": 38,
+  "checkpoints_count": 39,
   "files_touched": [
     ".claude/settings.local.json",
     ".claude/skills/benchmarking-cairo",
@@ -2556,6 +2556,7 @@
     "apps/demo/src/__tests__/verify-playground/errors.test.ts",
     "apps/demo/src/__tests__/verify-playground/falcon-service-deserialize.test.ts",
     "apps/demo/src/__tests__/verify-playground/falcon-service.test.ts",
+    "apps/demo/src/__tests__/verify-playground/use-falcon.test.ts",
     "apps/demo/src/app/globals.css",
     "apps/demo/src/app/layout.tsx",
     "apps/demo/src/app/page.tsx",
@@ -2566,6 +2567,7 @@
     "apps/demo/src/components/interactive/InteractiveSections.tsx",
     "apps/demo/src/components/landing/PerformanceStats.tsx",
     "apps/demo/src/components/landing/WhyPostQuantum.tsx",
+    "apps/demo/src/hooks/useFalcon.ts",
     "apps/demo/src/providers/AtomProvider.tsx",
     "apps/demo/src/services/FalconService.ts",
     "apps/demo/src/tests/landing/why-post-quantum.test.ts",
@@ -2595,6 +2597,7 @@
     "docs/plans/PV-001.md",
     "docs/plans/STYLE-003.md",
     "docs/plans/STYLE-004.md",
+    "docs/plans/VP-005.md",
     "docs/plans/WASM-001.md",
     "packages/falcon/.claude/settings.local.json",
     "packages/falcon/Scarb.lock",
@@ -2898,13 +2901,20 @@
       "context": "/2f/3d03ce615a/35/context.md",
       "content_hash": "/2f/3d03ce615a/35/content_hash.txt",
       "prompt": "/2f/3d03ce615a/35/prompt.txt"
+    },
+    {
+      "metadata": "/2f/3d03ce615a/36/metadata.json",
+      "transcript": "/2f/3d03ce615a/36/full.jsonl",
+      "context": "/2f/3d03ce615a/36/context.md",
+      "content_hash": "/2f/3d03ce615a/36/content_hash.txt",
+      "prompt": "/2f/3d03ce615a/36/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 2867,
-    "cache_creation_tokens": 2076549,
-    "cache_read_tokens": 62244504,
-    "output_tokens": 14893,
-    "api_call_count": 911
+    "input_tokens": 2884,
+    "cache_creation_tokens": 2114129,
+    "cache_read_tokens": 62883755,
+    "output_tokens": 15053,
+    "api_call_count": 926
   }
 }
