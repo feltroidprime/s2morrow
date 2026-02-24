@@ -1,0 +1,61 @@
+IMPORTANT: After completing the task below, you MUST output a JSON object in a ```json code fence at the very end of your response. Do NOT forget this — the workflow fails without it.
+
+RESEARCH PHASE — Ticket: ES-004
+
+Title: Implement FalconService with correct publicKeyNtt deserialization
+Description: Create apps/demo/src/services/FalconService.ts with Effect.Service, accessors: true, dependencies: [WasmRuntimeLive]. Implement all 5 methods (generateKeypair, sign, verify, createHint, packPublicKey). Fix the planned bug where publicKeyNtt returns empty Int32Array(512) — must actually deserialize from verifying key bytes. Remove Generator&lt;any, *, any&gt; explicit annotations; let Effect.fn infer types. Write success and failure tests for each method.
+Category: effect-services
+
+Your job is to gather all reference materials needed to implement this ticket.
+
+## Reference Paths
+
+Read these reference paths:
+- docs/specs/
+- docs/specs/falcon-demo-website.md
+- docs/plans/2026-02-23-falcon-demo-website-design.md
+- docs/plans/2026-02-23-falcon-demo-website-impl.md
+- CLAUDE.md
+- apps/demo/src/
+## Steps
+
+- **Read the specs** — Review all relevant specification documents
+
+- **Read reference materials** — Browse reference documentation for patterns and examples
+
+- **Read existing implementation** — Read any files listed in the ticket&#x27;s relevantFiles
+
+- **Write context file** — Write docs/context/ES-004.md with all paths and summaries
+
+## Commit
+
+After writing the context file:
+
+`jj describe -m &quot;📝 docs({props.ticketCategory}): gather research for {props.ticketId}&quot;
+jj new
+jj bookmark set ticket/{props.ticketId} -r @
+jj git push --bookmark ticket/{props.ticketId}
+`
+
+
+**REQUIRED OUTPUT** — You MUST end your response with a JSON object in a code fence matching this schema:
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "contextFilePath": {
+      "type": "string"
+    },
+    "summary": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "contextFilePath",
+    "summary"
+  ],
+  "additionalProperties": false
+}
+```
+Output the JSON at the END of your response. The workflow will fail without it.
