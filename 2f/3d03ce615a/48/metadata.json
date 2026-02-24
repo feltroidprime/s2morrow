@@ -1,0 +1,49 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "2f3d03ce615a",
+  "session_id": "d9313313-ed6a-4b42-a41e-a0d3a1321268",
+  "strategy": "manual-commit",
+  "created_at": "2026-02-24T19:51:17.362692421Z",
+  "branch": "frontend",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/demo/.next/cache/webpack/client-production/4.pack_",
+    "apps/demo/.next/cache/webpack/server-production/3.pack_",
+    "apps/demo/.next/next-minimal-server.js.nft.json",
+    "apps/demo/.next/next-server.js.nft.json",
+    "apps/demo/.next/static/chunks/440.c30616db1c2c39fc.js",
+    "apps/demo/.next/static/chunks/622.6c973ec1c9c6195e.js",
+    "apps/demo/.next/static/chunks/840.ff8f0473dff982c2.js",
+    "apps/demo/.next/static/chunks/app/layout-3b778bcc5e7bc8fd.js",
+    "apps/demo/.next/static/chunks/app/layout-fabc4ad387a17e9c.js",
+    "apps/demo/.next/static/chunks/app/page-ac9f93fb1767097b.js",
+    "apps/demo/.next/static/chunks/app/page-f47082ca351a8369.js",
+    "apps/demo/.next/static/chunks/webpack-4e6bf084ac60582b.js",
+    "apps/demo/.next/static/chunks/webpack-c620a714124b422c.js",
+    "apps/demo/.next/static/css/d66b8e2ea5923b1e.css",
+    "apps/demo/.next/static/css/f25a246cf7de0ff8.css",
+    "apps/demo/.next/static/mPLirFwEmPtlVggWAAZOp/_buildManifest.js",
+    "apps/demo/.next/static/mPLirFwEmPtlVggWAAZOp/_ssgManifest.js",
+    "apps/demo/.next/static/pV6mdLHWXkCo4BUF8JABP/_buildManifest.js",
+    "apps/demo/.next/static/pV6mdLHWXkCo4BUF8JABP/_ssgManifest.js",
+    "apps/demo/src/components/interactive/InteractiveSections.tsx"
+  ],
+  "agent": "Claude Code",
+  "token_usage": {
+    "input_tokens": 271,
+    "cache_creation_tokens": 15809,
+    "cache_read_tokens": 97152,
+    "output_tokens": 24,
+    "api_call_count": 4
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-02-24T19:51:17.323063784Z",
+    "agent_lines": 0,
+    "human_added": 137,
+    "human_modified": 51,
+    "human_removed": 0,
+    "total_committed": 186,
+    "agent_percentage": 0
+  },
+  "transcript_path": ".claude/projects/-home-felt-PycharmProjects-s2morrow/d9313313-ed6a-4b42-a41e-a0d3a1321268.jsonl"
+}
