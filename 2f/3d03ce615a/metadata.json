@@ -3,7 +3,7 @@
   "checkpoint_id": "2f3d03ce615a",
   "strategy": "manual-commit",
   "branch": "frontend",
-  "checkpoints_count": 17,
+  "checkpoints_count": 18,
   "files_touched": [
     ".claude/settings.local.json",
     ".claude/skills/benchmarking-cairo",
@@ -25,6 +25,7 @@
     "apps/demo/.next/cache/webpack/server-production/index.pack",
     "apps/demo/.next/cache/webpack/server-production/index.pack.old",
     "apps/demo/.next/export-detail.json",
+    "apps/demo/.next/fallback-build-manifest.json",
     "apps/demo/.next/required-server-files.json",
     "apps/demo/.next/routes-manifest.json",
     "apps/demo/.next/server/app/_not-found.html",
@@ -49,6 +50,9 @@
     "apps/demo/.next/static/chunks/df28a_next_dist_compiled_next-devtools_index_b18d74af.js.map",
     "apps/demo/.next/static/chunks/df28a_next_dist_compiled_react-dom_7f34a029._.js.map",
     "apps/demo/.next/static/css/20d37fa45eb6b978.css",
+    "apps/demo/.next/static/development/_buildManifest.js",
+    "apps/demo/.next/static/development/_clientMiddlewareManifest.json",
+    "apps/demo/.next/static/development/_ssgManifest.js",
     "apps/demo/.next/static/pPzXlAI6WOJkBgwHufAbd/_buildManifest.js",
     "apps/demo/.next/static/pPzXlAI6WOJkBgwHufAbd/_ssgManifest.js",
     "apps/demo/.next/trace",
@@ -66,9 +70,11 @@
     "docs/context/ES-001.md",
     "docs/context/ES-004.md",
     "docs/context/ES-005.md",
+    "docs/plans/DEPLOY-001.md",
     "docs/plans/ES-001.md",
     "docs/plans/ES-002.md",
     "docs/plans/ES-004.md",
+    "docs/plans/PV-001.md",
     "docs/plans/STYLE-003.md",
     "docs/plans/STYLE-004.md",
     "docs/plans/WASM-001.md",
@@ -227,13 +233,20 @@
       "context": "/2f/3d03ce615a/14/context.md",
       "content_hash": "/2f/3d03ce615a/14/content_hash.txt",
       "prompt": "/2f/3d03ce615a/14/prompt.txt"
+    },
+    {
+      "metadata": "/2f/3d03ce615a/15/metadata.json",
+      "transcript": "/2f/3d03ce615a/15/full.jsonl",
+      "context": "/2f/3d03ce615a/15/context.md",
+      "content_hash": "/2f/3d03ce615a/15/content_hash.txt",
+      "prompt": "/2f/3d03ce615a/15/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 1006,
-    "cache_creation_tokens": 964663,
-    "cache_read_tokens": 35852709,
-    "output_tokens": 9186,
-    "api_call_count": 451
+    "input_tokens": 1033,
+    "cache_creation_tokens": 1041872,
+    "cache_read_tokens": 37484154,
+    "output_tokens": 9492,
+    "api_call_count": 475
   }
 }

@@ -1,0 +1,35 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "2f3d03ce615a",
+  "session_id": "0fe5b5f1-56d9-4495-ab5e-5067b9b690a1",
+  "strategy": "manual-commit",
+  "created_at": "2026-02-24T19:50:21.022474902Z",
+  "branch": "frontend",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/demo/.next/fallback-build-manifest.json",
+    "apps/demo/.next/static/development/_buildManifest.js",
+    "apps/demo/.next/static/development/_clientMiddlewareManifest.json",
+    "apps/demo/.next/static/development/_ssgManifest.js",
+    "docs/plans/DEPLOY-001.md",
+    "docs/plans/PV-001.md"
+  ],
+  "agent": "Claude Code",
+  "token_usage": {
+    "input_tokens": 27,
+    "cache_creation_tokens": 77209,
+    "cache_read_tokens": 1631445,
+    "output_tokens": 306,
+    "api_call_count": 24
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-02-24T19:50:20.78080389Z",
+    "agent_lines": 125,
+    "human_added": 2997,
+    "human_modified": 29,
+    "human_removed": 0,
+    "total_committed": 3151,
+    "agent_percentage": 3.9669946048873377
+  },
+  "transcript_path": ".claude/projects/-home-felt-PycharmProjects-s2morrow/0fe5b5f1-56d9-4495-ab5e-5067b9b690a1.jsonl"
+}
