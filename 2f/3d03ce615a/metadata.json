@@ -3,7 +3,7 @@
   "checkpoint_id": "2f3d03ce615a",
   "strategy": "manual-commit",
   "branch": "frontend",
-  "checkpoints_count": 16,
+  "checkpoints_count": 17,
   "files_touched": [
     ".claude/settings.local.json",
     ".claude/skills/benchmarking-cairo",
@@ -53,8 +53,11 @@
     "apps/demo/.next/static/pPzXlAI6WOJkBgwHufAbd/_ssgManifest.js",
     "apps/demo/.next/trace",
     "apps/demo/.workflow/components/workflow.tsx",
+    "apps/demo/src/__tests__/verify-playground/falcon-service-deserialize.test.ts",
     "apps/demo/src/atoms/falcon.ts",
     "apps/demo/src/atoms/index.ts",
+    "apps/demo/src/providers/AtomProvider.tsx",
+    "apps/demo/src/tests/scaffold/dev-server-smoke.test.ts",
     "apps/demo/tests/atoms/falcon.test.ts",
     "apps/demo/tests/atoms/pipeline.test.ts",
     "apps/demo/tests/atoms/starknet.test.ts",
@@ -217,13 +220,20 @@
       "context": "/2f/3d03ce615a/13/context.md",
       "content_hash": "/2f/3d03ce615a/13/content_hash.txt",
       "prompt": "/2f/3d03ce615a/13/prompt.txt"
+    },
+    {
+      "metadata": "/2f/3d03ce615a/14/metadata.json",
+      "transcript": "/2f/3d03ce615a/14/full.jsonl",
+      "context": "/2f/3d03ce615a/14/context.md",
+      "content_hash": "/2f/3d03ce615a/14/content_hash.txt",
+      "prompt": "/2f/3d03ce615a/14/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 992,
-    "cache_creation_tokens": 943594,
-    "cache_read_tokens": 35532574,
-    "output_tokens": 9018,
-    "api_call_count": 440
+    "input_tokens": 1006,
+    "cache_creation_tokens": 964663,
+    "cache_read_tokens": 35852709,
+    "output_tokens": 9186,
+    "api_call_count": 451
   }
 }
