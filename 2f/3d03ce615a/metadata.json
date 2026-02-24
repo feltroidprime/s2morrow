@@ -2,11 +2,12 @@
   "cli_version": "0.4.4",
   "checkpoint_id": "2f3d03ce615a",
   "strategy": "manual-commit",
-  "checkpoints_count": 7,
+  "checkpoints_count": 8,
   "files_touched": [
     ".claude/skills/cairo-coding/SKILL.md",
     "apps/demo/.workflow/components/workflow.tsx",
     "cairo_gen/circuit.py",
+    "docs/context/ES-005.md",
     "docs/plans/WASM-001.md",
     "packages/falcon/Scarb.lock",
     "packages/falcon/Scarb.toml",
@@ -92,13 +93,20 @@
       "context": "/2f/3d03ce615a/4/context.md",
       "content_hash": "/2f/3d03ce615a/4/content_hash.txt",
       "prompt": "/2f/3d03ce615a/4/prompt.txt"
+    },
+    {
+      "metadata": "/2f/3d03ce615a/5/metadata.json",
+      "transcript": "/2f/3d03ce615a/5/full.jsonl",
+      "context": "/2f/3d03ce615a/5/context.md",
+      "content_hash": "/2f/3d03ce615a/5/content_hash.txt",
+      "prompt": "/2f/3d03ce615a/5/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 412,
-    "cache_creation_tokens": 247663,
-    "cache_read_tokens": 7715992,
-    "output_tokens": 5076,
-    "api_call_count": 107
+    "input_tokens": 430,
+    "cache_creation_tokens": 327632,
+    "cache_read_tokens": 8887966,
+    "output_tokens": 5248,
+    "api_call_count": 122
   }
 }
