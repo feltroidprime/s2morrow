@@ -2444,6 +2444,7 @@
     "apps/demo/.next/cache/webpack/client-production/0.pack",
     "apps/demo/.next/cache/webpack/client-production/1.pack",
     "apps/demo/.next/cache/webpack/client-production/1.pack_",
+    "apps/demo/.next/cache/webpack/client-production/2.pack",
     "apps/demo/.next/cache/webpack/client-production/3.pack_",
     "apps/demo/.next/cache/webpack/client-production/4.pack_",
     "apps/demo/.next/cache/webpack/client-production/index.pack",
@@ -2535,6 +2536,7 @@
     "apps/demo/.next/static/chunks/webpack-4e6bf084ac60582b.js",
     "apps/demo/.next/static/chunks/webpack-c620a714124b422c.js",
     "apps/demo/.next/static/css/20d37fa45eb6b978.css",
+    "apps/demo/.next/static/css/32b463b039e54a25.css",
     "apps/demo/.next/static/css/d66b8e2ea5923b1e.css",
     "apps/demo/.next/static/css/f25a246cf7de0ff8.css",
     "apps/demo/.next/static/development/_buildManifest.js",
@@ -2542,6 +2544,8 @@
     "apps/demo/.next/static/development/_ssgManifest.js",
     "apps/demo/.next/static/g5MFl0Po0XsRCZBXR-p6L/_buildManifest.js",
     "apps/demo/.next/static/g5MFl0Po0XsRCZBXR-p6L/_ssgManifest.js",
+    "apps/demo/.next/static/k0SRZE6OxcrfbblaV8u5H/_buildManifest.js",
+    "apps/demo/.next/static/k0SRZE6OxcrfbblaV8u5H/_ssgManifest.js",
     "apps/demo/.next/static/mPLirFwEmPtlVggWAAZOp/_buildManifest.js",
     "apps/demo/.next/static/mPLirFwEmPtlVggWAAZOp/_ssgManifest.js",
     "apps/demo/.next/static/pPzXlAI6WOJkBgwHufAbd/_buildManifest.js",
@@ -2580,6 +2584,7 @@
     "apps/demo/src/components/interactive/PipelineVisualizer.tsx",
     "apps/demo/src/components/interactive/VerificationPlayground.tsx",
     "apps/demo/src/components/interactive/__tests__/PipelineSection.test.ts",
+    "apps/demo/src/components/landing/Hero.tsx",
     "apps/demo/src/components/landing/PerformanceStats.tsx",
     "apps/demo/src/components/landing/SectionSkeleton.tsx",
     "apps/demo/src/components/landing/WhyPostQuantum.tsx",
@@ -3038,13 +3043,20 @@
       "context": "/2f/3d03ce615a/51/context.md",
       "content_hash": "/2f/3d03ce615a/51/content_hash.txt",
       "prompt": "/2f/3d03ce615a/51/prompt.txt"
+    },
+    {
+      "metadata": "/2f/3d03ce615a/52/metadata.json",
+      "transcript": "/2f/3d03ce615a/52/full.jsonl",
+      "context": "/2f/3d03ce615a/52/context.md",
+      "content_hash": "/2f/3d03ce615a/52/content_hash.txt",
+      "prompt": "/2f/3d03ce615a/52/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 7403,
-    "cache_creation_tokens": 3095731,
-    "cache_read_tokens": 104901068,
-    "output_tokens": 21219,
-    "api_call_count": 1457
+    "input_tokens": 7418,
+    "cache_creation_tokens": 3111469,
+    "cache_read_tokens": 105157726,
+    "output_tokens": 21317,
+    "api_call_count": 1467
   }
 }
