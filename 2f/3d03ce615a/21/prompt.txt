@@ -1,0 +1,200 @@
+IMPORTANT: After completing the task below, you MUST output a JSON object in a ```json code fence at the very end of your response. Do NOT forget this — the workflow fails without it.
+
+IMPLEMENTATION PHASE — Ticket: atoms-001
+
+Title: Implement all atom definitions (falcon.ts, starknet.ts, pipeline.ts)
+Category: atoms-state
+
+## Context
+
+Read the plan file: /home/felt/PycharmProjects/s2morrow/docs/plans/atoms-001.md
+Read the context file: /home/felt/PycharmProjects/s2morrow/docs/context/atoms-001.md
+
+Implementation steps from plan:
+
+1. Plan file created with TDD-first ordering, file-level signatures, test matrix (unit + integration), risks/mitigations, and acceptance verification.
+2. Blocked before commit/push: working copy contains many unrelated changes (`apps/demo/.next/*`, `apps/demo/src/tests/scaffold/es-001-scaffold.test.ts`, `apps/demo/tsconfig.json`, `apps/demo/tsconfig.tsbuildinfo`, and `.smithers/...`) not made in this task.
+3. Need your direction: 1) commit only `docs/plans/atoms-001.md` with a path-limited jj commit, or 2) proceed with current dirty tree (will include unrelated changes).
+
+## TDD IS MANDATORY — Follow This Order Exactly
+
+### Step 1: Write Failing Tests FIRST
+
+Write unit tests AND integration tests
+### Step 2: Write Minimal Implementation (Green Phase)
+
+- Write the SMALLEST amount of code to make failing tests pass
+- Follow architecture patterns from specs
+
+### Step 3: Refactor (Refactor Phase)
+
+- Clean up while keeping tests green
+
+- Extract shared logic
+
+- Improve naming
+- Run formatters: Format typecheck, Format build
+
+### Step 4: Verify
+
+- Run `cd apps/demo &amp;&amp; bun run typecheck`
+- Run `cd apps/demo &amp;&amp; bun run build`
+## Architecture Rules
+
+- Read docs/specs/ for patterns
+## JJ COMMIT — MANDATORY (DO NOT SKIP)
+
+You MUST commit and push your changes to the ticket branch before finishing. Uncommitted work is lost work.
+
+- `jj describe -m &quot;{props.commitPrefix || &#x27;EMOJI&#x27;} type(scope): description&quot;` — describe your changes with a meaningful message.
+
+- `jj new` — create a new change for the next logical step. Repeat describe+new for each atomic change.
+
+- `jj bookmark set ticket/{props.ticketId} -r @`
+
+- `jj git push --bookmark ticket/{props.ticketId}`
+
+Emoji prefixes: ✨ feat, 🐛 fix, ♻️ refactor, 📝 docs, 🧪 test
+**If you do not commit and push to the ticket branch, your work does not count. This is non-negotiable.**
+
+
+**REQUIRED OUTPUT** — You MUST end your response with a JSON object in a code fence matching this schema:
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "whatWasDone": {
+      "type": "string"
+    },
+    "filesCreated": {
+      "anyOf": [
+        {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "filesModified": {
+      "anyOf": [
+        {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "nextSteps": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "required": [
+    "whatWasDone",
+    "filesCreated",
+    "filesModified",
+    "nextSteps"
+  ],
+  "additionalProperties": false
+}
+```
+Output the JSON at the END of your response. The workflow will fail without it.
+
+---
+
+Base directory for this skill: /home/felt/.claude/plugins/cache/claude-plugins-official/superpowers/4.3.1/skills/executing-plans
+
+# Executing Plans
+
+## Overview
+
+Load plan, review critically, execute tasks in batches, report for review between batches.
+
+**Core principle:** Batch execution with checkpoints for architect review.
+
+**Announce at start:** "I'm using the executing-plans skill to implement this plan."
+
+## The Process
+
+### Step 1: Load and Review Plan
+1. Read plan file
+2. Review critically - identify any questions or concerns about the plan
+3. If concerns: Raise them with your human partner before starting
+4. If no concerns: Create TodoWrite and proceed
+
+### Step 2: Execute Batch
+**Default: First 3 tasks**
+
+For each task:
+1. Mark as in_progress
+2. Follow each step exactly (plan has bite-sized steps)
+3. Run verifications as specified
+4. Mark as completed
+
+### Step 3: Report
+When batch complete:
+- Show what was implemented
+- Show verification output
+- Say: "Ready for feedback."
+
+### Step 4: Continue
+Based on feedback:
+- Apply changes if needed
+- Execute next batch
+- Repeat until complete
+
+### Step 5: Complete Development
+
+After all tasks complete and verified:
+- Announce: "I'm using the finishing-a-development-branch skill to complete this work."
+- **REQUIRED SUB-SKILL:** Use superpowers:finishing-a-development-branch
+- Follow that skill to verify tests, present options, execute choice
+
+## When to Stop and Ask for Help
+
+**STOP executing immediately when:**
+- Hit a blocker mid-batch (missing dependency, test fails, instruction unclear)
+- Plan has critical gaps preventing starting
+- You don't understand an instruction
+- Verification fails repeatedly
+
+**Ask for clarification rather than guessing.**
+
+## When to Revisit Earlier Steps
+
+**Return to Review (Step 1) when:**
+- Partner updates the plan based on your feedback
+- Fundamental approach needs rethinking
+
+**Don't force through blockers** - stop and ask.
+
+## Remember
+- Review plan critically first
+- Follow plan steps exactly
+- Don't skip verifications
+- Reference skills when plan says to
+- Between batches: just report and wait
+- Stop when blocked, don't guess
+- Never start implementation on main/master branch without explicit user consent
+
+## Integration
+
+**Required workflow skills:**
+- **superpowers:using-git-worktrees** - REQUIRED: Set up isolated workspace before starting
+- **superpowers:writing-plans** - Creates the plan this skill executes
+- **superpowers:finishing-a-development-branch** - Complete development after all tasks

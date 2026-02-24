@@ -1,0 +1,33 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "2f3d03ce615a",
+  "session_id": "365d352f-dac3-45cb-b6c6-37756d43c24f",
+  "strategy": "manual-commit",
+  "created_at": "2026-02-24T19:50:27.323582206Z",
+  "branch": "frontend",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/demo/.gitignore",
+    "apps/demo/src/app/layout.tsx",
+    "apps/demo/src/providers/AtomProvider.tsx",
+    "apps/demo/src/services/FalconService.ts"
+  ],
+  "agent": "Claude Code",
+  "token_usage": {
+    "input_tokens": 1409,
+    "cache_creation_tokens": 84008,
+    "cache_read_tokens": 4853047,
+    "output_tokens": 1006,
+    "api_call_count": 63
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-02-24T19:50:27.08777634Z",
+    "agent_lines": 16,
+    "human_added": 7053,
+    "human_modified": 49,
+    "human_removed": 0,
+    "total_committed": 7118,
+    "agent_percentage": 0.224782242202866
+  },
+  "transcript_path": ".claude/projects/-home-felt-PycharmProjects-s2morrow/365d352f-dac3-45cb-b6c6-37756d43c24f.jsonl"
+}
