@@ -2,7 +2,7 @@
   "cli_version": "0.4.4",
   "checkpoint_id": "2f3d03ce615a",
   "strategy": "manual-commit",
-  "checkpoints_count": 12,
+  "checkpoints_count": 13,
   "files_touched": [
     ".claude/settings.local.json",
     ".claude/skills/benchmarking-cairo",
@@ -147,13 +147,20 @@
       "context": "/2f/3d03ce615a/9/context.md",
       "content_hash": "/2f/3d03ce615a/9/content_hash.txt",
       "prompt": "/2f/3d03ce615a/9/prompt.txt"
+    },
+    {
+      "metadata": "/2f/3d03ce615a/10/metadata.json",
+      "transcript": "/2f/3d03ce615a/10/full.jsonl",
+      "context": "/2f/3d03ce615a/10/context.md",
+      "content_hash": "/2f/3d03ce615a/10/content_hash.txt",
+      "prompt": "/2f/3d03ce615a/10/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 518,
-    "cache_creation_tokens": 615236,
-    "cache_read_tokens": 14159029,
-    "output_tokens": 6043,
-    "api_call_count": 199
+    "input_tokens": 715,
+    "cache_creation_tokens": 721960,
+    "cache_read_tokens": 20672644,
+    "output_tokens": 6911,
+    "api_call_count": 272
   }
 }
