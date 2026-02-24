@@ -3,7 +3,7 @@
   "checkpoint_id": "2f3d03ce615a",
   "strategy": "manual-commit",
   "branch": "frontend",
-  "checkpoints_count": 54,
+  "checkpoints_count": 55,
   "files_touched": [
     ".claude/settings.local.json",
     ".claude/skills/benchmarking-cairo",
@@ -2584,6 +2584,7 @@
     "apps/demo/src/components/interactive/PipelineVisualizer.tsx",
     "apps/demo/src/components/interactive/VerificationPlayground.tsx",
     "apps/demo/src/components/interactive/__tests__/PipelineSection.test.ts",
+    "apps/demo/src/components/landing/Footer.tsx",
     "apps/demo/src/components/landing/Hero.tsx",
     "apps/demo/src/components/landing/PerformanceStats.tsx",
     "apps/demo/src/components/landing/SectionSkeleton.tsx",
@@ -2595,6 +2596,7 @@
     "apps/demo/src/services/WasmRuntime.ts",
     "apps/demo/src/services/__tests__/WasmRuntime.test.ts",
     "apps/demo/src/tests/atoms.test.ts",
+    "apps/demo/src/tests/landing/footer.page.integration.test.ts",
     "apps/demo/src/tests/landing/why-post-quantum.test.ts",
     "apps/demo/src/tests/scaffold/dev-server-smoke.test.ts",
     "apps/demo/src/tests/scaffold/providers.test.ts",
@@ -2627,6 +2629,7 @@
     "docs/plans/PV-001.md",
     "docs/plans/STYLE-003.md",
     "docs/plans/STYLE-004.md",
+    "docs/plans/VP-003.md",
     "docs/plans/VP-005.md",
     "docs/plans/WASM-001.md",
     "packages/falcon/.claude/settings.local.json",
@@ -3050,13 +3053,20 @@
       "context": "/2f/3d03ce615a/52/context.md",
       "content_hash": "/2f/3d03ce615a/52/content_hash.txt",
       "prompt": "/2f/3d03ce615a/52/prompt.txt"
+    },
+    {
+      "metadata": "/2f/3d03ce615a/53/metadata.json",
+      "transcript": "/2f/3d03ce615a/53/full.jsonl",
+      "context": "/2f/3d03ce615a/53/context.md",
+      "content_hash": "/2f/3d03ce615a/53/content_hash.txt",
+      "prompt": "/2f/3d03ce615a/53/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 7418,
-    "cache_creation_tokens": 3111469,
-    "cache_read_tokens": 105157726,
-    "output_tokens": 21317,
-    "api_call_count": 1467
+    "input_tokens": 7447,
+    "cache_creation_tokens": 3193440,
+    "cache_read_tokens": 106896597,
+    "output_tokens": 21615,
+    "api_call_count": 1491
   }
 }
