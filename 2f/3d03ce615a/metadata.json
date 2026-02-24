@@ -3,7 +3,7 @@
   "checkpoint_id": "2f3d03ce615a",
   "strategy": "manual-commit",
   "branch": "frontend",
-  "checkpoints_count": 60,
+  "checkpoints_count": 61,
   "files_touched": [
     ".claude/settings.local.json",
     ".claude/skills/benchmarking-cairo",
@@ -2606,6 +2606,8 @@
     "apps/demo/src/services/__tests__/WasmRuntime.test.ts",
     "apps/demo/src/tests/atoms.test.ts",
     "apps/demo/src/tests/landing/footer.page.integration.test.ts",
+    "apps/demo/src/tests/landing/page-composition.test.tsx",
+    "apps/demo/src/tests/landing/performance-stats.test.ts",
     "apps/demo/src/tests/landing/why-post-quantum.test.ts",
     "apps/demo/src/tests/providers/atom-provider.test.ts",
     "apps/demo/src/tests/providers/layout-atom-provider.integration.test.ts",
@@ -2617,6 +2619,7 @@
     "apps/demo/tests/atoms/falcon.test.ts",
     "apps/demo/tests/atoms/pipeline.test.ts",
     "apps/demo/tests/atoms/starknet.test.ts",
+    "apps/demo/tests/setup.ts",
     "apps/demo/tsconfig.tsbuildinfo",
     "cairo_gen/circuit.py",
     "docs/context/DEPLOY-001.md",
@@ -3108,13 +3111,20 @@
       "context": "/2f/3d03ce615a/58/context.md",
       "content_hash": "/2f/3d03ce615a/58/content_hash.txt",
       "prompt": "/2f/3d03ce615a/58/prompt.txt"
+    },
+    {
+      "metadata": "/2f/3d03ce615a/59/metadata.json",
+      "transcript": "/2f/3d03ce615a/59/full.jsonl",
+      "context": "/2f/3d03ce615a/59/context.md",
+      "content_hash": "/2f/3d03ce615a/59/content_hash.txt",
+      "prompt": "/2f/3d03ce615a/59/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 10708,
-    "cache_creation_tokens": 3469960,
-    "cache_read_tokens": 112107628,
-    "output_tokens": 22671,
-    "api_call_count": 1588
+    "input_tokens": 10846,
+    "cache_creation_tokens": 3640509,
+    "cache_read_tokens": 124922659,
+    "output_tokens": 24183,
+    "api_call_count": 1721
   }
 }
