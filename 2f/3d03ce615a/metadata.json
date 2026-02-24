@@ -3,7 +3,7 @@
   "checkpoint_id": "2f3d03ce615a",
   "strategy": "manual-commit",
   "branch": "frontend",
-  "checkpoints_count": 33,
+  "checkpoints_count": 34,
   "files_touched": [
     ".claude/settings.local.json",
     ".claude/skills/benchmarking-cairo",
@@ -2546,20 +2546,27 @@
     "apps/demo/.next/types/package.json",
     "apps/demo/.next/types/routes.d.ts",
     "apps/demo/.next/types/validator.ts",
+    "apps/demo/.workflow/.claude/settings.local.json",
     "apps/demo/.workflow/components/workflow.tsx",
     "apps/demo/next-env.d.ts",
     "apps/demo/src/__tests__/effect-services/wasm-runtime.test.ts",
     "apps/demo/src/__tests__/verify-playground/atoms.test.ts",
+    "apps/demo/src/__tests__/verify-playground/errors.test.ts",
     "apps/demo/src/__tests__/verify-playground/falcon-service-deserialize.test.ts",
+    "apps/demo/src/__tests__/verify-playground/falcon-service.test.ts",
     "apps/demo/src/app/globals.css",
     "apps/demo/src/app/layout.tsx",
+    "apps/demo/src/app/page.tsx",
     "apps/demo/src/atoms/falcon.ts",
     "apps/demo/src/atoms/index.ts",
     "apps/demo/src/components/ThemeToggle.tsx",
     "apps/demo/src/components/interactive/InteractiveSections.tsx",
+    "apps/demo/src/components/landing/WhyPostQuantum.tsx",
     "apps/demo/src/providers/AtomProvider.tsx",
     "apps/demo/src/services/FalconService.ts",
+    "apps/demo/src/tests/landing/why-post-quantum.test.ts",
     "apps/demo/src/tests/scaffold/dev-server-smoke.test.ts",
+    "apps/demo/src/tests/scaffold/providers.test.ts",
     "apps/demo/src/tests/styling/theme-toggle.test.ts",
     "apps/demo/src/types/falcon-rs-wasm.d.ts",
     "apps/demo/tests/atoms/falcon.test.ts",
@@ -2852,13 +2859,20 @@
       "context": "/2f/3d03ce615a/30/context.md",
       "content_hash": "/2f/3d03ce615a/30/content_hash.txt",
       "prompt": "/2f/3d03ce615a/30/prompt.txt"
+    },
+    {
+      "metadata": "/2f/3d03ce615a/31/metadata.json",
+      "transcript": "/2f/3d03ce615a/31/full.jsonl",
+      "context": "/2f/3d03ce615a/31/context.md",
+      "content_hash": "/2f/3d03ce615a/31/content_hash.txt",
+      "prompt": "/2f/3d03ce615a/31/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 2752,
-    "cache_creation_tokens": 1828338,
-    "cache_read_tokens": 57123105,
-    "output_tokens": 13743,
-    "api_call_count": 809
+    "input_tokens": 2791,
+    "cache_creation_tokens": 1873440,
+    "cache_read_tokens": 58836634,
+    "output_tokens": 14210,
+    "api_call_count": 845
   }
 }
