@@ -3,7 +3,7 @@
   "checkpoint_id": "2f3d03ce615a",
   "strategy": "manual-commit",
   "branch": "frontend",
-  "checkpoints_count": 44,
+  "checkpoints_count": 45,
   "files_touched": [
     ".claude/settings.local.json",
     ".claude/skills/benchmarking-cairo",
@@ -2570,6 +2570,8 @@
     "apps/demo/src/hooks/useFalcon.ts",
     "apps/demo/src/providers/AtomProvider.tsx",
     "apps/demo/src/services/FalconService.ts",
+    "apps/demo/src/services/WasmRuntime.ts",
+    "apps/demo/src/services/__tests__/WasmRuntime.test.ts",
     "apps/demo/src/tests/landing/why-post-quantum.test.ts",
     "apps/demo/src/tests/scaffold/dev-server-smoke.test.ts",
     "apps/demo/src/tests/scaffold/providers.test.ts",
@@ -2944,13 +2946,20 @@
       "context": "/2f/3d03ce615a/41/context.md",
       "content_hash": "/2f/3d03ce615a/41/content_hash.txt",
       "prompt": "/2f/3d03ce615a/41/prompt.txt"
+    },
+    {
+      "metadata": "/2f/3d03ce615a/42/metadata.json",
+      "transcript": "/2f/3d03ce615a/42/full.jsonl",
+      "context": "/2f/3d03ce615a/42/context.md",
+      "content_hash": "/2f/3d03ce615a/42/content_hash.txt",
+      "prompt": "/2f/3d03ce615a/42/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 2958,
-    "cache_creation_tokens": 2308563,
-    "cache_read_tokens": 65106959,
-    "output_tokens": 15736,
-    "api_call_count": 985
+    "input_tokens": 3007,
+    "cache_creation_tokens": 2369394,
+    "cache_read_tokens": 67812155,
+    "output_tokens": 16261,
+    "api_call_count": 1030
   }
 }
