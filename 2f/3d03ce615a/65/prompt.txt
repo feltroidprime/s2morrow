@@ -1,1 +1,9 @@
 I want to rewrite the history of commits on the frontend branch, remove commits chore(demo): upgrade Gemini fallback to gemini-3.1-pro-preview, feat(demo): add 3-agent fallback chains across all roles, feat(demo): initialize and customize super-ralph workflow, and chore(demo): remove obsolete workflow files and configurations. The goal is to remove anything smithers / ralph related but keep the frontend code that was generated after the docs and prd additions (let's keep the docs)
+
+---
+
+add relevant things to .gitignore
+
+---
+
+commit this
