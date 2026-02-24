@@ -1,0 +1,35 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "2f3d03ce615a",
+  "session_id": "fff17dbb-9db0-4fc2-ad63-e93b9ecc8686",
+  "strategy": "manual-commit",
+  "created_at": "2026-02-24T19:51:46.198787145Z",
+  "branch": "frontend",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/demo/.next/cache/webpack/client-production/1.pack",
+    "apps/demo/.next/cache/webpack/server-production/1.pack",
+    "apps/demo/.next/cache/webpack/server-production/2.pack",
+    "apps/demo/.next/cache/webpack/server-production/index.pack",
+    "apps/demo/.next/cache/webpack/server-production/index.pack.old",
+    "apps/demo/src/services/FalconService.ts"
+  ],
+  "agent": "Claude Code",
+  "token_usage": {
+    "input_tokens": 28,
+    "cache_creation_tokens": 41871,
+    "cache_read_tokens": 956924,
+    "output_tokens": 295,
+    "api_call_count": 25
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-02-24T19:51:46.10597986Z",
+    "agent_lines": 0,
+    "human_added": 0,
+    "human_modified": 188,
+    "human_removed": 3,
+    "total_committed": 78,
+    "agent_percentage": 0
+  },
+  "transcript_path": ".claude/projects/-home-felt-PycharmProjects-s2morrow/fff17dbb-9db0-4fc2-ad63-e93b9ecc8686.jsonl"
+}
