@@ -1,0 +1,39 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "f23bba886b6d",
+  "session_id": "4f1910d9-43f7-4f41-bfe6-1f0a2a1210e8",
+  "strategy": "manual-commit",
+  "created_at": "2026-02-25T15:15:21.786398726Z",
+  "branch": "frontend",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/demo/src/__tests__/account-deploy/account-deploy-flow.test.ts",
+    "apps/demo/src/__tests__/config/networks.test.ts",
+    "apps/demo/src/atoms/starknet.ts",
+    "apps/demo/src/components/landing/NavHeader.tsx",
+    "apps/demo/src/config/networks.ts",
+    "apps/demo/src/services/errors.ts",
+    "apps/demo/src/services/types.ts",
+    "bin/declare.sh",
+    "sncast.toml"
+  ],
+  "agent": "Claude Code",
+  "transcript_identifier_at_start": "204cb1cb-dc46-4d20-8cf5-2d9e550ab6b0",
+  "token_usage": {
+    "input_tokens": 37,
+    "cache_creation_tokens": 77000,
+    "cache_read_tokens": 2643866,
+    "output_tokens": 376,
+    "api_call_count": 34
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-02-25T15:15:21.591067424Z",
+    "agent_lines": 0,
+    "human_added": 303,
+    "human_modified": 42,
+    "human_removed": 0,
+    "total_committed": 344,
+    "agent_percentage": 0
+  },
+  "transcript_path": ".claude/projects/-home-felt-PycharmProjects-s2morrow/4f1910d9-43f7-4f41-bfe6-1f0a2a1210e8.jsonl"
+}
