@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useCallback, useMemo, useState } from "react"
+import React, { useCallback, useEffect, useMemo, useState } from "react"
 import { useAtomSet, useAtomValue } from "@effect-atom/atom-react"
 import { Cause, Exit, Layer, ManagedRuntime, Option } from "effect"
 import { keypairAtom } from "@/atoms/falcon"
@@ -50,8 +50,34 @@ export function AccountDeployFlow(): React.JSX.Element {
   const [privateKey, setPrivateKey] = useState("")
   const [preparedDeploy, setPreparedDeploy] =
     useState<Option.Option<PreparedAccountDeploy>>(Option.none())
+  const [balance, setBalance] = useState<bigint | null>(null)
 
   const hasKeypair = Option.isSome(keypair)
+
+  useEffect(() => {
+    if (deployStep.step !== "awaiting-funds") {
+      setBalance(null)
+      return
+    }
+
+    let cancelled = false
+
+    const poll = async () => {
+      const exit = await deployRuntime.runPromiseExit(
+        StarknetService.getBalance(deployStep.address),
+      )
+      if (!cancelled && Exit.isSuccess(exit)) {
+        setBalance(exit.value)
+      }
+    }
+
+    poll()
+    const interval = setInterval(poll, 5000)
+    return () => {
+      cancelled = true
+      clearInterval(interval)
+    }
+  }, [deployStep])
 
   const handlePrepare = useCallback(async () => {
     setDeployStep({ step: hasKeypair ? "packing" : "generating-keypair" })
@@ -263,6 +289,17 @@ export function AccountDeployFlow(): React.JSX.Element {
                 >
                   Get testnet STRK from the Starknet Faucet &rarr;
                 </a>
+                {balance !== null && (
+                  <p className="text-sm text-falcon-muted">
+                    Current balance:{" "}
+                    <span className={balance > 0n ? "text-falcon-success" : "text-falcon-muted"}>
+                      {(Number(balance) / 1e18).toFixed(4)} STRK
+                    </span>
+                    {balance > 0n && (
+                      <span className="ml-2 text-falcon-success">— Ready to deploy!</span>
+                    )}
+                  </p>
+                )}
               </div>
             )}
           </DeployStepIndicator>
