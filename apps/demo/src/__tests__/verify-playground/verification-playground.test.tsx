@@ -13,7 +13,7 @@ import type { FalconKeypair, VerificationStep } from "../../services/types"
 
 const mockKeypair: FalconKeypair = {
   secretKey: new Uint8Array(1281).fill(1),
-  verifyingKey: new Uint8Array(897).fill(2),
+  verifyingKey: new Uint8Array(896).fill(2),
   publicKeyNtt: new Int32Array(512).fill(3),
 }
 
@@ -42,18 +42,25 @@ function renderPlayground(options?: {
 }
 
 describe("VerificationPlayground", () => {
-  it("renders message input and action buttons", () => {
+  it("renders 2-panel layout with Key Management and Sign & Verify", () => {
     const html = renderPlayground()
 
-    expect(html).toContain('id="message-input"')
-    expect(html).toContain("Generate Keypair")
+    expect(html).toContain("Key Management")
     expect(html).toContain("Sign &amp; Verify")
+    expect(html).toContain('id="message-input"')
   })
 
-  it("adds explicit aria-label attributes to interactive buttons", () => {
+  it("renders Generate, Import, Export buttons in key panel", () => {
     const html = renderPlayground()
 
-    expect(html).toContain('aria-label="Generate Keypair"')
+    expect(html).toContain(">Generate</button>")
+    expect(html).toContain(">Import</button>")
+    expect(html).toContain(">Export</button>")
+  })
+
+  it("adds explicit aria-label to sign button", () => {
+    const html = renderPlayground()
+
     expect(html).toContain('aria-label="Sign and verify message"')
   })
 
