@@ -1,0 +1,32 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "f23bba886b6d",
+  "session_id": "079a23b3-cc4b-48ba-a645-2c18b7b855c7",
+  "strategy": "manual-commit",
+  "created_at": "2026-02-25T13:16:17.034101064Z",
+  "branch": "frontend",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "docs/plans/2026-02-25-network-switcher-design.md",
+    "docs/plans/2026-02-25-network-switcher.md"
+  ],
+  "agent": "Claude Code",
+  "transcript_identifier_at_start": "10581b54-6083-4ca5-afba-fdc539f41a8e",
+  "token_usage": {
+    "input_tokens": 85,
+    "cache_creation_tokens": 134251,
+    "cache_read_tokens": 5790981,
+    "output_tokens": 30275,
+    "api_call_count": 77
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-02-25T13:16:15.891213549Z",
+    "agent_lines": 0,
+    "human_added": 1287,
+    "human_modified": 2,
+    "human_removed": 0,
+    "total_committed": 1287,
+    "agent_percentage": 0
+  },
+  "transcript_path": ".claude/projects/-home-felt-PycharmProjects-s2morrow/079a23b3-cc4b-48ba-a645-2c18b7b855c7.jsonl"
+}
