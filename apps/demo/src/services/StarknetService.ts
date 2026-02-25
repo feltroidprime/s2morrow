@@ -115,6 +115,7 @@ function makeService(rpcUrl: string, classHash: string) {
   }
 }
 
+// @ts-ignore — StarknetService.make() intentionally overrides the inherited Effect.Service.make() with a Layer factory
 export class StarknetService extends Effect.Service<StarknetService>()(
   "StarknetService",
   {
@@ -130,7 +131,9 @@ export class StarknetService extends Effect.Service<StarknetService>()(
    * Use this instead of Default when you need a specific rpcUrl and classHash
    * (e.g., switching between Sepolia and Mainnet at runtime).
    */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   static make(rpcUrl: string, classHash: string): Layer.Layer<StarknetService> {
-    return Layer.succeed(StarknetService, makeService(rpcUrl, classHash))
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return Layer.succeed(StarknetService, makeService(rpcUrl, classHash) as any)
   }
 }
