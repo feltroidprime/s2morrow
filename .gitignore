@@ -62,3 +62,6 @@ node_modules
 # Next.js
 .next/
 apps/demo/.env.local
+.vercel
+.accounts.json
+accounts.json

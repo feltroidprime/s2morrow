@@ -1,4 +1,5 @@
 import { Effect, Option, Schema } from "effect"
+import type { SignerInterface } from "starknet"
 import { FalconService } from "@/services/FalconService"
 import { StarknetService } from "@/services/StarknetService"
 import { InsufficientFundsError } from "@/services/errors"
@@ -32,7 +33,7 @@ export interface PreparedAccountDeploy {
 export interface DeployAccountInput {
   readonly address: ContractAddress
   readonly packedPublicKey: PackedPublicKey
-  readonly privateKey: string
+  readonly signer: SignerInterface
   readonly salt: string
   readonly requiredBalance: bigint
 }
@@ -50,15 +51,16 @@ export const validateHexPrivateKey = Effect.fn(
       }
 
       const hexBody = normalized.slice(2)
-      if (hexBody.length !== 64) {
-        throw new Error("Private key must be a 32-byte hex string")
+      if (hexBody.length === 0 || hexBody.length > 64) {
+        throw new Error("Private key must be between 1 and 32 bytes hex")
       }
 
       if (!/^[0-9a-f]+$/u.test(hexBody)) {
         throw new Error("Private key contains non-hex characters")
       }
 
-      return normalized
+      // Pad to 32 bytes for consistency (Starknet private keys may be shorter)
+      return `0x${hexBody.padStart(64, "0")}`
     },
     catch: (error) =>
       new InvalidPrivateKeyError({
@@ -129,11 +131,10 @@ export const deployAccountEffect = Effect.fn(
 )(function* ({
   address,
   packedPublicKey,
-  privateKey,
+  signer,
   salt,
   requiredBalance,
 }: DeployAccountInput) {
-  const normalizedPrivateKey = yield* validateHexPrivateKey(privateKey)
   const balance = yield* StarknetService.getBalance(address)
 
   if (balance < requiredBalance) {
@@ -148,7 +149,7 @@ export const deployAccountEffect = Effect.fn(
 
   const deployment = yield* StarknetService.deployAccount(
     packedPublicKey,
-    normalizedPrivateKey,
+    signer,
     salt,
   )
 

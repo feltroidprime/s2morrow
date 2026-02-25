@@ -95,7 +95,7 @@ describe("truncateHex", () => {
 
 const mockKeypair: FalconKeypair = {
   secretKey: new Uint8Array(1281),
-  verifyingKey: new Uint8Array(897),
+  verifyingKey: new Uint8Array(896),
   publicKeyNtt: new Int32Array(512),
 }
 

@@ -17,7 +17,7 @@ export const NETWORKS: Record<NetworkId, NetworkConfig> = {
     id: "devnet",
     name: "Devnet",
     rpcUrl: "http://localhost:5050",
-    classHash: "0x0",
+    classHash: "0x37c7626b50ba517835c9556b53bce57cb6633704bb702f8c2f13a44cf151d5",
     explorerBaseUrl: "",
     isTestnet: true,
     isDevnet: true,

@@ -13,6 +13,7 @@ import {
 import { NETWORKS } from "@/config/networks"
 import type { NetworkConfig } from "@/config/networks"
 import { FalconService } from "@/services/FalconService"
+import { FalconSigner } from "@/services/FalconSigner"
 import { StarknetService } from "@/services/StarknetService"
 import { WasmRuntimeLive } from "@/services/WasmRuntime"
 import type { DevnetAccount } from "@/services/types"
@@ -180,11 +181,16 @@ export function AccountDeployFlow(): React.JSX.Element {
     }
 
     setDeployStep({ step: "deploying", address: prepared.address })
+    const signer = new FalconSigner(
+      prepared.keypair.secretKey,
+      prepared.keypair.publicKeyNtt,
+      falconRuntime,
+    )
     const deployExit = await deployRuntimeRef.current.runPromiseExit(
       deployAccountEffect({
         address: prepared.address,
         packedPublicKey: prepared.packedPublicKey,
-        privateKey: prepared.privateKey,
+        signer,
         salt: prepared.salt,
         requiredBalance: 1n,
       }),

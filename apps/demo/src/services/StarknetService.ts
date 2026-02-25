@@ -1,5 +1,5 @@
 import { Config, Effect, Layer } from "effect"
-import { RpcProvider, Account, hash, CallData, stark } from "starknet"
+import { RpcProvider, Account, hash, stark } from "starknet"
 import type { SignerInterface } from "starknet"
 import {
   StarknetRpcError,
@@ -32,9 +32,9 @@ function makeService(rpcUrl: string, classHash: string) {
 
   const computeDeployAddress = Effect.fn("Starknet.computeDeployAddress")(
     function* (packedPk: PackedPublicKey) {
-      const constructorCalldata = CallData.compile({
-        pk_packed: packedPk.slots,
-      })
+      // PackedPolynomial512 is a flat struct (s0..s28), not an Array.
+      // CallData.compile would add a length prefix; pass raw slots instead.
+      const constructorCalldata = [...packedPk.slots]
       const salt = stark.randomAddress()
       const address = hash.calculateContractAddressFromHash(
         salt,
@@ -69,12 +69,12 @@ function makeService(rpcUrl: string, classHash: string) {
   const deployAccount = Effect.fn("Starknet.deployAccount")(
     function* (
       packedPk: PackedPublicKey,
-      privateKey: string,
+      signer: SignerInterface,
       salt: string,
     ) {
-      const constructorCalldata = CallData.compile({
-        pk_packed: packedPk.slots,
-      })
+      // PackedPolynomial512 is a flat struct (s0..s28), not an Array.
+      // CallData.compile would add a length prefix; pass raw slots instead.
+      const constructorCalldata = [...packedPk.slots]
       const address = hash.calculateContractAddressFromHash(
         salt,
         classHash,
@@ -82,7 +82,7 @@ function makeService(rpcUrl: string, classHash: string) {
         0,
       )
 
-      const account = new Account({ provider, address, signer: privateKey })
+      const account = new Account({ provider, address, signer })
 
       const result = yield* Effect.tryPromise({
         try: () =>
@@ -127,12 +127,24 @@ function makeService(rpcUrl: string, classHash: string) {
       return yield* Effect.tryPromise({
         try: async () => {
           const baseUrl = rpcUrl.replace(/\/rpc.*$/, "").replace(/\/$/, "")
-          const response = await fetch(`${baseUrl}/predeployed_accounts`)
+          const response = await fetch(baseUrl, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              jsonrpc: "2.0",
+              id: 1,
+              method: "devnet_getPredeployedAccounts",
+              params: [],
+            }),
+          })
           if (!response.ok) {
             throw new Error(`HTTP ${response.status}`)
           }
-          const data = await response.json()
-          return parsePrefundedAccounts(data as unknown[])
+          const json = await response.json()
+          if (json.error) {
+            throw new Error(json.error.message ?? JSON.stringify(json.error))
+          }
+          return parsePrefundedAccounts(json.result as unknown[])
         },
         catch: (error) =>
           new DevnetFetchError({ message: `Failed to fetch prefunded accounts: ${error}` }),
