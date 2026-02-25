@@ -1,9 +1,11 @@
 import { Config, Effect, Layer } from "effect"
 import { RpcProvider, Account, hash, CallData, stark } from "starknet"
+import type { SignerInterface } from "starknet"
 import {
   StarknetRpcError,
   AccountDeployError,
   DevnetFetchError,
+  TransactionSubmitError,
 } from "./errors"
 import { TxHash, ContractAddress } from "./types"
 import type { PackedPublicKey, DevnetAccount } from "./types"
@@ -138,12 +140,39 @@ function makeService(rpcUrl: string, classHash: string) {
     },
   )
 
+  const sendTransaction = Effect.fn("Starknet.sendTransaction")(
+    function* (
+      accountAddress: string,
+      signer: SignerInterface,
+      recipient: string,
+      amount: bigint,
+    ) {
+      const account = new Account({ provider, address: accountAddress, signer })
+      return yield* Effect.tryPromise({
+        try: async () => {
+          const result = await account.execute([
+            {
+              contractAddress: STRK_TOKEN_ADDRESS,
+              entrypoint: "transfer",
+              calldata: [recipient, amount.toString(), "0"],
+            },
+          ])
+          await provider.waitForTransaction(result.transaction_hash)
+          return { txHash: TxHash.make(result.transaction_hash) }
+        },
+        catch: (error) =>
+          new TransactionSubmitError({ message: String(error) }),
+      })
+    },
+  )
+
   return {
     computeDeployAddress,
     getBalance,
     deployAccount,
     waitForTx,
     fetchPrefundedAccounts,
+    sendTransaction,
     provider,
   }
 }

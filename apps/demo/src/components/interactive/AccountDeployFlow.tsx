@@ -16,11 +16,16 @@ import { FalconService } from "@/services/FalconService"
 import { StarknetService } from "@/services/StarknetService"
 import { WasmRuntimeLive } from "@/services/WasmRuntime"
 import type { DevnetAccount } from "@/services/types"
+import { SendTransaction } from "./SendTransaction"
 import type { PreparedAccountDeploy } from "./accountDeployPipeline"
 import {
   deployAccountEffect,
   prepareAccountDeployEffect,
 } from "./accountDeployPipeline"
+
+const falconRuntime = ManagedRuntime.make(
+  FalconService.Default.pipe(Layer.provide(WasmRuntimeLive)),
+)
 
 function createDeployRuntime(config: NetworkConfig) {
   return ManagedRuntime.make(
@@ -432,27 +437,34 @@ export function AccountDeployFlow(): React.JSX.Element {
         </div>
 
         {deployStep.step === "deployed" && (
-          <div
-            role="status"
-            aria-live="polite"
-            className="mt-6 rounded-xl border border-falcon-success/30 bg-falcon-success/10 p-5"
-          >
-            <h3 className="font-semibold text-falcon-success">Account Deployed</h3>
-            <p className="mt-2 break-all font-mono text-xs text-falcon-text">
-              Address: {deployStep.address}
-            </p>
-            <p className="mt-1 break-all font-mono text-xs text-falcon-text">Tx: {deployStep.txHash}</p>
-            {networkConfig.explorerBaseUrl && (
-              <a
-                href={`${networkConfig.explorerBaseUrl}/tx/${deployStep.txHash}`}
-                target="_blank"
-                rel="noreferrer noopener"
-                className="mt-3 inline-block text-sm text-falcon-accent hover:underline"
-              >
-                View on Voyager
-              </a>
-            )}
-          </div>
+          <>
+            <div
+              role="status"
+              aria-live="polite"
+              className="mt-6 rounded-xl border border-falcon-success/30 bg-falcon-success/10 p-5"
+            >
+              <h3 className="font-semibold text-falcon-success">Account Deployed</h3>
+              <p className="mt-2 break-all font-mono text-xs text-falcon-text">
+                Address: {deployStep.address}
+              </p>
+              <p className="mt-1 break-all font-mono text-xs text-falcon-text">Tx: {deployStep.txHash}</p>
+              {networkConfig.explorerBaseUrl && (
+                <a
+                  href={`${networkConfig.explorerBaseUrl}/tx/${deployStep.txHash}`}
+                  target="_blank"
+                  rel="noreferrer noopener"
+                  className="mt-3 inline-block text-sm text-falcon-accent hover:underline"
+                >
+                  View on Voyager
+                </a>
+              )}
+            </div>
+            <SendTransaction
+              deployedAddress={deployStep.address}
+              deployRuntime={deployRuntimeRef.current}
+              falconRuntime={falconRuntime}
+            />
+          </>
         )}
 
         {deployStep.step === "error" && (
