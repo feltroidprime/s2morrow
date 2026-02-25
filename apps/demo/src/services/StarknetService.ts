@@ -3,13 +3,27 @@ import { RpcProvider, Account, hash, CallData, stark } from "starknet"
 import {
   StarknetRpcError,
   AccountDeployError,
+  DevnetFetchError,
 } from "./errors"
 import { TxHash, ContractAddress } from "./types"
-import type { PackedPublicKey } from "./types"
+import type { PackedPublicKey, DevnetAccount } from "./types"
 
 /** STRK token contract address (same on mainnet and Sepolia) */
 export const STRK_TOKEN_ADDRESS =
   "0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d"
+
+export function parsePrefundedAccounts(raw: unknown[]): DevnetAccount[] {
+  return raw
+    .filter((item): item is Record<string, string> =>
+      typeof item === "object" && item !== null &&
+      "address" in item && "private_key" in item
+    )
+    .map((item) => ({
+      address: item.address,
+      private_key: item.private_key,
+      initial_balance: item.initial_balance ?? "0",
+    }))
+}
 
 function makeService(rpcUrl: string, classHash: string) {
   const provider = new RpcProvider({ nodeUrl: rpcUrl })
@@ -106,11 +120,30 @@ function makeService(rpcUrl: string, classHash: string) {
     },
   )
 
+  const fetchPrefundedAccounts = Effect.fn("Starknet.fetchPrefundedAccounts")(
+    function* () {
+      return yield* Effect.tryPromise({
+        try: async () => {
+          const baseUrl = rpcUrl.replace(/\/rpc.*$/, "").replace(/\/$/, "")
+          const response = await fetch(`${baseUrl}/predeployed_accounts`)
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`)
+          }
+          const data = await response.json()
+          return parsePrefundedAccounts(data as unknown[])
+        },
+        catch: (error) =>
+          new DevnetFetchError({ message: `Failed to fetch prefunded accounts: ${error}` }),
+      })
+    },
+  )
+
   return {
     computeDeployAddress,
     getBalance,
     deployAccount,
     waitForTx,
+    fetchPrefundedAccounts,
     provider,
   }
 }
