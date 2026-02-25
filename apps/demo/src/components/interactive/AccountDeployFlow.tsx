@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useCallback, useEffect, useMemo, useState } from "react"
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useAtomSet, useAtomValue } from "@effect-atom/atom-react"
 import { Cause, Exit, Layer, ManagedRuntime, Option } from "effect"
 import { keypairAtom } from "@/atoms/falcon"
@@ -8,7 +8,10 @@ import {
   deployStepAtom,
   deployedAddressAtom,
   deployTxHashAtom,
+  networkAtom,
 } from "@/atoms/starknet"
+import { NETWORKS } from "@/config/networks"
+import type { NetworkConfig } from "@/config/networks"
 import { FalconService } from "@/services/FalconService"
 import { StarknetService } from "@/services/StarknetService"
 import { WasmRuntimeLive } from "@/services/WasmRuntime"
@@ -18,12 +21,14 @@ import {
   prepareAccountDeployEffect,
 } from "./accountDeployPipeline"
 
-const deployRuntime = ManagedRuntime.make(
-  Layer.mergeAll(
-    FalconService.Default.pipe(Layer.provide(WasmRuntimeLive)),
-    StarknetService.Default,
-  ),
-)
+function createDeployRuntime(config: NetworkConfig) {
+  return ManagedRuntime.make(
+    Layer.mergeAll(
+      FalconService.Default.pipe(Layer.provide(WasmRuntimeLive)),
+      StarknetService.make(config.rpcUrl, config.classHash),
+    ),
+  )
+}
 
 const extractFailureMessage = <A, E extends { readonly message: string }>(
   exit: Exit.Exit<A, E>,
@@ -46,11 +51,29 @@ export function AccountDeployFlow(): React.JSX.Element {
   const setDeployStep = useAtomSet(deployStepAtom)
   const setDeployedAddress = useAtomSet(deployedAddressAtom)
   const setDeployTxHash = useAtomSet(deployTxHashAtom)
+  const networkId = useAtomValue(networkAtom)
+  const networkConfig = NETWORKS[networkId]
+
+  // Runtime ref — rebuild synchronously when network changes
+  const deployRuntimeRef = useRef(createDeployRuntime(networkConfig))
+  const prevNetworkRef = useRef(networkId)
+  if (prevNetworkRef.current !== networkId) {
+    prevNetworkRef.current = networkId
+    deployRuntimeRef.current = createDeployRuntime(networkConfig)
+  }
 
   const [privateKey, setPrivateKey] = useState("")
   const [preparedDeploy, setPreparedDeploy] =
     useState<Option.Option<PreparedAccountDeploy>>(Option.none())
   const [balance, setBalance] = useState<bigint | null>(null)
+
+  // Reset deploy state when network changes
+  useEffect(() => {
+    setDeployStep({ step: "idle" })
+    setPreparedDeploy(Option.none())
+    setBalance(null)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [networkId])
 
   const hasKeypair = Option.isSome(keypair)
 
@@ -63,7 +86,7 @@ export function AccountDeployFlow(): React.JSX.Element {
     let cancelled = false
 
     const poll = async () => {
-      const exit = await deployRuntime.runPromiseExit(
+      const exit = await deployRuntimeRef.current.runPromiseExit(
         StarknetService.getBalance(deployStep.address),
       )
       if (!cancelled && Exit.isSuccess(exit)) {
@@ -85,7 +108,7 @@ export function AccountDeployFlow(): React.JSX.Element {
     setDeployedAddress(Option.none())
     setPreparedDeploy(Option.none())
 
-    const prepareExit = await deployRuntime.runPromiseExit(
+    const prepareExit = await deployRuntimeRef.current.runPromiseExit(
       prepareAccountDeployEffect({
         privateKey,
         existingKeypair: keypair,
@@ -129,7 +152,7 @@ export function AccountDeployFlow(): React.JSX.Element {
     }
 
     setDeployStep({ step: "deploying", address: prepared.address })
-    const deployExit = await deployRuntime.runPromiseExit(
+    const deployExit = await deployRuntimeRef.current.runPromiseExit(
       deployAccountEffect({
         address: prepared.address,
         packedPublicKey: prepared.packedPublicKey,
@@ -228,7 +251,7 @@ export function AccountDeployFlow(): React.JSX.Element {
       <div className="mx-auto max-w-4xl">
         <h2 className="text-3xl font-bold tracking-tight text-falcon-text">Account Deploy Flow</h2>
         <p className="mt-4 text-falcon-muted">
-          Deploy a Falcon-powered account to Starknet Sepolia testnet with the same keypair used in
+          Deploy a Falcon-powered account to Starknet {networkConfig.name} with the same keypair used in
           the verification playground.
         </p>
         <p className="sr-only" aria-live="polite">
@@ -281,14 +304,16 @@ export function AccountDeployFlow(): React.JSX.Element {
                     </button>
                   </div>
                 </div>
-                <a
-                  href="https://starknet-faucet.vercel.app/"
-                  target="_blank"
-                  rel="noreferrer noopener"
-                  className="inline-block text-sm text-falcon-accent hover:underline"
-                >
-                  Get testnet STRK from the Starknet Faucet &rarr;
-                </a>
+                {networkConfig.isTestnet && (
+                  <a
+                    href="https://starknet-faucet.vercel.app/"
+                    target="_blank"
+                    rel="noreferrer noopener"
+                    className="inline-block text-sm text-falcon-accent hover:underline"
+                  >
+                    Get testnet STRK from the Starknet Faucet &rarr;
+                  </a>
+                )}
                 {balance !== null && (
                   <p className="text-sm text-falcon-muted">
                     Current balance:{" "}
@@ -357,7 +382,7 @@ export function AccountDeployFlow(): React.JSX.Element {
             </p>
             <p className="mt-1 break-all font-mono text-xs text-falcon-text">Tx: {deployStep.txHash}</p>
             <a
-              href={`https://sepolia.voyager.online/tx/${deployStep.txHash}`}
+              href={`${networkConfig.explorerBaseUrl}/tx/${deployStep.txHash}`}
               target="_blank"
               rel="noreferrer noopener"
               className="mt-3 inline-block text-sm text-falcon-accent hover:underline"

@@ -4,7 +4,7 @@ import { renderToStaticMarkup } from "react-dom/server"
 import { RegistryProvider } from "@effect-atom/atom-react"
 import { Option } from "effect"
 import { keypairAtom } from "../../atoms/falcon"
-import { deployStepAtom } from "../../atoms/starknet"
+import { deployStepAtom, networkAtom } from "../../atoms/starknet"
 import { AccountDeployFlow } from "../../components/interactive/AccountDeployFlow"
 import { ContractAddress, TxHash } from "../../services/types"
 import type { DeployStep } from "../../atoms/starknet"
@@ -26,9 +26,11 @@ const ADDRESS = ContractAddress.make(
 const renderAccountDeployFlow = (options?: {
   readonly step?: DeployStep
   readonly keypair?: Option.Option<FalconKeypair>
+  readonly network?: "sepolia" | "mainnet"
 }): string => {
   const step = options?.step ?? { step: "idle" }
   const keypair = options?.keypair ?? Option.none()
+  const network = options?.network ?? "sepolia"
 
   return renderToStaticMarkup(
     React.createElement(
@@ -37,6 +39,7 @@ const renderAccountDeployFlow = (options?: {
         initialValues: [
           [deployStepAtom, step],
           [keypairAtom, keypair],
+          [networkAtom, network],
         ],
       },
       React.createElement(AccountDeployFlow),
@@ -75,5 +78,37 @@ describe("AccountDeployFlow view", () => {
     expect(html).toContain("Try Again")
     expect(html).toContain('role="alert"')
     expect(html).toContain('aria-live="polite"')
+  })
+
+  it("renders faucet link on Sepolia", () => {
+    const html = renderAccountDeployFlow({
+      step: { step: "awaiting-funds", address: ADDRESS },
+      network: "sepolia",
+    })
+    expect(html).toContain("starknet-faucet.vercel.app")
+  })
+
+  it("hides faucet link on Mainnet", () => {
+    const html = renderAccountDeployFlow({
+      step: { step: "awaiting-funds", address: ADDRESS },
+      network: "mainnet",
+    })
+    expect(html).not.toContain("starknet-faucet.vercel.app")
+  })
+
+  it("renders Voyager Sepolia explorer link on Sepolia network", () => {
+    const html = renderAccountDeployFlow({
+      step: { step: "deployed", address: ADDRESS, txHash: TX_HASH },
+      network: "sepolia",
+    })
+    expect(html).toContain(`href="https://sepolia.voyager.online/tx/${TX_HASH}"`)
+  })
+
+  it("renders Voyager mainnet explorer link on Mainnet network", () => {
+    const html = renderAccountDeployFlow({
+      step: { step: "deployed", address: ADDRESS, txHash: TX_HASH },
+      network: "mainnet",
+    })
+    expect(html).toContain(`href="https://voyager.online/tx/${TX_HASH}"`)
   })
 })
