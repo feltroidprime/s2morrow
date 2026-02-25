@@ -15,6 +15,7 @@ import type { NetworkConfig } from "@/config/networks"
 import { FalconService } from "@/services/FalconService"
 import { StarknetService } from "@/services/StarknetService"
 import { WasmRuntimeLive } from "@/services/WasmRuntime"
+import type { DevnetAccount } from "@/services/types"
 import type { PreparedAccountDeploy } from "./accountDeployPipeline"
 import {
   deployAccountEffect,
@@ -63,6 +64,7 @@ export function AccountDeployFlow(): React.JSX.Element {
   }
 
   const [privateKey, setPrivateKey] = useState("")
+  const [devnetAccounts, setDevnetAccounts] = useState<DevnetAccount[]>([])
   const [preparedDeploy, setPreparedDeploy] =
     useState<Option.Option<PreparedAccountDeploy>>(Option.none())
   const [balance, setBalance] = useState<bigint | null>(null)
@@ -74,6 +76,28 @@ export function AccountDeployFlow(): React.JSX.Element {
     setBalance(null)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [networkId])
+
+  // Fetch prefunded accounts on devnet
+  useEffect(() => {
+    if (!networkConfig.isDevnet) {
+      setDevnetAccounts([])
+      return
+    }
+    let cancelled = false
+    const fetchAccounts = async () => {
+      const exit = await deployRuntimeRef.current.runPromiseExit(
+        StarknetService.fetchPrefundedAccounts(),
+      )
+      if (!cancelled && Exit.isSuccess(exit)) {
+        setDevnetAccounts(exit.value)
+        if (exit.value.length > 0) {
+          setPrivateKey(exit.value[0].private_key)
+        }
+      }
+    }
+    fetchAccounts()
+    return () => { cancelled = true }
+  }, [networkConfig.isDevnet])
 
   const hasKeypair = Option.isSome(keypair)
 
@@ -311,7 +335,7 @@ export function AccountDeployFlow(): React.JSX.Element {
                     </button>
                   </div>
                 </div>
-                {networkConfig.isTestnet && (
+                {networkConfig.isTestnet && !networkConfig.isDevnet && (
                   <a
                     href="https://starknet-faucet.vercel.app/"
                     target="_blank"
@@ -345,18 +369,40 @@ export function AccountDeployFlow(): React.JSX.Element {
         </div>
 
         <div className="mt-8 space-y-3">
-          <label htmlFor="deploy-private-key" className="block text-sm font-medium text-falcon-text">
-            Deployer Private Key
-          </label>
-          <input
-            id="deploy-private-key"
-            type="password"
-            autoComplete="off"
-            value={privateKey}
-            onChange={(event) => setPrivateKey(event.target.value)}
-            placeholder="0x..."
-            className="w-full rounded-lg border border-falcon-muted/30 bg-falcon-surface px-4 py-2 font-mono text-sm text-falcon-text placeholder-falcon-muted focus:outline-none focus:ring-2 focus:ring-falcon-primary"
-          />
+          {networkConfig.isDevnet && devnetAccounts.length > 0 ? (
+            <div>
+              <label htmlFor="devnet-account" className="block text-sm font-medium text-falcon-text">
+                Deployer Account
+              </label>
+              <select
+                id="devnet-account"
+                value={privateKey}
+                onChange={(e) => setPrivateKey(e.target.value)}
+                className="mt-1 w-full rounded-lg border border-falcon-muted/30 bg-falcon-surface px-4 py-2 font-mono text-sm text-falcon-text focus:outline-none focus:ring-2 focus:ring-falcon-primary"
+              >
+                {devnetAccounts.map((acc, i) => (
+                  <option key={acc.address} value={acc.private_key}>
+                    Account #{i} ({acc.address.slice(0, 10)}...{acc.address.slice(-4)})
+                  </option>
+                ))}
+              </select>
+            </div>
+          ) : (
+            <div>
+              <label htmlFor="deploy-private-key" className="block text-sm font-medium text-falcon-text">
+                Deployer Private Key
+              </label>
+              <input
+                id="deploy-private-key"
+                type="password"
+                autoComplete="off"
+                value={privateKey}
+                onChange={(event) => setPrivateKey(event.target.value)}
+                placeholder="0x..."
+                className="w-full rounded-lg border border-falcon-muted/30 bg-falcon-surface px-4 py-2 font-mono text-sm text-falcon-text placeholder-falcon-muted focus:outline-none focus:ring-2 focus:ring-falcon-primary"
+              />
+            </div>
+          )}
 
           {deployStep.step === "idle" && (() => {
             const classHashValid = networkConfig.classHash !== "0x0"
@@ -396,14 +442,16 @@ export function AccountDeployFlow(): React.JSX.Element {
               Address: {deployStep.address}
             </p>
             <p className="mt-1 break-all font-mono text-xs text-falcon-text">Tx: {deployStep.txHash}</p>
-            <a
-              href={`${networkConfig.explorerBaseUrl}/tx/${deployStep.txHash}`}
-              target="_blank"
-              rel="noreferrer noopener"
-              className="mt-3 inline-block text-sm text-falcon-accent hover:underline"
-            >
-              View on Voyager
-            </a>
+            {networkConfig.explorerBaseUrl && (
+              <a
+                href={`${networkConfig.explorerBaseUrl}/tx/${deployStep.txHash}`}
+                target="_blank"
+                rel="noreferrer noopener"
+                className="mt-3 inline-block text-sm text-falcon-accent hover:underline"
+              >
+                View on Voyager
+              </a>
+            )}
           </div>
         )}
 
