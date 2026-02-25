@@ -45,8 +45,9 @@ const makeMockWasmModule = (): WasmModule => ({
   create_verification_hint: (_s1: Int32Array, _pkNtt: Int32Array) =>
     new Uint16Array(0),
   pack_public_key_wasm: (_pkNtt: Uint16Array) => [],
-  public_key_length: () => 897,
+  public_key_length: () => 896,
   salt_length: () => 40,
+  sign_for_starknet: (_sk: Uint8Array, _txHash: string, _pkNtt: Int32Array) => [],
 })
 
 // ---------------------------------------------------------------------------
@@ -153,7 +154,7 @@ describe("WasmRuntime Layer injection (mock)", () => {
     )
     expect(Exit.isSuccess(exit)).toBe(true)
     if (Exit.isSuccess(exit)) {
-      expect(exit.value).toBe(897)
+      expect(exit.value).toBe(896)
     }
   })
 

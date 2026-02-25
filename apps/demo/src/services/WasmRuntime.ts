@@ -27,6 +27,11 @@ export interface WasmModule {
   readonly pack_public_key_wasm: (pkNtt: Uint16Array) => string[]
   readonly public_key_length: () => number
   readonly salt_length: () => number
+  readonly sign_for_starknet: (
+    skBytes: Uint8Array,
+    txHash: string,
+    pkNtt: Int32Array,
+  ) => string[]
 }
 
 // ---------------------------------------------------------------------------
@@ -61,6 +66,7 @@ export function isValidWasmModule(mod: unknown): mod is WasmModule {
     "pack_public_key_wasm",
     "public_key_length",
     "salt_length",
+    "sign_for_starknet",
   ] as const
   return methods.every((method) => typeof Reflect.get(mod, method) === "function")
 }
@@ -106,7 +112,7 @@ const loadWasmModule = Effect.fn("WasmRuntime.load")(function* () {
       new WasmLoadError({
         message:
           "WASM module is missing required methods. Expected: keygen, sign, verify, " +
-          "create_verification_hint, pack_public_key_wasm, public_key_length, salt_length.",
+          "create_verification_hint, pack_public_key_wasm, public_key_length, salt_length, sign_for_starknet.",
       }),
     )
   }

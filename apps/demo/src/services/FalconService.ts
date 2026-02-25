@@ -18,12 +18,11 @@ import type {
 // ---------------------------------------------------------------------------
 
 /**
- * Deserialize a Falcon-512 verifying key (897 bytes) into 512 NTT-domain
+ * Deserialize a Falcon-512 verifying key (896 bytes) into 512 NTT-domain
  * coefficients stored as an Int32Array.
  *
- * Format (falcon-rs encoding.rs):
- *   - Byte 0:      1-byte header (falcon algorithm/degree tag) — SKIPPED
- *   - Bytes 1-896: 512 coefficients x 14 bits each, packed LSB-first
+ * Format (falcon-rs, PUBLIC_KEY_LEN = 896, no header):
+ *   - 512 coefficients x 14 bits each, packed LSB-first
  *
  * Algorithm: maintains a bit-buffer, loading bytes from the input one at a
  * time and extracting 14-bit windows.
@@ -36,11 +35,9 @@ function parsePublicKeyNttBytes(vkBytes: Uint8Array): Int32Array {
   const BITS_PER_COEFF = 14
   const DATA_BYTES = (N * BITS_PER_COEFF) / 8 // 896
 
-  // Byte 0 is the Falcon header tag (e.g. 0x09 for Falcon-512).
-  // The 896 bytes of coefficient data start at index 1.
-  if (vkBytes.length < 1 + DATA_BYTES) {
+  if (vkBytes.length < DATA_BYTES) {
     throw new Error(
-      `VK too short: expected at least ${1 + DATA_BYTES} bytes, got ${vkBytes.length}`,
+      `VK too short: expected at least ${DATA_BYTES} bytes, got ${vkBytes.length}`,
     )
   }
 
@@ -49,7 +46,7 @@ function parsePublicKeyNttBytes(vkBytes: Uint8Array): Int32Array {
 
   let bitBuffer = 0
   let bitsInBuffer = 0
-  let byteIndex = 1 // skip header byte
+  let byteIndex = 0
 
   for (let i = 0; i < N; i++) {
     while (bitsInBuffer < BITS_PER_COEFF) {
@@ -114,7 +111,7 @@ export class FalconService extends Effect.Service<FalconService>()(
         ) {
           const result = yield* Effect.try({
             try: () =>
-              wasm.sign(secretKey, message, new Uint8Array(0)),
+              wasm.sign(secretKey, message, crypto.getRandomValues(new Uint8Array(40))),
             catch: (error) =>
               new SigningError({ message: String(error) }),
           })
@@ -175,6 +172,20 @@ export class FalconService extends Effect.Service<FalconService>()(
         })
       })
 
+      const signForStarknet = Effect.fn("Falcon.signForStarknet")(
+        function* (
+          secretKey: Uint8Array,
+          txHash: string,
+          pkNtt: Int32Array,
+        ) {
+          return yield* Effect.try({
+            try: () => wasm.sign_for_starknet(secretKey, txHash, pkNtt),
+            catch: (error) =>
+              new SigningError({ message: String(error) }),
+          })
+        },
+      )
+
       return {
         generateKeypair,
         sign,
@@ -182,6 +193,7 @@ export class FalconService extends Effect.Service<FalconService>()(
         createHint,
         packPublicKey,
         deserializePublicKeyNtt,
+        signForStarknet,
       }
     }),
   },

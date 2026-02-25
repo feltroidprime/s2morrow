@@ -159,6 +159,8 @@ const makeFalconLayer = (options: FalconLayerOptions) =>
       })
     },
     deserializePublicKeyNtt: (_vkBytes: Uint8Array) => Effect.succeed(new Int32Array(512)),
+    signForStarknet: (_sk: Uint8Array, _txHash: string, _pkNtt: Int32Array) =>
+      Effect.succeed(Array.from({ length: 61 }, () => "0x0")),
     }),
   )
 

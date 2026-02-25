@@ -19,7 +19,7 @@ import type { WasmModule } from "../../services/WasmRuntime"
 const makeSuccessWasm = (): WasmModule => ({
   keygen: (_seed) => ({
     sk: new Uint8Array(1281).fill(1),
-    vk: new Uint8Array(897).fill(2),
+    vk: new Uint8Array(896).fill(2),
   }),
   sign: (_sk, _msg, _salt) => ({
     signature: new Uint8Array(666).fill(3),
@@ -30,8 +30,10 @@ const makeSuccessWasm = (): WasmModule => ({
     new Uint16Array(512).fill(0),
   pack_public_key_wasm: (_pkNtt) =>
     Array.from({ length: 29 }, (_, i) => `0x${i.toString(16).padStart(64, "0")}`),
-  public_key_length: () => 897,
+  public_key_length: () => 896,
   salt_length: () => 40,
+  sign_for_starknet: (_sk, _txHash, _pkNtt) =>
+    Array.from({ length: 61 }, (_, i) => `0x${i.toString(16)}`),
 })
 
 const makeFailingWasm = (): WasmModule => ({
@@ -50,8 +52,11 @@ const makeFailingWasm = (): WasmModule => ({
   pack_public_key_wasm: () => {
     throw new Error("packing failed in WASM")
   },
-  public_key_length: () => 897,
+  public_key_length: () => 896,
   salt_length: () => 40,
+  sign_for_starknet: () => {
+    throw new Error("starknet signing failed in WASM")
+  },
 })
 
 // Layer helpers
@@ -78,15 +83,14 @@ async function runWith<A, E>(
 // generateKeypair
 // ---------------------------------------------------------------------------
 
-// VK mock (897 bytes, all 0x02): produces deterministic known coefficients.
-// Header byte (index 0) is skipped during deserialization.
-// Data bytes 1..896 = 0x02, 14-bit LSB-first unpacking produces repeating pattern:
+// VK mock (896 bytes, all 0x02): produces deterministic known coefficients.
+// 896 data bytes = 0x02, 14-bit LSB-first unpacking produces repeating pattern:
 //   coeff[0]=514, coeff[1]=2056, coeff[2]=8224, coeff[3]=128 (period 4)
-const KNOWN_VK_MOCK = new Uint8Array(897).fill(2)
+const KNOWN_VK_MOCK = new Uint8Array(896).fill(2)
 
 // VK mock that produces coefficient >= Q (12289), causing KeygenError.
 // With all bytes = 0xFF: first 14 bits = 0b11111111111111 = 16383 >= 12289.
-const INVALID_COEFF_VK = new Uint8Array(897).fill(0xff)
+const INVALID_COEFF_VK = new Uint8Array(896).fill(0xff)
 
 // VK mock that is too short to contain 512 x 14-bit coefficients.
 const TOO_SHORT_VK = new Uint8Array(10).fill(2)
@@ -130,7 +134,7 @@ describe("FalconService.generateKeypair", () => {
   })
 
   it("publicKeyNtt contains known coefficients for fill(2) VK mock", async () => {
-    // VK = Uint8Array(897).fill(2): byte 0 is header (skipped), bytes 1-896 are data.
+    // VK = Uint8Array(896).fill(2): all 896 bytes are data (no header).
     // 14-bit LSB-first unpacking of repeating 0x02 bytes gives pattern:
     // coeff[0]=514, coeff[1]=2056, coeff[2]=8224, coeff[3]=128 (repeating every 4)
     const mockWasm: WasmModule = {
@@ -261,7 +265,7 @@ describe("FalconService.sign", () => {
 // ---------------------------------------------------------------------------
 
 describe("FalconService.verify", () => {
-  const vk = new Uint8Array(897).fill(2)
+  const vk = new Uint8Array(896).fill(2)
   const msg = new TextEncoder().encode("Hello, Falcon!")
   const sig = new Uint8Array(666).fill(3)
 
@@ -398,11 +402,10 @@ describe("FalconService.packPublicKey", () => {
 // ---------------------------------------------------------------------------
 
 describe("FalconService.deserializePublicKeyNtt", () => {
-  it("succeeds with a valid all-zero 897-byte VK and returns 512 Int32Array coefficients", async () => {
-    // 897 bytes: byte 0 = header (0x09 for Falcon-512), bytes 1-896 = all-zero coefficient data
-    // all-zero bit stream → all-zero 14-bit windows → all coefficients = 0 < Q=12289 ✓
-    const validVk = new Uint8Array(897)
-    validVk[0] = 0x09
+  it("succeeds with a valid all-zero 896-byte VK and returns 512 Int32Array coefficients", async () => {
+    // 896 bytes: all-zero coefficient data (no header)
+    // all-zero bit stream → all-zero 14-bit windows → all coefficients = 0 < Q=12289
+    const validVk = new Uint8Array(896)
     const exit = await runWith(
       FalconService.deserializePublicKeyNtt(validVk),
       makeSuccessLayer(),
@@ -415,7 +418,7 @@ describe("FalconService.deserializePublicKeyNtt", () => {
     }
   })
 
-  it("fails with KeygenError when VK is too short (< 897 bytes)", async () => {
+  it("fails with KeygenError when VK is too short (< 896 bytes)", async () => {
     const shortVk = new Uint8Array(10)
     const exit = await runWith(
       FalconService.deserializePublicKeyNtt(shortVk),
@@ -512,7 +515,7 @@ describe("FalconService error message propagation", () => {
     }
     const exit = await runWith(
       FalconService.verify(
-        new Uint8Array(897),
+        new Uint8Array(896),
         new TextEncoder().encode("msg"),
         new Uint8Array(666),
       ),
@@ -543,7 +546,7 @@ describe("FalconService full pipeline integration", () => {
       ...makeSuccessWasm(),
       keygen: () => ({
         sk: new Uint8Array(1281).fill(7),
-        vk: new Uint8Array(897),
+        vk: new Uint8Array(896),
       }),
       sign: () => ({
         signature: new Uint8Array(666).fill(9),
@@ -592,7 +595,7 @@ describe("FalconService full pipeline integration", () => {
       ...makeSuccessWasm(),
       keygen: () => ({
         sk: new Uint8Array(1281).fill(7),
-        vk: new Uint8Array(897),
+        vk: new Uint8Array(896),
       }),
       sign: () => ({
         signature: new Uint8Array(666).fill(9),
