@@ -126,7 +126,6 @@ export function AccountDeployFlow(): React.JSX.Element {
     const prepared = prepareExit.value
     setPreparedDeploy(Option.some(prepared))
     setKeypair(Option.some(prepared.keypair))
-    setDeployStep({ step: "computing-address" })
     setDeployStep({ step: "awaiting-funds", address: prepared.address })
   }, [
     hasKeypair,
@@ -254,6 +253,14 @@ export function AccountDeployFlow(): React.JSX.Element {
           Deploy a Falcon-powered account to Starknet {networkConfig.name} with the same keypair used in
           the verification playground.
         </p>
+        {networkConfig.classHash === "0x0" && (
+          <div className="mt-4 rounded-xl border border-yellow-500/30 bg-yellow-500/10 p-4">
+            <p className="text-sm text-yellow-400">
+              FalconAccount not declared on {networkConfig.name}.
+              Run: <code className="rounded bg-falcon-bg px-1 font-mono text-xs">./bin/declare.sh {networkConfig.id}</code>
+            </p>
+          </div>
+        )}
         <p className="sr-only" aria-live="polite">
           {liveStatus}
         </p>
@@ -351,14 +358,22 @@ export function AccountDeployFlow(): React.JSX.Element {
             className="w-full rounded-lg border border-falcon-muted/30 bg-falcon-surface px-4 py-2 font-mono text-sm text-falcon-text placeholder-falcon-muted focus:outline-none focus:ring-2 focus:ring-falcon-primary"
           />
 
-          {deployStep.step === "idle" && (
-            <button
-              onClick={handlePrepare}
-              className="rounded-lg bg-falcon-primary px-6 py-2.5 text-sm font-semibold text-falcon-text hover:opacity-90"
-            >
-              Prepare Deploy
-            </button>
-          )}
+          {deployStep.step === "idle" && (() => {
+            const classHashValid = networkConfig.classHash !== "0x0"
+            return (
+              <button
+                onClick={handlePrepare}
+                disabled={!classHashValid}
+                className={`rounded-lg px-6 py-2.5 text-sm font-semibold ${
+                  classHashValid
+                    ? "bg-falcon-primary text-falcon-text hover:opacity-90"
+                    : "cursor-not-allowed bg-falcon-muted/20 text-falcon-muted"
+                }`}
+              >
+                Prepare Deploy
+              </button>
+            )
+          })()}
 
           {deployStep.step === "awaiting-funds" && (
             <button
