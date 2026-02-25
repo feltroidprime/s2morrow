@@ -3,8 +3,11 @@
   "checkpoint_id": "f23bba886b6d",
   "strategy": "manual-commit",
   "branch": "frontend",
-  "checkpoints_count": 4,
+  "checkpoints_count": 5,
   "files_touched": [
+    ".tool-versions",
+    "Makefile",
+    "accounts.json",
     "apps/demo/src/__tests__/account-deploy/account-deploy-flow.test.ts",
     "apps/demo/src/__tests__/account-deploy/account-deploy-pipeline.test.ts",
     "apps/demo/src/__tests__/account-deploy/account-deploy-view.test.tsx",
@@ -20,6 +23,7 @@
     "apps/demo/src/components/interactive/SendTransaction.tsx",
     "apps/demo/src/components/interactive/SignVerifyPanel.tsx",
     "apps/demo/src/components/interactive/VerificationPlayground.tsx",
+    "apps/demo/src/components/interactive/accountDeployPipeline.ts",
     "apps/demo/src/components/landing/NavHeader.tsx",
     "apps/demo/src/config/networks.ts",
     "apps/demo/src/services/FalconService.ts",
@@ -35,7 +39,8 @@
     "docs/plans/2026-02-25-demo-production-impl.md",
     "docs/plans/2026-02-25-network-switcher-design.md",
     "docs/plans/2026-02-25-network-switcher.md",
-    "sncast.toml"
+    "sncast.toml",
+    "snfoundry.toml"
   ],
   "sessions": [
     {
@@ -65,13 +70,20 @@
       "context": "/f2/3bba886b6d/3/context.md",
       "content_hash": "/f2/3bba886b6d/3/content_hash.txt",
       "prompt": "/f2/3bba886b6d/3/prompt.txt"
+    },
+    {
+      "metadata": "/f2/3bba886b6d/4/metadata.json",
+      "transcript": "/f2/3bba886b6d/4/full.jsonl",
+      "context": "/f2/3bba886b6d/4/context.md",
+      "content_hash": "/f2/3bba886b6d/4/content_hash.txt",
+      "prompt": "/f2/3bba886b6d/4/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 2658,
-    "cache_creation_tokens": 471591,
-    "cache_read_tokens": 21526940,
-    "output_tokens": 38119,
-    "api_call_count": 234
+    "input_tokens": 3027,
+    "cache_creation_tokens": 816463,
+    "cache_read_tokens": 50830968,
+    "output_tokens": 50685,
+    "api_call_count": 544
   }
 }
