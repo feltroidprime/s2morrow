@@ -1,0 +1,31 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "ecdef76c9f6d",
+  "session_id": "a6923d41-73f6-4b9e-a398-bdfff6a39796",
+  "strategy": "manual-commit",
+  "created_at": "2026-02-25T12:07:34.02569657Z",
+  "branch": "frontend",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "docs/plans/2026-02-25-sepolia-testnet-demo.md"
+  ],
+  "agent": "Claude Code",
+  "transcript_identifier_at_start": "b94eda6c-702c-4a4b-9231-a286cac6db99",
+  "token_usage": {
+    "input_tokens": 578,
+    "cache_creation_tokens": 136616,
+    "cache_read_tokens": 2250389,
+    "output_tokens": 3504,
+    "api_call_count": 27
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-02-25T12:07:33.145357178Z",
+    "agent_lines": 0,
+    "human_added": 0,
+    "human_modified": 4,
+    "human_removed": 1175,
+    "total_committed": 3,
+    "agent_percentage": 0
+  },
+  "transcript_path": ".claude/projects/-home-felt-PycharmProjects-s2morrow/a6923d41-73f6-4b9e-a398-bdfff6a39796.jsonl"
+}
