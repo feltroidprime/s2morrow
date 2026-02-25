@@ -31,6 +31,7 @@ import { Effect, Exit, Layer, Option, Cause, ConfigProvider } from "effect"
 import { Registry } from "@effect-atom/atom"
 
 import { StarknetService } from "../../services/StarknetService"
+import { networkAtom } from "../../atoms/starknet"
 import {
   StarknetRpcError,
   AccountDeployError,
@@ -782,5 +783,29 @@ describe("Branded types in account-deploy flow", () => {
     expect(Option.isSome(val)).toBe(true)
     const txHash: TxHash = Option.getOrThrow(val)
     expect(txHash).toBe(MOCK_TX_HASH)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// networkAtom
+// ---------------------------------------------------------------------------
+
+describe("networkAtom", () => {
+  it("defaults to 'sepolia'", () => {
+    const registry = Registry.make()
+    expect(registry.get(networkAtom)).toBe("sepolia")
+  })
+
+  it("can be set to 'mainnet'", () => {
+    const registry = Registry.make()
+    registry.set(networkAtom, "mainnet")
+    expect(registry.get(networkAtom)).toBe("mainnet")
+  })
+
+  it("can be set back to 'sepolia'", () => {
+    const registry = Registry.make()
+    registry.set(networkAtom, "mainnet")
+    registry.set(networkAtom, "sepolia")
+    expect(registry.get(networkAtom)).toBe("sepolia")
   })
 })
