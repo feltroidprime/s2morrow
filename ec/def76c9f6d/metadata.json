@@ -3,7 +3,7 @@
   "checkpoint_id": "ecdef76c9f6d",
   "strategy": "manual-commit",
   "branch": "frontend",
-  "checkpoints_count": 8,
+  "checkpoints_count": 9,
   "files_touched": [
     ".claude/settings.local.json",
     ".demo.pid",
@@ -21,6 +21,7 @@
     "apps/demo/src/services/FalconService.ts",
     "apps/demo/src/services/__tests__/WasmRuntime.test.ts",
     "apps/demo/tsconfig.tsbuildinfo",
+    "docs/plans/2026-02-24-falcon-demo-findings-fixes.md",
     "docs/plans/2026-02-24-falcon-demo-remaining.md",
     "docs/plans/2026-02-25-sepolia-testnet-demo.md",
     "packages/falcon/.claude/settings.local.json"
@@ -60,13 +61,20 @@
       "context": "/ec/def76c9f6d/4/context.md",
       "content_hash": "/ec/def76c9f6d/4/content_hash.txt",
       "prompt": "/ec/def76c9f6d/4/prompt.txt"
+    },
+    {
+      "metadata": "/ec/def76c9f6d/5/metadata.json",
+      "transcript": "/ec/def76c9f6d/5/full.jsonl",
+      "context": "/ec/def76c9f6d/5/context.md",
+      "content_hash": "/ec/def76c9f6d/5/content_hash.txt",
+      "prompt": "/ec/def76c9f6d/5/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 6481,
-    "cache_creation_tokens": 485863,
-    "cache_read_tokens": 10122627,
-    "output_tokens": 15754,
-    "api_call_count": 159
+    "input_tokens": 6493,
+    "cache_creation_tokens": 568068,
+    "cache_read_tokens": 10752070,
+    "output_tokens": 15862,
+    "api_call_count": 169
   }
 }
