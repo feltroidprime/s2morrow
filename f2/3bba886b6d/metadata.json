@@ -3,12 +3,14 @@
   "checkpoint_id": "f23bba886b6d",
   "strategy": "manual-commit",
   "branch": "frontend",
-  "checkpoints_count": 2,
+  "checkpoints_count": 3,
   "files_touched": [
     "apps/demo/src/__tests__/account-deploy/account-deploy-view.test.tsx",
     "apps/demo/src/components/interactive/AccountDeployFlow.tsx",
     "apps/demo/src/components/landing/NavHeader.tsx",
     "apps/demo/src/services/StarknetService.ts",
+    "docs/plans/2026-02-25-demo-production-design.md",
+    "docs/plans/2026-02-25-demo-production-impl.md",
     "docs/plans/2026-02-25-network-switcher-design.md",
     "docs/plans/2026-02-25-network-switcher.md"
   ],
@@ -26,13 +28,20 @@
       "context": "/f2/3bba886b6d/1/context.md",
       "content_hash": "/f2/3bba886b6d/1/content_hash.txt",
       "prompt": "/f2/3bba886b6d/1/prompt.txt"
+    },
+    {
+      "metadata": "/f2/3bba886b6d/2/metadata.json",
+      "transcript": "/f2/3bba886b6d/2/full.jsonl",
+      "context": "/f2/3bba886b6d/2/context.md",
+      "content_hash": "/f2/3bba886b6d/2/content_hash.txt",
+      "prompt": "/f2/3bba886b6d/2/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 122,
-    "cache_creation_tokens": 155710,
-    "cache_read_tokens": 9458486,
-    "output_tokens": 31923,
-    "api_call_count": 111
+    "input_tokens": 1536,
+    "cache_creation_tokens": 288661,
+    "cache_read_tokens": 13073542,
+    "output_tokens": 33144,
+    "api_call_count": 153
   }
 }
