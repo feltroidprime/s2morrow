@@ -3,10 +3,11 @@
   "checkpoint_id": "ecdef76c9f6d",
   "strategy": "manual-commit",
   "branch": "frontend",
-  "checkpoints_count": 3,
+  "checkpoints_count": 5,
   "files_touched": [
     ".claude/settings.local.json",
     ".demo.pid",
+    "Makefile",
     "apps/demo/findings.md",
     "apps/demo/src/__tests__/account-deploy/account-deploy-pipeline.test.ts",
     "apps/demo/src/__tests__/account-deploy/account-deploy-view.test.tsx",
@@ -36,13 +37,20 @@
       "context": "/ec/def76c9f6d/1/context.md",
       "content_hash": "/ec/def76c9f6d/1/content_hash.txt",
       "prompt": "/ec/def76c9f6d/1/prompt.txt"
+    },
+    {
+      "metadata": "/ec/def76c9f6d/2/metadata.json",
+      "transcript": "/ec/def76c9f6d/2/full.jsonl",
+      "context": "/ec/def76c9f6d/2/context.md",
+      "content_hash": "/ec/def76c9f6d/2/content_hash.txt",
+      "prompt": "/ec/def76c9f6d/2/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 91,
-    "cache_creation_tokens": 188569,
-    "cache_read_tokens": 4973276,
-    "output_tokens": 9306,
-    "api_call_count": 84
+    "input_tokens": 108,
+    "cache_creation_tokens": 209912,
+    "cache_read_tokens": 5282993,
+    "output_tokens": 9871,
+    "api_call_count": 95
   }
 }
