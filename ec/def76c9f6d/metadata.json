@@ -3,7 +3,7 @@
   "checkpoint_id": "ecdef76c9f6d",
   "strategy": "manual-commit",
   "branch": "frontend",
-  "checkpoints_count": 6,
+  "checkpoints_count": 8,
   "files_touched": [
     ".claude/settings.local.json",
     ".demo.pid",
@@ -15,6 +15,7 @@
     "apps/demo/src/__tests__/verify-playground/falcon-service.test.ts",
     "apps/demo/src/__tests__/verify-playground/verification-playground.test.tsx",
     "apps/demo/src/__tests__/verify-playground/verification-utils.test.ts",
+    "apps/demo/src/app/page.tsx",
     "apps/demo/src/components/interactive/PipelineSection.tsx",
     "apps/demo/src/components/interactive/PipelineVisualizer.tsx",
     "apps/demo/src/services/FalconService.ts",
@@ -52,13 +53,20 @@
       "context": "/ec/def76c9f6d/3/context.md",
       "content_hash": "/ec/def76c9f6d/3/content_hash.txt",
       "prompt": "/ec/def76c9f6d/3/prompt.txt"
+    },
+    {
+      "metadata": "/ec/def76c9f6d/4/metadata.json",
+      "transcript": "/ec/def76c9f6d/4/full.jsonl",
+      "context": "/ec/def76c9f6d/4/context.md",
+      "content_hash": "/ec/def76c9f6d/4/content_hash.txt",
+      "prompt": "/ec/def76c9f6d/4/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 686,
-    "cache_creation_tokens": 346528,
-    "cache_read_tokens": 7533382,
-    "output_tokens": 13375,
-    "api_call_count": 122
+    "input_tokens": 6481,
+    "cache_creation_tokens": 485863,
+    "cache_read_tokens": 10122627,
+    "output_tokens": 15754,
+    "api_call_count": 159
   }
 }
