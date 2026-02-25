@@ -16,7 +16,7 @@ export function Hero(): React.JSX.Element {
         </h1>
         <p className="mx-auto mt-6 max-w-2xl text-base leading-7 text-falcon-muted sm:text-lg">
           Verify Falcon signatures with production Cairo metrics and account abstraction deployment
-          flows.
+          flows on Starknet Sepolia testnet.
         </p>
 
         <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">

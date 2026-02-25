@@ -202,8 +202,8 @@ export function AccountDeployFlow(): React.JSX.Element {
       <div className="mx-auto max-w-4xl">
         <h2 className="text-3xl font-bold tracking-tight text-falcon-text">Account Deploy Flow</h2>
         <p className="mt-4 text-falcon-muted">
-          Deploy a Falcon-powered account to Starknet mainnet with the same keypair used in the
-          verification playground.
+          Deploy a Falcon-powered account to Starknet Sepolia testnet with the same keypair used in
+          the verification playground.
         </p>
         <p className="sr-only" aria-live="polite">
           {liveStatus}
@@ -299,12 +299,12 @@ export function AccountDeployFlow(): React.JSX.Element {
             </p>
             <p className="mt-1 break-all font-mono text-xs text-falcon-text">Tx: {deployStep.txHash}</p>
             <a
-              href={`https://starkscan.co/tx/${deployStep.txHash}`}
+              href={`https://sepolia.voyager.online/tx/${deployStep.txHash}`}
               target="_blank"
               rel="noreferrer noopener"
               className="mt-3 inline-block text-sm text-falcon-accent hover:underline"
             >
-              View on Starkscan
+              View on Voyager
             </a>
           </div>
         )}
