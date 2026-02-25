@@ -15,8 +15,9 @@ import {
   verificationStepAtom,
   messageAtom,
   signatureAtom,
+  packedKeyAtom,
 } from "../../atoms/falcon"
-import type { FalconKeypair, VerificationStep } from "../../services/types"
+import type { FalconKeypair, PackedPublicKey, VerificationStep } from "../../services/types"
 
 // Helper: create a fresh registry per test (isolated state)
 function makeRegistry() {
@@ -63,7 +64,7 @@ describe("keypairAtom", () => {
     const registry = makeRegistry()
     const mockKeypair: FalconKeypair = {
       secretKey: new Uint8Array(1281),
-      verifyingKey: new Uint8Array(897),
+      verifyingKey: new Uint8Array(896),
       publicKeyNtt: new Int32Array(512),
     }
     registry.set(keypairAtom, Option.some(mockKeypair))
@@ -80,7 +81,7 @@ describe("keypairAtom", () => {
     const registry = makeRegistry()
     const mockKeypair: FalconKeypair = {
       secretKey: new Uint8Array(1281),
-      verifyingKey: new Uint8Array(897),
+      verifyingKey: new Uint8Array(896),
       publicKeyNtt: new Int32Array(512),
     }
     registry.set(keypairAtom, Option.some(mockKeypair))
@@ -231,5 +232,41 @@ describe("signatureAtom", () => {
       expect(val.value.signature).toBeInstanceOf(Uint8Array)
       expect(val.value.salt).toBeInstanceOf(Uint8Array)
     }
+  })
+})
+
+describe("packedKeyAtom", () => {
+  it("has initial value Option.none()", () => {
+    const registry = makeRegistry()
+    expect(Option.isNone(registry.get(packedKeyAtom))).toBe(true)
+  })
+
+  it("can be set to Some(PackedPublicKey) with 29 slots", () => {
+    const registry = makeRegistry()
+    const mockPacked: PackedPublicKey = {
+      slots: Array.from({ length: 29 }, (_, i) =>
+        `0x${i.toString(16).padStart(64, "0")}`,
+      ),
+    }
+    registry.set(packedKeyAtom, Option.some(mockPacked))
+    const val = registry.get(packedKeyAtom)
+    expect(Option.isSome(val)).toBe(true)
+    if (Option.isSome(val)) {
+      expect(val.value.slots.length).toBe(29)
+      expect(val.value.slots[0]).toMatch(/^0x/)
+    }
+  })
+
+  it("can be reset to Option.none()", () => {
+    const registry = makeRegistry()
+    const mockPacked: PackedPublicKey = {
+      slots: Array.from({ length: 29 }, (_, i) =>
+        `0x${i.toString(16).padStart(64, "0")}`,
+      ),
+    }
+    registry.set(packedKeyAtom, Option.some(mockPacked))
+    expect(Option.isSome(registry.get(packedKeyAtom))).toBe(true)
+    registry.set(packedKeyAtom, Option.none())
+    expect(Option.isNone(registry.get(packedKeyAtom))).toBe(true)
   })
 })

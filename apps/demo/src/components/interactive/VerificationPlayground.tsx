@@ -6,7 +6,7 @@
  * Lets the user:
  *   1. Generate a Falcon-512 keypair in-browser via WASM
  *   2. Type a message to sign
- *   3. Run sign + verify and see the result with timing
+ *   3. Run sign → pack public key → verify and see the result with timing
  *
  * Architecture:
  * - Atom state (keypairAtom, verificationStepAtom, messageAtom, etc.) drives
@@ -25,6 +25,7 @@ import { WasmRuntimeLive } from "@/services/WasmRuntime"
 import {
   keypairAtom,
   messageAtom,
+  packedKeyAtom,
   signatureAtom,
   verificationStepAtom,
   wasmStatusAtom,
@@ -47,12 +48,14 @@ export function VerificationPlayground(): React.JSX.Element {
   const message = useAtomValue(messageAtom)
   const keypair = useAtomValue(keypairAtom)
   const step = useAtomValue(verificationStepAtom)
+  const packedKey = useAtomValue(packedKeyAtom)
 
   // ── Atom writes ─────────────────────────────────────────────────────────
   const setMessage = useAtomSet(messageAtom)
   const setKeypair = useAtomSet(keypairAtom)
   const setStep = useAtomSet(verificationStepAtom)
   const setSignature = useAtomSet(signatureAtom)
+  const setPackedKey = useAtomSet(packedKeyAtom)
   const setWasmStatus = useAtomSet(wasmStatusAtom)
 
   // ── Derived disabled state ───────────────────────────────────────────────
@@ -65,6 +68,7 @@ export function VerificationPlayground(): React.JSX.Element {
   // ── Handler: Generate Keypair ────────────────────────────────────────────
   const handleGenerateKeypair = useCallback(async () => {
     setStep({ step: "generating-keypair" })
+    setPackedKey(Option.none())
     const seed = crypto.getRandomValues(new Uint8Array(32))
 
     const exit = await appRuntime.runPromiseExit(
@@ -83,7 +87,7 @@ export function VerificationPlayground(): React.JSX.Element {
       })
       setStep({ step: "error", message: msg })
     }
-  }, [setKeypair, setStep, setWasmStatus])
+  }, [setKeypair, setPackedKey, setStep, setWasmStatus])
 
   // ── Handler: Sign & Verify ───────────────────────────────────────────────
   const handleSignAndVerify = useCallback(async () => {
@@ -116,6 +120,28 @@ export function VerificationPlayground(): React.JSX.Element {
     const sigResult = signExit.value
     setSignature(Option.some(sigResult))
 
+    // ── Pack Public Key ────────────────────────────────────────────────────
+    setStep({ step: "packing" })
+    const pkNtt16 = new Uint16Array(kp.publicKeyNtt.length)
+    for (let i = 0; i < kp.publicKeyNtt.length; i++) {
+      pkNtt16[i] = kp.publicKeyNtt[i]
+    }
+    const packExit = await appRuntime.runPromiseExit(
+      FalconService.packPublicKey(pkNtt16),
+    )
+
+    if (Exit.isFailure(packExit)) {
+      const errOpt = Cause.failureOption(packExit.cause)
+      const msg = Option.match(errOpt, {
+        onNone: () => "Packing failed",
+        onSome: (e) => e.message,
+      })
+      setStep({ step: "error", message: msg })
+      return
+    }
+
+    setPackedKey(Option.some(packExit.value))
+
     // ── Verify ────────────────────────────────────────────────────────────
     setStep({ step: "verifying", substep: "verify" })
     const verifyExit = await appRuntime.runPromiseExit(
@@ -134,13 +160,18 @@ export function VerificationPlayground(): React.JSX.Element {
 
     const durationMs = Date.now() - startTime
     setStep({ step: "complete", valid: verifyExit.value, durationMs })
-  }, [keypair, message, setSignature, setStep])
+  }, [keypair, message, setPackedKey, setSignature, setStep])
 
   // ── Derived display values ───────────────────────────────────────────────
   // Use bytesToHex (browser-safe, no Buffer.from) + Option.match (no getOrThrow)
   const keypairHexPreview = Option.match(keypair, {
     onNone: () => null,
     onSome: (kp) => "0x" + bytesToHex(kp.verifyingKey),
+  })
+
+  const packedKeySlots = Option.match(packedKey, {
+    onNone: () => null,
+    onSome: (pk) => pk.slots,
   })
 
   // ── Render ───────────────────────────────────────────────────────────────
@@ -196,7 +227,9 @@ export function VerificationPlayground(): React.JSX.Element {
               disabled={!canSign}
               className="rounded-lg bg-falcon-accent px-6 py-2.5 text-sm font-semibold text-falcon-text transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-falcon-accent disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {step.step === "signing" || step.step === "verifying"
+              {step.step === "signing" ||
+              step.step === "packing" ||
+              step.step === "verifying"
                 ? "Running…"
                 : "Sign & Verify"}
             </button>
@@ -207,6 +240,16 @@ export function VerificationPlayground(): React.JSX.Element {
             <HexDisplay
               label="Verifying Key (preview)"
               value={keypairHexPreview}
+              truncate={{ head: 18, tail: 8 }}
+            />
+          )}
+
+          {/* Packed public key — 29 felt252 slots */}
+          {packedKeySlots !== null && (
+            <HexDisplay
+              label="Packed Public Key (29 felt252 slots)"
+              value={packedKeySlots}
+              maxRows={29}
               truncate={{ head: 18, tail: 8 }}
             />
           )}
