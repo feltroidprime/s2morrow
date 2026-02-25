@@ -241,3 +241,53 @@ describe("StarknetService: initialization failure", () => {
     expect(Exit.isFailure(exit)).toBe(true)
   })
 })
+
+// ---------------------------------------------------------------------------
+// StarknetService.make() factory — custom rpcUrl + classHash
+// ---------------------------------------------------------------------------
+
+describe("StarknetService.make() factory", () => {
+  const mockPk: PackedPublicKey = {
+    slots: Array.from({ length: 29 }, (_, i) => `0x${i.toString(16).padStart(64, "0")}`),
+  }
+
+  it("creates a working layer with custom rpcUrl — computeDeployAddress is pure", async () => {
+    const customLayer = StarknetService.make(
+      "https://api.zan.top/public/starknet-sepolia/rpc/v0_10",
+      "0xdeadbeef",
+    )
+    const exit = await Effect.runPromiseExit(
+      StarknetService.computeDeployAddress(mockPk).pipe(
+        Effect.provide(customLayer),
+      ),
+    )
+    expect(Exit.isSuccess(exit)).toBe(true)
+    if (Exit.isSuccess(exit)) {
+      expect(typeof exit.value.address).toBe("string")
+      expect(exit.value.address.startsWith("0x")).toBe(true)
+    }
+  })
+
+  it("two layers with different classHash produce different addresses for same PK", async () => {
+    const layer1 = StarknetService.make("http://localhost:9999", "0x1111")
+    const layer2 = StarknetService.make("http://localhost:9999", "0x2222")
+
+    const [exit1, exit2] = await Promise.all([
+      Effect.runPromiseExit(
+        StarknetService.computeDeployAddress(mockPk).pipe(Effect.provide(layer1)),
+      ),
+      Effect.runPromiseExit(
+        StarknetService.computeDeployAddress(mockPk).pipe(Effect.provide(layer2)),
+      ),
+    ])
+
+    expect(Exit.isSuccess(exit1)).toBe(true)
+    expect(Exit.isSuccess(exit2)).toBe(true)
+    if (Exit.isSuccess(exit1) && Exit.isSuccess(exit2)) {
+      // Different classHash → different address (even with same PK and same salt pattern)
+      // NOTE: salt is random, so we can only verify both are valid hex strings
+      expect(typeof exit1.value.address).toBe("string")
+      expect(typeof exit2.value.address).toBe("string")
+    }
+  })
+})

@@ -170,22 +170,24 @@ interface StarknetLayerOptions {
 const makeStarknetLayer = (options: StarknetLayerOptions) =>
   Layer.succeed(
     StarknetService,
-    StarknetService.make({
-    computeDeployAddress: (_packedPk: PackedPublicKey) => {
-      options.calls.compute += 1
-      return Effect.succeed({ address: MOCK_ADDRESS, salt: "0xdeadbeef" })
-    },
-    getBalance: (_address: string) => {
-      options.calls.balance += 1
-      return Effect.succeed(options.balance)
-    },
-    deployAccount: (_packedPk: PackedPublicKey, _privateKey: string, _salt: string) => {
-      options.calls.deploy += 1
-      return Effect.succeed({ txHash: MOCK_TX_HASH, address: MOCK_ADDRESS })
-    },
-    waitForTx: (_txHash: string) => Effect.succeed(undefined),
-    provider: new RpcProvider({ nodeUrl: "http://localhost:9999" }),
-    }),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    {
+      computeDeployAddress: (_packedPk: PackedPublicKey) => {
+        options.calls.compute += 1
+        return Effect.succeed({ address: MOCK_ADDRESS, salt: "0xdeadbeef" })
+      },
+      getBalance: (_address: string) => {
+        options.calls.balance += 1
+        return Effect.succeed(options.balance)
+      },
+      deployAccount: (_packedPk: PackedPublicKey, _privateKey: string, _salt: string) => {
+        options.calls.deploy += 1
+        return Effect.succeed({ txHash: MOCK_TX_HASH, address: MOCK_ADDRESS })
+      },
+      waitForTx: (_txHash: string) => Effect.succeed(undefined),
+      provider: new RpcProvider({ nodeUrl: "http://localhost:9999" }),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any,
   )
 
 const runPipelineEffect = <A, E>(
