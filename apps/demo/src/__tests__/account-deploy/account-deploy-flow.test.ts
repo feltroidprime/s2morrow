@@ -791,9 +791,9 @@ describe("Branded types in account-deploy flow", () => {
 // ---------------------------------------------------------------------------
 
 describe("networkAtom", () => {
-  it("defaults to 'sepolia'", () => {
+  it("defaults to 'devnet'", () => {
     const registry = Registry.make()
-    expect(registry.get(networkAtom)).toBe("sepolia")
+    expect(registry.get(networkAtom)).toBe("devnet")
   })
 
   it("can be set to 'mainnet'", () => {

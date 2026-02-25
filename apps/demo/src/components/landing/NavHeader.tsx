@@ -21,7 +21,9 @@ export function NavHeader(): React.JSX.Element {
   useEffect(() => {
     try {
       const stored = localStorage.getItem(NETWORK_STORAGE_KEY)
-      if (stored === "mainnet") setNetwork("mainnet")
+      if (stored === "mainnet" || stored === "sepolia" || stored === "devnet") {
+        setNetwork(stored)
+      }
     } catch {
       // localStorage unavailable (e.g., private browsing restriction)
     }
@@ -65,7 +67,7 @@ export function NavHeader(): React.JSX.Element {
           role="group"
           aria-label="Network selection"
         >
-          {(["sepolia", "mainnet"] as const).map((id) => {
+          {(["devnet", "sepolia", "mainnet"] as const).map((id) => {
             const isActive = networkId === id
             return (
               <button

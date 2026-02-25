@@ -36,7 +36,10 @@ function readStoredNetwork(): NetworkId {
       return DEFAULT_NETWORK
     }
     const stored = localStorage.getItem(NETWORK_STORAGE_KEY)
-    return stored === "mainnet" ? "mainnet" : DEFAULT_NETWORK
+    if (stored === "mainnet" || stored === "sepolia" || stored === "devnet") {
+      return stored
+    }
+    return DEFAULT_NETWORK
   } catch {
     return DEFAULT_NETWORK
   }
