@@ -239,11 +239,30 @@ export function AccountDeployFlow(): React.JSX.Element {
             complete={stepFlags.step4Complete}
           >
             {deployStep.step === "awaiting-funds" && (
-              <div className="mt-3 rounded-lg bg-falcon-bg p-3">
-                <p className="text-xs uppercase tracking-wide text-falcon-muted">Send STRK to</p>
-                <code className="mt-1 block break-all font-mono text-sm text-falcon-accent">
-                  {deployStep.address}
-                </code>
+              <div className="mt-3 space-y-3">
+                <div className="rounded-lg bg-falcon-bg p-3">
+                  <p className="text-xs uppercase tracking-wide text-falcon-muted">Send STRK to</p>
+                  <div className="mt-1 flex items-center gap-2">
+                    <code className="flex-1 break-all font-mono text-sm text-falcon-accent">
+                      {deployStep.address}
+                    </code>
+                    <button
+                      onClick={() => navigator.clipboard.writeText(deployStep.address)}
+                      className="shrink-0 rounded border border-falcon-muted/30 px-2 py-1 text-xs text-falcon-muted hover:bg-falcon-surface"
+                      title="Copy address"
+                    >
+                      Copy
+                    </button>
+                  </div>
+                </div>
+                <a
+                  href="https://starknet-faucet.vercel.app/"
+                  target="_blank"
+                  rel="noreferrer noopener"
+                  className="inline-block text-sm text-falcon-accent hover:underline"
+                >
+                  Get testnet STRK from the Starknet Faucet &rarr;
+                </a>
               </div>
             )}
           </DeployStepIndicator>
@@ -262,6 +281,8 @@ export function AccountDeployFlow(): React.JSX.Element {
           </label>
           <input
             id="deploy-private-key"
+            type="password"
+            autoComplete="off"
             value={privateKey}
             onChange={(event) => setPrivateKey(event.target.value)}
             placeholder="0x..."
