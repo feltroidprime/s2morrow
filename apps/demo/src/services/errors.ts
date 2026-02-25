@@ -44,3 +44,18 @@ export class InsufficientFundsError extends Schema.TaggedError<InsufficientFunds
   "InsufficientFundsError",
   { message: Schema.String, address: Schema.String, required: Schema.String },
 ) {}
+
+export class TransactionSignError extends Schema.TaggedError<TransactionSignError>()(
+  "TransactionSignError",
+  { message: Schema.String },
+) {}
+
+export class TransactionSubmitError extends Schema.TaggedError<TransactionSubmitError>()(
+  "TransactionSubmitError",
+  { message: Schema.String, txHash: Schema.optional(Schema.String) },
+) {}
+
+export class DevnetFetchError extends Schema.TaggedError<DevnetFetchError>()(
+  "DevnetFetchError",
+  { message: Schema.String },
+) {}

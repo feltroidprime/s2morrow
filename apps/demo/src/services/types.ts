@@ -42,3 +42,18 @@ export interface PipelineStep {
   readonly stepCount: number
   readonly status: "pending" | "active" | "complete"
 }
+
+export interface FalconKeyFile {
+  readonly version: 1
+  readonly algorithm: "falcon-512"
+  readonly secretKey: string        // 0x hex
+  readonly verifyingKey: string     // 0x hex
+  readonly publicKeyNtt: number[]   // 512 integers in [0, 12289)
+  readonly packedPublicKey: string[] // 29 hex felt252
+}
+
+export interface DevnetAccount {
+  readonly address: string
+  readonly private_key: string
+  readonly initial_balance: string
+}

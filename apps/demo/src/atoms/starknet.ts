@@ -14,6 +14,8 @@ export type DeployStep =
   | { step: "awaiting-funds"; address: ContractAddress }
   | { step: "deploying"; address: ContractAddress }
   | { step: "deployed"; address: ContractAddress; txHash: TxHash }
+  | { step: "sending-tx"; address: ContractAddress }
+  | { step: "tx-confirmed"; address: ContractAddress; txHash: TxHash; transferTxHash: TxHash }
   | { step: "error"; message: string }
 
 export const deployStepAtom = Atom.make<DeployStep>({ step: "idle" }).pipe(
