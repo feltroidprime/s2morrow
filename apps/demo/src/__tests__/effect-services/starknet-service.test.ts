@@ -34,9 +34,9 @@ const mockTxHash = "0x7f3e2a1b9c4d5e6f" as TxHash
 const makeSuccessService = (): Layer.Layer<StarknetService> =>
   Layer.succeed(StarknetService, {
     computeDeployAddress: (_pk: PackedPublicKey) =>
-      Effect.succeed(mockAddress),
+      Effect.succeed({ address: mockAddress, salt: "0xdeadbeef" }),
     getBalance: (_addr: string) => Effect.succeed(BigInt("1000000000000000000")),
-    deployAccount: (_pk: PackedPublicKey, _sk: string) =>
+    deployAccount: (_pk: PackedPublicKey, _sk: string, _salt: string) =>
       Effect.succeed({ txHash: mockTxHash, address: mockAddress }),
     waitForTx: (_tx: string) => Effect.succeed(undefined as void),
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -52,7 +52,7 @@ const makeFailingService = (): Layer.Layer<StarknetService> =>
       Effect.fail(new StarknetRpcError({ message: "mock rpc error", code: -1 })),
     getBalance: (_addr: string) =>
       Effect.fail(new StarknetRpcError({ message: "balance fetch failed", code: -32000 })),
-    deployAccount: (_pk: PackedPublicKey, _sk: string) =>
+    deployAccount: (_pk: PackedPublicKey, _sk: string, _salt: string) =>
       Effect.fail(new AccountDeployError({ message: "deploy rejected" })),
     waitForTx: (_tx: string) =>
       Effect.fail(new StarknetRpcError({ message: "tx timeout", code: -1 })),
@@ -87,8 +87,8 @@ describe("StarknetService.computeDeployAddress (mocked)", () => {
     )
     expect(Exit.isSuccess(exit)).toBe(true)
     if (Exit.isSuccess(exit)) {
-      expect(typeof exit.value).toBe("string")
-      expect(exit.value.startsWith("0x")).toBe(true)
+      expect(typeof exit.value.address).toBe("string")
+      expect(exit.value.address.startsWith("0x")).toBe(true)
     }
   })
 
@@ -144,7 +144,7 @@ describe("StarknetService.deployAccount (mocked)", () => {
 
   it("succeeds and returns txHash and address", async () => {
     const exit = await runWith(
-      StarknetService.deployAccount(mockPk, "0xprivkey"),
+      StarknetService.deployAccount(mockPk, "0xprivkey", "0xsalt"),
       makeSuccessService(),
     )
     expect(Exit.isSuccess(exit)).toBe(true)
@@ -156,7 +156,7 @@ describe("StarknetService.deployAccount (mocked)", () => {
 
   it("fails with AccountDeployError when deployment is rejected", async () => {
     const exit = await runWith(
-      StarknetService.deployAccount(mockPk, "0xprivkey"),
+      StarknetService.deployAccount(mockPk, "0xprivkey", "0xsalt"),
       makeFailingService(),
     )
     expect(Exit.isFailure(exit)).toBe(true)
@@ -215,7 +215,8 @@ describe("StarknetService.computeDeployAddress (real implementation)", () => {
     // even with a fake RPC URL because no network call is made
     expect(Exit.isSuccess(exit)).toBe(true)
     if (Exit.isSuccess(exit)) {
-      expect(typeof exit.value).toBe("string")
+      expect(typeof exit.value.address).toBe("string")
+      expect(typeof exit.value.salt).toBe("string")
     }
   })
 })

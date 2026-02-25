@@ -54,14 +54,14 @@ describe("AccountDeployFlow view", () => {
     expect(html).toContain("Deploy")
   })
 
-  it("renders Starkscan link in success state", () => {
+  it("renders Voyager link in success state", () => {
     const html = renderAccountDeployFlow({
       step: { step: "deployed", address: ADDRESS, txHash: TX_HASH },
       keypair: Option.some(KEYPAIR),
     })
 
-    expect(html).toContain(`href="https://starkscan.co/tx/${TX_HASH}"`)
-    expect(html).toContain("View on Starkscan")
+    expect(html).toContain(`href="https://sepolia.voyager.online/tx/${TX_HASH}"`)
+    expect(html).toContain("View on Voyager")
     expect(html).toContain('role="status"')
     expect(html).toContain('aria-live="polite"')
   })

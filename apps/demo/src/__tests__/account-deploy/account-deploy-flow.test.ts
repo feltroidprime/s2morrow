@@ -71,10 +71,10 @@ const ZERO_BALANCE = BigInt(0)
 const makeSuccessLayer = (): Layer.Layer<StarknetService> =>
   Layer.succeed(StarknetService, {
     computeDeployAddress: (_pk: PackedPublicKey) =>
-      Effect.succeed(MOCK_ADDRESS),
+      Effect.succeed({ address: MOCK_ADDRESS, salt: "0xdeadbeef" }),
     getBalance: (_addr: string) =>
       Effect.succeed(FUNDED_BALANCE),
-    deployAccount: (_pk: PackedPublicKey, _sk: string) =>
+    deployAccount: (_pk: PackedPublicKey, _sk: string, _salt: string) =>
       Effect.succeed({ txHash: MOCK_TX_HASH, address: MOCK_ADDRESS }),
     waitForTx: (_tx: string) =>
       Effect.succeed(undefined as void),
@@ -89,10 +89,10 @@ const makeSuccessLayer = (): Layer.Layer<StarknetService> =>
 const makeZeroBalanceLayer = (): Layer.Layer<StarknetService> =>
   Layer.succeed(StarknetService, {
     computeDeployAddress: (_pk: PackedPublicKey) =>
-      Effect.succeed(MOCK_ADDRESS),
+      Effect.succeed({ address: MOCK_ADDRESS, salt: "0xdeadbeef" }),
     getBalance: (_addr: string) =>
       Effect.succeed(ZERO_BALANCE),
-    deployAccount: (_pk: PackedPublicKey, _sk: string) =>
+    deployAccount: (_pk: PackedPublicKey, _sk: string, _salt: string) =>
       Effect.fail(new AccountDeployError({ message: "should not be reached" })),
     waitForTx: (_tx: string) =>
       Effect.succeed(undefined as void),
@@ -107,10 +107,10 @@ const makeZeroBalanceLayer = (): Layer.Layer<StarknetService> =>
 const makeDeployFailureLayer = (): Layer.Layer<StarknetService> =>
   Layer.succeed(StarknetService, {
     computeDeployAddress: (_pk: PackedPublicKey) =>
-      Effect.succeed(MOCK_ADDRESS),
+      Effect.succeed({ address: MOCK_ADDRESS, salt: "0xdeadbeef" }),
     getBalance: (_addr: string) =>
       Effect.succeed(FUNDED_BALANCE),
-    deployAccount: (_pk: PackedPublicKey, _sk: string) =>
+    deployAccount: (_pk: PackedPublicKey, _sk: string, _salt: string) =>
       Effect.fail(new AccountDeployError({ message: "insufficient fee" })),
     waitForTx: (_tx: string) =>
       Effect.succeed(undefined as void),
@@ -125,10 +125,10 @@ const makeDeployFailureLayer = (): Layer.Layer<StarknetService> =>
 const makeDeployRevertedLayer = (): Layer.Layer<StarknetService> =>
   Layer.succeed(StarknetService, {
     computeDeployAddress: (_pk: PackedPublicKey) =>
-      Effect.succeed(MOCK_ADDRESS),
+      Effect.succeed({ address: MOCK_ADDRESS, salt: "0xdeadbeef" }),
     getBalance: (_addr: string) =>
       Effect.succeed(FUNDED_BALANCE),
-    deployAccount: (_pk: PackedPublicKey, _sk: string) =>
+    deployAccount: (_pk: PackedPublicKey, _sk: string, _salt: string) =>
       Effect.fail(
         new AccountDeployError({
           message: "transaction reverted",
@@ -151,7 +151,7 @@ const makeRpcFailureLayer = (): Layer.Layer<StarknetService> =>
       Effect.fail(new StarknetRpcError({ message: "connection refused", code: -1 })),
     getBalance: (_addr: string) =>
       Effect.fail(new StarknetRpcError({ message: "connection refused", code: -1 })),
-    deployAccount: (_pk: PackedPublicKey, _sk: string) =>
+    deployAccount: (_pk: PackedPublicKey, _sk: string, _salt: string) =>
       Effect.fail(new AccountDeployError({ message: "connection refused" })),
     waitForTx: (_tx: string) =>
       Effect.fail(new StarknetRpcError({ message: "timeout", code: -32003 })),
@@ -265,8 +265,8 @@ describe("StarknetService.computeDeployAddress — account-deploy step 3", () =>
     )
     expect(Exit.isSuccess(exit)).toBe(true)
     if (Exit.isSuccess(exit)) {
-      expect(typeof exit.value).toBe("string")
-      expect((exit.value as string).startsWith("0x")).toBe(true)
+      expect(typeof exit.value.address).toBe("string")
+      expect(exit.value.address.startsWith("0x")).toBe(true)
     }
   })
 
@@ -366,7 +366,7 @@ describe("StarknetService.getBalance — awaiting-funds gate", () => {
 describe("StarknetService.deployAccount — step 5", () => {
   it("success: returns { txHash, address } with correct shapes", async () => {
     const exit = await runWith(
-      StarknetService.deployAccount(MOCK_PACKED_PK, MOCK_PRIVATE_KEY),
+      StarknetService.deployAccount(MOCK_PACKED_PK, MOCK_PRIVATE_KEY, "0xsalt"),
       makeSuccessLayer(),
     )
     expect(Exit.isSuccess(exit)).toBe(true)
@@ -380,7 +380,7 @@ describe("StarknetService.deployAccount — step 5", () => {
 
   it("failure: AccountDeployError without txHash (pre-broadcast rejection)", async () => {
     const exit = await runWith(
-      StarknetService.deployAccount(MOCK_PACKED_PK, MOCK_PRIVATE_KEY),
+      StarknetService.deployAccount(MOCK_PACKED_PK, MOCK_PRIVATE_KEY, "0xsalt"),
       makeDeployFailureLayer(),
     )
     expect(Exit.isFailure(exit)).toBe(true)
@@ -396,7 +396,7 @@ describe("StarknetService.deployAccount — step 5", () => {
 
   it("failure: AccountDeployError WITH txHash (broadcast succeeded but tx reverted)", async () => {
     const exit = await runWith(
-      StarknetService.deployAccount(MOCK_PACKED_PK, MOCK_PRIVATE_KEY),
+      StarknetService.deployAccount(MOCK_PACKED_PK, MOCK_PRIVATE_KEY, "0xsalt"),
       makeDeployRevertedLayer(),
     )
     expect(Exit.isFailure(exit)).toBe(true)
@@ -612,7 +612,7 @@ const makeDeployOrchestrationEffect = (registry: ReturnType<typeof Registry.make
 
     // Step 3: computing-address
     registry.set(deployStepAtom, { step: "computing-address" })
-    const address = yield* StarknetService.computeDeployAddress(packedPk)
+    const { address, salt } = yield* StarknetService.computeDeployAddress(packedPk)
 
     // Step 4: awaiting-funds
     registry.set(deployStepAtom, { step: "awaiting-funds", address })
@@ -620,7 +620,7 @@ const makeDeployOrchestrationEffect = (registry: ReturnType<typeof Registry.make
 
     // Step 5: deploying (only if funded)
     registry.set(deployStepAtom, { step: "deploying", address })
-    const result = yield* StarknetService.deployAccount(packedPk, MOCK_PRIVATE_KEY)
+    const result = yield* StarknetService.deployAccount(packedPk, MOCK_PRIVATE_KEY, salt)
 
     // Done — component sets Option atoms after effect resolves (see Group 1 & 8 tests)
     registry.set(deployStepAtom, {
