@@ -27,7 +27,8 @@ export class FalconSigner extends SignerInterface {
   constructor(
     private readonly sk: Uint8Array,
     private readonly pkNtt: Int32Array,
-    private readonly runtime: ManagedRuntime.ManagedRuntime<FalconService, never>,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private readonly runtime: ManagedRuntime.ManagedRuntime<FalconService, any>,
   ) {
     super()
   }
