@@ -35,7 +35,10 @@ export class StarknetService extends Effect.Service<StarknetService>()(
             constructorCalldata,
             0,
           )
-          return ContractAddress.make(address)
+          return {
+            address: ContractAddress.make(address),
+            salt,
+          }
         },
       )
 
@@ -57,11 +60,14 @@ export class StarknetService extends Effect.Service<StarknetService>()(
       )
 
       const deployAccount = Effect.fn("Starknet.deployAccount")(
-        function* (packedPk: PackedPublicKey, privateKey: string) {
+        function* (
+          packedPk: PackedPublicKey,
+          privateKey: string,
+          salt: string,
+        ) {
           const constructorCalldata = CallData.compile({
             pk_packed: packedPk.slots,
           })
-          const salt = stark.randomAddress()
           const address = hash.calculateContractAddressFromHash(
             salt,
             FALCON_ACCOUNT_CLASS_HASH,

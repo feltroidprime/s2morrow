@@ -26,12 +26,14 @@ export interface PreparedAccountDeploy {
   readonly keypair: FalconKeypair
   readonly packedPublicKey: PackedPublicKey
   readonly address: ContractAddress
+  readonly salt: string
 }
 
 export interface DeployAccountInput {
   readonly address: ContractAddress
   readonly packedPublicKey: PackedPublicKey
   readonly privateKey: string
+  readonly salt: string
   readonly requiredBalance: bigint
 }
 
@@ -111,13 +113,14 @@ export const prepareAccountDeployEffect = Effect.fn(
 
   const publicKeyNtt = yield* toUint16PublicKeyNtt(keypair.publicKeyNtt)
   const packedPublicKey = yield* FalconService.packPublicKey(publicKeyNtt)
-  const address = yield* StarknetService.computeDeployAddress(packedPublicKey)
+  const { address, salt } = yield* StarknetService.computeDeployAddress(packedPublicKey)
 
   return {
     privateKey: normalizedPrivateKey,
     keypair,
     packedPublicKey,
     address,
+    salt,
   } satisfies PreparedAccountDeploy
 })
 
@@ -127,6 +130,7 @@ export const deployAccountEffect = Effect.fn(
   address,
   packedPublicKey,
   privateKey,
+  salt,
   requiredBalance,
 }: DeployAccountInput) {
   const normalizedPrivateKey = yield* validateHexPrivateKey(privateKey)
@@ -145,6 +149,7 @@ export const deployAccountEffect = Effect.fn(
   const deployment = yield* StarknetService.deployAccount(
     packedPublicKey,
     normalizedPrivateKey,
+    salt,
   )
 
   return deployment

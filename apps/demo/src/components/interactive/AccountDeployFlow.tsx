@@ -108,6 +108,7 @@ export function AccountDeployFlow(): React.JSX.Element {
         address: prepared.address,
         packedPublicKey: prepared.packedPublicKey,
         privateKey: prepared.privateKey,
+        salt: prepared.salt,
         requiredBalance: 1n,
       }),
     )

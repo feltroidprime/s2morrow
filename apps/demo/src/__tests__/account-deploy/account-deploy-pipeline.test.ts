@@ -122,7 +122,7 @@ const MOCK_TX_HASH = TxHash.make(
 
 const makeKeypair = (fill: number): FalconKeypair => ({
   secretKey: new Uint8Array(1281).fill(fill),
-  verifyingKey: new Uint8Array(897).fill(fill + 1),
+  verifyingKey: new Uint8Array(896).fill(fill + 1),
   publicKeyNtt: new Int32Array(512).fill(fill + 2),
 })
 
@@ -173,13 +173,13 @@ const makeStarknetLayer = (options: StarknetLayerOptions) =>
     StarknetService.make({
     computeDeployAddress: (_packedPk: PackedPublicKey) => {
       options.calls.compute += 1
-      return Effect.succeed(MOCK_ADDRESS)
+      return Effect.succeed({ address: MOCK_ADDRESS, salt: "0xdeadbeef" })
     },
     getBalance: (_address: string) => {
       options.calls.balance += 1
       return Effect.succeed(options.balance)
     },
-    deployAccount: (_packedPk: PackedPublicKey, _privateKey: string) => {
+    deployAccount: (_packedPk: PackedPublicKey, _privateKey: string, _salt: string) => {
       options.calls.deploy += 1
       return Effect.succeed({ txHash: MOCK_TX_HASH, address: MOCK_ADDRESS })
     },
@@ -278,6 +278,7 @@ describe("deployAccountEffect", () => {
         address: MOCK_ADDRESS,
         packedPublicKey: MOCK_PACKED_PUBLIC_KEY,
         privateKey: VALID_PRIVATE_KEY,
+        salt: "0xdeadbeef",
         requiredBalance: 1n,
       }),
       falconLayer,
@@ -305,6 +306,7 @@ describe("deployAccountEffect", () => {
         address: MOCK_ADDRESS,
         packedPublicKey: MOCK_PACKED_PUBLIC_KEY,
         privateKey: VALID_PRIVATE_KEY,
+        salt: "0xdeadbeef",
         requiredBalance: 1n,
       }),
       falconLayer,

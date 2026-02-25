@@ -299,8 +299,10 @@ describe("StarknetService.computeDeployAddress — account-deploy step 3", () =>
     // computeDeployAddress is pure (no RPC call), so must succeed
     expect(Exit.isSuccess(exit)).toBe(true)
     if (Exit.isSuccess(exit)) {
-      expect(typeof exit.value).toBe("string")
-      expect((exit.value as string).startsWith("0x")).toBe(true)
+      expect(typeof exit.value.address).toBe("string")
+      expect(exit.value.address.startsWith("0x")).toBe(true)
+      expect(typeof exit.value.salt).toBe("string")
+      expect(exit.value.salt.startsWith("0x")).toBe(true)
     }
   })
 })

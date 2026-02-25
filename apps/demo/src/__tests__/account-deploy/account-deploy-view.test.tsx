@@ -12,7 +12,7 @@ import type { FalconKeypair } from "../../services/types"
 
 const KEYPAIR: FalconKeypair = {
   secretKey: new Uint8Array(1281).fill(1),
-  verifyingKey: new Uint8Array(897).fill(2),
+  verifyingKey: new Uint8Array(896).fill(2),
   publicKeyNtt: new Int32Array(512).fill(3),
 }
 
