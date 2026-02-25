@@ -6,19 +6,27 @@
   "checkpoints_count": 4,
   "files_touched": [
     "apps/demo/src/__tests__/account-deploy/account-deploy-flow.test.ts",
+    "apps/demo/src/__tests__/account-deploy/account-deploy-pipeline.test.ts",
     "apps/demo/src/__tests__/account-deploy/account-deploy-view.test.tsx",
     "apps/demo/src/__tests__/config/networks.test.ts",
+    "apps/demo/src/__tests__/starknet/falcon-signer.test.ts",
+    "apps/demo/src/__tests__/verify-playground/falcon-service.test.ts",
     "apps/demo/src/__tests__/verify-playground/keyfile.test.ts",
     "apps/demo/src/__tests__/verify-playground/verification-playground.test.tsx",
     "apps/demo/src/atoms/falcon.ts",
     "apps/demo/src/atoms/starknet.ts",
     "apps/demo/src/components/interactive/AccountDeployFlow.tsx",
     "apps/demo/src/components/interactive/KeyManagementPanel.tsx",
+    "apps/demo/src/components/interactive/SendTransaction.tsx",
     "apps/demo/src/components/interactive/SignVerifyPanel.tsx",
     "apps/demo/src/components/interactive/VerificationPlayground.tsx",
     "apps/demo/src/components/landing/NavHeader.tsx",
     "apps/demo/src/config/networks.ts",
+    "apps/demo/src/services/FalconService.ts",
+    "apps/demo/src/services/FalconSigner.ts",
     "apps/demo/src/services/StarknetService.ts",
+    "apps/demo/src/services/WasmRuntime.ts",
+    "apps/demo/src/services/__tests__/WasmRuntime.test.ts",
     "apps/demo/src/services/errors.ts",
     "apps/demo/src/services/keyfile.ts",
     "apps/demo/src/services/types.ts",
@@ -60,10 +68,10 @@
     }
   ],
   "token_usage": {
-    "input_tokens": 1581,
-    "cache_creation_tokens": 323008,
-    "cache_read_tokens": 17556028,
-    "output_tokens": 38508,
-    "api_call_count": 196
+    "input_tokens": 2658,
+    "cache_creation_tokens": 471591,
+    "cache_read_tokens": 21526940,
+    "output_tokens": 38119,
+    "api_call_count": 234
   }
 }
