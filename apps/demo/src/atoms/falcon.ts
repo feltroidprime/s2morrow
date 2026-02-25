@@ -12,7 +12,9 @@ export const keypairAtom = Atom.make<Option.Option<FalconKeypair>>(Option.none()
 
 export const signatureAtom = Atom.make<Option.Option<FalconSignatureResult>>(Option.none())
 
-export const packedKeyAtom = Atom.make<Option.Option<PackedPublicKey>>(Option.none())
+export const packedKeyAtom = Atom.make<Option.Option<PackedPublicKey>>(Option.none()).pipe(
+  Atom.keepAlive,
+)
 
 export const verificationStepAtom = Atom.make<VerificationStep>({ step: "idle" })
 
