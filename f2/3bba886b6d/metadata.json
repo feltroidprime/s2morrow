@@ -8,12 +8,19 @@
     "apps/demo/src/__tests__/account-deploy/account-deploy-flow.test.ts",
     "apps/demo/src/__tests__/account-deploy/account-deploy-view.test.tsx",
     "apps/demo/src/__tests__/config/networks.test.ts",
+    "apps/demo/src/__tests__/verify-playground/keyfile.test.ts",
+    "apps/demo/src/__tests__/verify-playground/verification-playground.test.tsx",
+    "apps/demo/src/atoms/falcon.ts",
     "apps/demo/src/atoms/starknet.ts",
     "apps/demo/src/components/interactive/AccountDeployFlow.tsx",
+    "apps/demo/src/components/interactive/KeyManagementPanel.tsx",
+    "apps/demo/src/components/interactive/SignVerifyPanel.tsx",
+    "apps/demo/src/components/interactive/VerificationPlayground.tsx",
     "apps/demo/src/components/landing/NavHeader.tsx",
     "apps/demo/src/config/networks.ts",
     "apps/demo/src/services/StarknetService.ts",
     "apps/demo/src/services/errors.ts",
+    "apps/demo/src/services/keyfile.ts",
     "apps/demo/src/services/types.ts",
     "bin/declare.sh",
     "docs/plans/2026-02-25-demo-production-design.md",
@@ -53,10 +60,10 @@
     }
   ],
   "token_usage": {
-    "input_tokens": 1573,
-    "cache_creation_tokens": 365661,
-    "cache_read_tokens": 15717408,
-    "output_tokens": 33520,
-    "api_call_count": 187
+    "input_tokens": 1581,
+    "cache_creation_tokens": 323008,
+    "cache_read_tokens": 17556028,
+    "output_tokens": 38508,
+    "api_call_count": 196
   }
 }

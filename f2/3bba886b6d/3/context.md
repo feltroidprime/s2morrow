@@ -26,3 +26,7 @@ Load plan, review critically, execute tasks in batches, report for review betwee
 1. Read plan file
 2. Review critica...
 
+### Prompt 3
+
+continue
+
