@@ -3,11 +3,18 @@
   "checkpoint_id": "967e9acdba38",
   "strategy": "manual-commit",
   "branch": "frontend",
-  "checkpoints_count": 2,
+  "checkpoints_count": 3,
   "files_touched": [
     "README.md",
     "apps/demo/next.config.mjs",
-    "json"
+    "apps/demo/scripts/deploy-falcon.mjs",
+    "apps/demo/src/services/FalconService.ts",
+    "apps/demo/src/services/FalconSigner.ts",
+    "apps/demo/src/services/StarknetService.ts",
+    "apps/demo/src/services/WasmRuntime.ts",
+    "json",
+    "packages/falcon/src/falcon.cairo",
+    "packages/falcon_account/src/account.cairo"
   ],
   "sessions": [
     {
@@ -23,13 +30,20 @@
       "context": "/96/7e9acdba38/1/context.md",
       "content_hash": "/96/7e9acdba38/1/content_hash.txt",
       "prompt": "/96/7e9acdba38/1/prompt.txt"
+    },
+    {
+      "metadata": "/96/7e9acdba38/2/metadata.json",
+      "transcript": "/96/7e9acdba38/2/full.jsonl",
+      "context": "/96/7e9acdba38/2/context.md",
+      "content_hash": "/96/7e9acdba38/2/content_hash.txt",
+      "prompt": "/96/7e9acdba38/2/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 37,
-    "cache_creation_tokens": 108882,
-    "cache_read_tokens": 1142869,
-    "output_tokens": 8779,
-    "api_call_count": 30
+    "input_tokens": 565,
+    "cache_creation_tokens": 640835,
+    "cache_read_tokens": 50825740,
+    "output_tokens": 168949,
+    "api_call_count": 493
   }
 }
