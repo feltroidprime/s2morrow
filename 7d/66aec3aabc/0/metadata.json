@@ -1,0 +1,40 @@
+{
+  "cli_version": "0.4.2",
+  "checkpoint_id": "7d66aec3aabc",
+  "session_id": "24f9185c-4877-4806-b4b2-83ccdc3d1ef9",
+  "strategy": "manual-commit",
+  "created_at": "2026-02-26T13:18:12.453736126Z",
+  "branch": "frontend",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/demo/scripts/deploy-falcon.mjs",
+    "apps/demo/src/components/interactive/AccountDeployFlow.tsx",
+    "apps/demo/src/components/interactive/accountDeployPipeline.ts",
+    "apps/demo/src/services/FalconService.ts",
+    "apps/demo/src/services/FalconSigner.ts",
+    "apps/demo/src/services/StarknetService.ts",
+    "apps/demo/src/services/WasmRuntime.ts",
+    "packages/falcon/src/falcon.cairo",
+    "packages/falcon_account/src/account.cairo"
+  ],
+  "agent": "Claude Code",
+  "transcript_identifier_at_start": "d64334cc-debd-4b33-9f80-1022bebcff1f",
+  "checkpoint_transcript_start": 3085,
+  "transcript_lines_at_start": 3085,
+  "token_usage": {
+    "input_tokens": 23,
+    "cache_creation_tokens": 21910,
+    "cache_read_tokens": 2567725,
+    "output_tokens": 4460,
+    "api_call_count": 19
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-02-26T13:18:12.089365851Z",
+    "agent_lines": 0,
+    "human_added": 0,
+    "human_modified": 6,
+    "human_removed": 288,
+    "total_committed": 277,
+    "agent_percentage": 0
+  }
+}
