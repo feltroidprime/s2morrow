@@ -276,3 +276,66 @@ infinite loading. Kill everything and start again (make demo-serve)
 ---
 
 infinite loading. Kill everything and start again (make demo-serve)
+
+---
+
+Continue from where you left off.
+
+---
+
+continue
+
+---
+
+Continue from where you left off.
+
+---
+
+continue
+
+---
+
+[Request interrupted by user]
+
+---
+
+<task-notification>
+<task-id>b849d0a</task-id>
+<tool-use-id>REDACTED</tool-use-id>
+<output-file>REDACTED.output</output-file>
+<status>failed</status>
+<summary>Background command "Wait and check if dev server is ready" failed with exit code 143</summary>
+</task-notification>
+Read the output file to retrieve the result: REDACTED.output
+
+---
+
+[Request interrupted by user for tool use]
+
+---
+
+continue
+
+---
+
+[Request interrupted by user]
+
+---
+
+You're manipulating the chrome on fedora (see tailscale status). This is the asus machine. Make sure you're debugging using the chrome from the asus machine.
+
+---
+
+Test the flow on localhost now it should work
+
+---
+
+[Request interrupted by user]
+
+---
+
+test using asus:3737
+
+---
+
+[Request interrupted by user]
