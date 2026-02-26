@@ -1,24 +1,22 @@
 {
   "cli_version": "0.4.2",
   "checkpoint_id": "c30b08c363c9",
+  "session_id": "2dc9e661-eaff-49a3-a646-8e9028601667",
   "strategy": "manual-commit",
+  "created_at": "2026-02-26T15:59:37.387049787Z",
   "branch": "frontend",
-  "checkpoints_count": 2,
+  "checkpoints_count": 1,
   "files_touched": [
     "apps/demo/src/__tests__/account-deploy/account-deploy-section.integration.test.ts",
     "apps/demo/src/__tests__/account-deploy/account-deploy-view.test.tsx",
     "apps/demo/src/__tests__/effect-services/error-messages.test.ts",
     "apps/demo/src/__tests__/verify-playground/page-dynamic-verify.test.ts",
-    "apps/demo/src/app/globals.css",
-    "apps/demo/src/app/layout.tsx",
-    "apps/demo/src/components/ThemeToggle.tsx",
     "apps/demo/src/components/interactive/AccountDeployFlow.tsx",
     "apps/demo/src/components/interactive/PipelineVisualizer.tsx",
     "apps/demo/src/components/interactive/SendTransaction.tsx",
     "apps/demo/src/components/interactive/SignVerifyPanel.tsx",
     "apps/demo/src/components/landing/Footer.tsx",
     "apps/demo/src/components/landing/Hero.tsx",
-    "apps/demo/src/components/landing/NavHeader.tsx",
     "apps/demo/src/components/landing/PerformanceStats.tsx",
     "apps/demo/src/components/ui/AddressDisplay.tsx",
     "apps/demo/src/components/ui/CopyButton.tsx",
@@ -37,27 +35,22 @@
     "apps/demo/src/tests/styling/theme-toggle.test.ts",
     "docs/plans/2026-02-26-lucid-glass-dapp.md"
   ],
-  "sessions": [
-    {
-      "metadata": "/c3/0b08c363c9/0/metadata.json",
-      "transcript": "/c3/0b08c363c9/0/full.jsonl",
-      "context": "/c3/0b08c363c9/0/context.md",
-      "content_hash": "/c3/0b08c363c9/0/content_hash.txt",
-      "prompt": "/c3/0b08c363c9/0/prompt.txt"
-    },
-    {
-      "metadata": "/c3/0b08c363c9/1/metadata.json",
-      "transcript": "/c3/0b08c363c9/1/full.jsonl",
-      "context": "/c3/0b08c363c9/1/context.md",
-      "content_hash": "/c3/0b08c363c9/1/content_hash.txt",
-      "prompt": "/c3/0b08c363c9/1/prompt.txt"
-    }
-  ],
+  "agent": "Claude Code",
+  "transcript_identifier_at_start": "92c9f634-1753-46bc-9f8c-10f204812f12",
   "token_usage": {
-    "input_tokens": 5904,
-    "cache_creation_tokens": 510709,
-    "cache_read_tokens": 30604441,
-    "output_tokens": 99934,
-    "api_call_count": 281
+    "input_tokens": 5747,
+    "cache_creation_tokens": 383770,
+    "cache_read_tokens": 14345321,
+    "output_tokens": 55217,
+    "api_call_count": 139
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-02-26T15:59:37.172221152Z",
+    "agent_lines": 1824,
+    "human_added": 522,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 2346,
+    "agent_percentage": 77.74936061381074
   }
 }
