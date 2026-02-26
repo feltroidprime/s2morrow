@@ -1,5 +1,5 @@
 import { Config, Effect, Layer } from "effect"
-import { RpcProvider, Account, hash, transaction, EDAMode } from "starknet"
+import { RpcProvider, Account, hash } from "starknet"
 import type { SignerInterface, Signature } from "starknet"
 import {
   StarknetRpcError,
@@ -238,6 +238,11 @@ function makeService(rpcUrl: string, classHash: string) {
               nonce,
               version: "0x100000000000000000000000000000003",
               resourceBounds,
+              tip: 0,
+              paymasterData: [],
+              accountDeploymentData: [],
+              nonceDataAvailabilityMode: "L1",
+              feeDataAvailabilityMode: "L1",
             },
           )
           return { txHash: TxHash.make(result.transaction_hash) }
