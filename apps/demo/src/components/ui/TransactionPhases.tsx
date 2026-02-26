@@ -2,18 +2,21 @@ import React from "react"
 
 interface TransactionPhasesProps {
   /** Current active phase */
-  readonly phase: "signing" | "submitting" | "confirming"
+  readonly phase: "preparing" | "signing" | "submitting" | "confirming"
   /** Duration of signing phase in ms (set when signing completes) */
   readonly signMs?: number
 }
 
 const PHASES = [
+  { key: "preparing", label: "Preparing Transaction", activeLabel: "fetching nonce..." },
   { key: "signing", label: "Falcon-512 Signing", activeLabel: "signing..." },
   { key: "submitting", label: "Submitting to Network", activeLabel: "broadcasting..." },
   { key: "confirming", label: "Awaiting Confirmation", activeLabel: "waiting..." },
 ] as const
 
-const PHASE_ORDER = { signing: 0, submitting: 1, confirming: 2 }
+const PHASE_ORDER: Record<string, number> = {
+  preparing: 0, signing: 1, submitting: 2, confirming: 3,
+}
 
 export function TransactionPhases({ phase, signMs }: TransactionPhasesProps) {
   const activeIdx = PHASE_ORDER[phase]
@@ -35,8 +38,8 @@ export function TransactionPhases({ phase, signMs }: TransactionPhasesProps) {
           const isActive = i === activeIdx
           const isPending = i > activeIdx
 
-          // Only show duration for signing (the interesting one)
-          const durationLabel = isDone && i === 0 && signMs != null ? formatMs(signMs) : null
+          // Show duration badge for signing phase only
+          const durationLabel = isDone && p.key === "signing" && signMs != null ? formatMs(signMs) : null
 
           return (
             <div

@@ -18,9 +18,10 @@ import type { FalconService } from "@/services/FalconService"
 
 type TxPhase =
   | { phase: "idle" }
+  | { phase: "preparing" }
   | { phase: "signing" }
   | { phase: "submitting"; signMs: number }
-  | { phase: "confirming"; signMs: number; networkStartedAt: number; txHash: string }
+  | { phase: "confirming"; signMs: number; txHash: string }
   | { phase: "done"; signMs: number; networkMs: number; txHash: string }
   | { phase: "error"; message: string }
 
@@ -52,29 +53,33 @@ export function SendTransaction({
     const kp = Option.match(keypair, { onNone: () => null, onSome: (k) => k })
     if (!kp) return
 
-    setTxPhase({ phase: "signing" })
+    // Start with "preparing" — starknet.js fetches nonce before signing
+    setTxPhase({ phase: "preparing" })
     timingRef.current = { signMs: 0, networkStartedAt: 0 }
 
     const signer = new FalconSigner(
       kp.secretKey,
       kp.publicKeyNtt,
       falconRuntime,
-      (signMs) => {
-        // Written directly to ref — always available downstream
-        timingRef.current.signMs = signMs
-        timingRef.current.networkStartedAt = performance.now()
-        // flushSync forces React to render NOW, before starknet.js
-        // continues with the HTTP submission. Without it, React batches
-        // the update and the user never sees the signing→submitting transition.
-        flushSync(() => {
-          setTxPhase({ phase: "submitting", signMs })
-        })
+      {
+        onSignStart: () => {
+          // Fires when _signHash is entered — nonce fetch is done, actual signing begins
+          flushSync(() => {
+            setTxPhase({ phase: "signing" })
+          })
+        },
+        onSignComplete: (signMs) => {
+          timingRef.current.signMs = signMs
+          timingRef.current.networkStartedAt = performance.now()
+          flushSync(() => {
+            setTxPhase({ phase: "submitting", signMs })
+          })
+        },
       },
     )
 
     const amountWei = BigInt(Math.floor(parseFloat(amount) * 1e18))
 
-    // Phase 1+2: sign + submit (account.execute does both internally)
     const executeExit = await deployRuntime.runPromiseExit(
       StarknetService.executeTransaction(
         deployedAddress as string,
@@ -92,9 +97,9 @@ export function SendTransaction({
     const { txHash } = executeExit.value
     const { signMs, networkStartedAt } = timingRef.current
 
-    setTxPhase({ phase: "confirming", signMs, networkStartedAt, txHash })
+    setTxPhase({ phase: "confirming", signMs, txHash })
 
-    // Phase 3: wait for on-chain confirmation
+    // Wait for on-chain confirmation
     const waitExit = await deployRuntime.runPromiseExit(
       StarknetService.waitForTx(txHash),
     )
@@ -108,7 +113,11 @@ export function SendTransaction({
     setTxPhase({ phase: "done", signMs, networkMs, txHash })
   }, [keypair, deployedAddress, recipient, amount, deployRuntime, falconRuntime])
 
-  const isBusy = txPhase.phase === "signing" || txPhase.phase === "submitting" || txPhase.phase === "confirming"
+  const isBusy =
+    txPhase.phase === "preparing" ||
+    txPhase.phase === "signing" ||
+    txPhase.phase === "submitting" ||
+    txPhase.phase === "confirming"
 
   return (
     <div className="glass-card-static mt-8 rounded-2xl p-6">
@@ -155,7 +164,7 @@ export function SendTransaction({
 
       {isBusy && (
         <TransactionPhases
-          phase={txPhase.phase as "signing" | "submitting" | "confirming"}
+          phase={txPhase.phase as "preparing" | "signing" | "submitting" | "confirming"}
           signMs={"signMs" in txPhase ? txPhase.signMs : undefined}
         />
       )}

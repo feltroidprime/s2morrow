@@ -23,13 +23,18 @@ function intDAM(dam: EDataAvailabilityMode): EDAMode {
   throw new Error(`Unknown EDataAvailabilityMode: ${dam}`)
 }
 
+export interface FalconSignerCallbacks {
+  onSignStart?: () => void
+  onSignComplete?: (durationMs: number) => void
+}
+
 export class FalconSigner extends SignerInterface {
   constructor(
     private readonly sk: Uint8Array,
     private readonly pkNtt: Int32Array,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private readonly runtime: ManagedRuntime.ManagedRuntime<FalconService, any>,
-    private readonly onSignComplete?: (durationMs: number) => void,
+    private readonly callbacks?: FalconSignerCallbacks,
   ) {
     super()
   }
@@ -97,6 +102,7 @@ export class FalconSigner extends SignerInterface {
   }
 
   private async _signHash(txHash: string): Promise<string[]> {
+    this.callbacks?.onSignStart?.()
     const t0 = performance.now()
     const exit = await this.runtime.runPromiseExit(
       FalconService.signForStarknet(this.sk, txHash, this.pkNtt),
@@ -104,7 +110,7 @@ export class FalconSigner extends SignerInterface {
     const durationMs = performance.now() - t0
 
     if (Exit.isSuccess(exit)) {
-      this.onSignComplete?.(durationMs)
+      this.callbacks?.onSignComplete?.(durationMs)
       return exit.value
     }
 
