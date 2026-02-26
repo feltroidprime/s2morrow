@@ -1,0 +1,32 @@
+{
+  "cli_version": "0.4.2",
+  "checkpoint_id": "28b12ac8eea6",
+  "session_id": "2dc9e661-eaff-49a3-a646-8e9028601667",
+  "strategy": "manual-commit",
+  "created_at": "2026-02-26T17:34:28.854930757Z",
+  "branch": "frontend",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/demo/src/services/StarknetService.ts"
+  ],
+  "agent": "Claude Code",
+  "transcript_identifier_at_start": "a04bb2ed-667c-44bc-96c3-62429bcecd52",
+  "checkpoint_transcript_start": 1767,
+  "transcript_lines_at_start": 1767,
+  "token_usage": {
+    "input_tokens": 21,
+    "cache_creation_tokens": 11386,
+    "cache_read_tokens": 2897874,
+    "output_tokens": 5806,
+    "api_call_count": 20
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-02-26T17:34:28.583558494Z",
+    "agent_lines": 1,
+    "human_added": 69,
+    "human_modified": 3,
+    "human_removed": 0,
+    "total_committed": 73,
+    "agent_percentage": 1.36986301369863
+  }
+}
