@@ -3,7 +3,7 @@
   "checkpoint_id": "f23bba886b6d",
   "strategy": "manual-commit",
   "branch": "frontend",
-  "checkpoints_count": 8,
+  "checkpoints_count": 9,
   "files_touched": [
     "Makefile",
     "apps/demo/src/__tests__/account-deploy/account-deploy-flow.test.ts",
@@ -112,13 +112,20 @@
       "context": "/f2/3bba886b6d/7/context.md",
       "content_hash": "/f2/3bba886b6d/7/content_hash.txt",
       "prompt": "/f2/3bba886b6d/7/prompt.txt"
+    },
+    {
+      "metadata": "/f2/3bba886b6d/8/metadata.json",
+      "transcript": "/f2/3bba886b6d/8/full.jsonl",
+      "context": "/f2/3bba886b6d/8/context.md",
+      "content_hash": "/f2/3bba886b6d/8/content_hash.txt",
+      "prompt": "/f2/3bba886b6d/8/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 3198,
-    "cache_creation_tokens": 1412944,
-    "cache_read_tokens": 65948915,
-    "output_tokens": 94477,
-    "api_call_count": 682
+    "input_tokens": 3390,
+    "cache_creation_tokens": 1676511,
+    "cache_read_tokens": 83527148,
+    "output_tokens": 173185,
+    "api_call_count": 846
   }
 }
