@@ -22,6 +22,7 @@ import { extractUserMessage } from "@/services/error-messages"
 import { AddressDisplay } from "@/components/ui/AddressDisplay"
 import { ExplorerLink } from "@/components/ui/ExplorerLink"
 import { TokenAmount } from "@/components/ui/TokenAmount"
+import { TransactionPending } from "@/components/ui/TransactionPending"
 import type { PreparedAccountDeploy } from "./accountDeployPipeline"
 import {
   deployAccountEffect,
@@ -415,15 +416,10 @@ export function AccountDeployFlow(): React.JSX.Element {
         </div>
 
         {deployStep.step === "deploying" && (
-          <div className="glass-card-static glass-card-active mt-8 rounded-2xl p-6 animate-fade-in">
-            <div className="flex items-center gap-3">
-              <span className="inline-block h-2.5 w-2.5 animate-pulse-glow rounded-full bg-falcon-accent" />
-              <p className="text-sm font-medium text-falcon-text/80">Deploying account...</p>
-            </div>
-            <p className="mt-2 text-xs text-falcon-text/30">
-              Signing the deploy transaction with your Falcon key and submitting to {networkConfig.name}.
-            </p>
-          </div>
+          <TransactionPending
+            title="Deploying account..."
+            subtitle={`Signing with Falcon-512 and submitting to ${networkConfig.name}`}
+          />
         )}
 
         {deployStep.step === "deployed" && (

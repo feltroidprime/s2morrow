@@ -306,11 +306,42 @@ body > main {
 .stagger-delay-4 { animation-delay: 200ms; }
 .stagger-delay-5 { animation-delay: 250ms; }
 
+/* ─── Transaction pending animations ──────────────────────────────── */
+@keyframes spin-ring {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes progress-indeterminate {
+  0% { transform: translateX(-100%); }
+  50% { transform: translateX(0%); }
+  100% { transform: translateX(200%); }
+}
+
+@keyframes text-breathe {
+  0%, 100% { opacity: 0.8; }
+  50% { opacity: 0.4; }
+}
+
+.animate-spin-ring {
+  animation: spin-ring 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+}
+
+.animate-progress-indeterminate {
+  animation: progress-indeterminate 2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+.animate-text-breathe {
+  animation: text-breathe 2.4s ease-in-out infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-fade-in,
   .animate-scale-in,
   .animate-slide-up,
-  .animate-pulse-glow {
+  .animate-pulse-glow,
+  .animate-spin-ring,
+  .animate-progress-indeterminate,
+  .animate-text-breathe {
     animation: none;
   }
 }

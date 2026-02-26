@@ -10,6 +10,7 @@ import { StarknetService } from "@/services/StarknetService"
 import { FalconSigner } from "@/services/FalconSigner"
 import { extractUserMessage } from "@/services/error-messages"
 import { ExplorerLink } from "@/components/ui/ExplorerLink"
+import { TransactionPending } from "@/components/ui/TransactionPending"
 import type { ContractAddress } from "@/services/types"
 import type { ManagedRuntime } from "effect"
 import type { FalconService } from "@/services/FalconService"
@@ -110,15 +111,10 @@ export function SendTransaction({
       </div>
 
       {sending && (
-        <div className="glass-card-static glass-card-active mt-5 rounded-2xl p-5 animate-fade-in">
-          <div className="flex items-center gap-3">
-            <span className="inline-block h-2.5 w-2.5 animate-pulse-glow rounded-full bg-falcon-accent" />
-            <p className="text-sm font-medium text-falcon-text/80">Sending STRK...</p>
-          </div>
-          <p className="mt-2 text-xs text-falcon-text/30">
-            Signing with your Falcon key and submitting to the network.
-          </p>
-        </div>
+        <TransactionPending
+          title="Sending STRK..."
+          subtitle="Signing with Falcon-512 and submitting to the network"
+        />
       )}
 
       {result !== null && (
