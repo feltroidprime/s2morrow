@@ -1,0 +1,235 @@
+Implement the following plan:
+
+# Plan: Fix Sepolia Deploy — Fee Estimation + Deterministic Address
+
+## Context
+
+Deploying a Falcon account on Sepolia fails because resource bounds are hardcoded with devnet gas prices (`max_price_per_unit: 100B`) while Sepolia's actual prices are ~470x higher (`46.7T` for L1Gas). The fix is to let starknet.js auto-estimate fees. Additionally, each run generates a random salt → new address → requires new funding. Making the address deterministic avoids this.
+
+## Changes
+
+### 1. `bin/e2e-deploy.mjs` — Fee estimation + deterministic address + Sepolia support
+
+- **Remove hardcoded `RESOURCE_BOUNDS`** — starknet.js auto-estimates when `resourceBounds` is omitted from `deployAccount()` and `execute()`. It calls `estimateAccountDeployFee()` / `estimateInvokeFee()` internally, which simulates the tx and fetches current gas prices from the node.
+
+- **Deterministic salt** — Replace `stark.randomAddress()` (line 169) with a fixed default salt (`"0x1"`). Add `SALT` env var for override. Same seed + same salt + same class hash = same address every time.
+
+- **Conditional devnet mint** — Detect devnet via `RPC_URL` containing `localhost`/`127.0.0.1`. Only call `devnet_mint` on devnet. On Sepolia, check balance and error if insufficient.
+
+- **Skip deploy if already live** — Call `provider.getClassHashAt(address)` before deploying. If it returns the expected class hash, skip to transfer step.
+
+### 2. `apps/demo/src/services/StarknetService.ts` — Fee estimation
+
+- **Remove hardcoded `resourceBounds`** from `deployAccount()` (lines 100-104). Let starknet.js auto-estimate. The comment about auto-estimation failing was about devnet quirks, not Sepolia.
+
+### 3. Devnet test, then Sepolia
+
+1. `make e2e-devnet` — verify auto-estimation works on devnet
+2. `make e2e-devnet` again — verify idempotency (skip deploy, only transfer)
+3. Sepolia deploy via `node bin/e2e-deploy.mjs` with Sepolia RPC
+
+## Address reuse answer
+
+Yes — `address = pedersen(deployer=0, salt, class_hash, H(constructor_calldata))`. Fixed seed → deterministic keypair → deterministic calldata. With fixed salt + same class hash → same address. The pre-funded address is reusable.
+
+## Files
+
+| File | Change |
+|------|--------|
+| `bin/e2e-deploy.mjs` | Remove RESOURCE_BOUNDS, deterministic salt, devnet detection, idempotent deploy |
+| `apps/demo/src/services/StarknetService.ts` | Remove hardcoded resourceBounds from deployAccount |
+
+## Verification
+
+```bash
+make e2e-devnet                    # fresh deploy with auto-estimation
+make e2e-devnet                    # re-run (skip deploy, only transfer)
+
+# Sepolia
+CLASS_HASH=0x37c7...d151d5 \
+  RPC_URL=<sepolia-rpc> \
+  node bin/e2e-deploy.mjs          # deploy + transfer on Sepolia
+```
+
+
+If you need specific details from before exiting plan mode (like exact code snippets, error messages, or content you generated), read the full transcript at: /home/felt/.REDACTED.jsonl
+
+---
+
+Verify yourself and fix any issue that arises
+
+---
+
+Base directory for this skill: /home/felt/.claude/plugins/cache/superpowers-marketplace/superpowers/4.1.1/skills/verification-before-completion
+
+# Verification Before Completion
+
+## Overview
+
+Claiming work is complete without verification is dishonesty, not efficiency.
+
+**Core principle:** Evidence before claims, always.
+
+**Violating the letter of this rule is violating the spirit of this rule.**
+
+## The Iron Law
+
+```
+NO COMPLETION CLAIMS WITHOUT FRESH VERIFICATION EVIDENCE
+```
+
+If you haven't run the verification command in this message, you cannot claim it passes.
+
+## The Gate Function
+
+```
+BEFORE claiming any status or expressing satisfaction:
+
+1. IDENTIFY: What command proves this claim?
+2. RUN: Execute the FULL command (fresh, complete)
+3. READ: Full output, check exit code, count failures
+4. VERIFY: Does output confirm the claim?
+   - If NO: State actual status with evidence
+   - If YES: State claim WITH evidence
+5. ONLY THEN: Make the claim
+
+Skip any step = lying, not verifying
+```
+
+## Common Failures
+
+| Claim | Requires | Not Sufficient |
+|-------|----------|----------------|
+| Tests pass | Test command output: 0 failures | Previous run, "should pass" |
+| Linter clean | Linter output: 0 errors | Partial check, extrapolation |
+| Build succeeds | Build command: exit 0 | Linter passing, logs look good |
+| Bug fixed | Test original symptom: passes | Code changed, assumed fixed |
+| Regression test works | Red-green cycle verified | Test passes once |
+| Agent completed | VCS diff shows changes | Agent reports "success" |
+| Requirements met | Line-by-line checklist | Tests passing |
+
+## Red Flags - STOP
+
+- Using "should", "probably", "seems to"
+- Expressing satisfaction before verification ("Great!", "Perfect!", "Done!", etc.)
+- About to commit/push/PR without verification
+- Trusting agent success reports
+- Relying on partial verification
+- Thinking "just this once"
+- Tired and wanting work over
+- **ANY wording implying success without having run verification**
+
+## Rationalization Prevention
+
+| Excuse | Reality |
+|--------|---------|
+| "Should work now" | RUN the verification |
+| "I'm confident" | Confidence ≠ evidence |
+| "Just this once" | No exceptions |
+| "Linter passed" | Linter ≠ compiler |
+| "Agent said success" | Verify independently |
+| "I'm tired" | Exhaustion ≠ excuse |
+| "Partial check is enough" | Partial proves nothing |
+| "Different words so rule doesn't apply" | Spirit over letter |
+
+## Key Patterns
+
+**Tests:**
+```
+✅ [Run test command] [See: 34/34 pass] "All tests pass"
+❌ "Should pass now" / "Looks correct"
+```
+
+**Regression tests (TDD Red-Green):**
+```
+✅ Write → Run (pass) → Revert fix → Run (MUST FAIL) → Restore → Run (pass)
+❌ "I've written a regression test" (without red-green verification)
+```
+
+**Build:**
+```
+✅ [Run build] [See: exit 0] "Build passes"
+❌ "Linter passed" (linter doesn't check compilation)
+```
+
+**Requirements:**
+```
+✅ Re-read plan → Create checklist → Verify each → Report gaps or completion
+❌ "Tests pass, phase complete"
+```
+
+**Agent delegation:**
+```
+✅ Agent reports success → Check VCS diff → Verify changes → Report actual state
+❌ Trust agent report
+```
+
+## Why This Matters
+
+From 24 failure memories:
+- your human partner said "I don't believe you" - trust broken
+- Undefined functions shipped - would crash
+- Missing requirements shipped - incomplete features
+- Time wasted on false completion → redirect → rework
+- Violates: "Honesty is a core value. If you lie, you'll be replaced."
+
+## When To Apply
+
+**ALWAYS before:**
+- ANY variation of success/completion claims
+- ANY expression of satisfaction
+- ANY positive statement about work state
+- Committing, PR creation, task completion
+- Moving to next task
+- Delegating to agents
+
+**Rule applies to:**
+- Exact phrases
+- Paraphrases and synonyms
+- Implications of success
+- ANY communication suggesting completion/correctness
+
+## The Bottom Line
+
+**No shortcuts for verification.**
+
+Run the command. Read the output. THEN claim the result.
+
+This is non-negotiable.
+
+---
+
+when i import an acccount.json, each tiem the account to be funded is different, can you make sure it's deterministic
+
+---
+
+[Request interrupted by user]
+
+---
+
+when i import an falcon acccount.json on the webapp, each time the account to be funded is different, can you make sure it's deterministic
+
+---
+
+deploy this
+
+---
+
+Deploy worked. I have a out of gas error for the final Test Your Falcon Account
+Send STRK using your post-quantum account. did we use hardcoded values as well ?
+
+---
+
+Let's factor the gas logic using an Element best practice
+
+---
+
+[Request interrupted by user]
+
+---
+
+Let's factor the gas logic using an Effect best practice
+
+---
+
+Fix the logic, should detect if account is already deployed (i got "0x0", "resource_bounds": { "l2_gas": { "max_amount": "0x2faf080", "max_price_per_unit": "0x3b9aca000" }, "l1_gas": { "max_amount": "0x0", "max_price_per_unit": "0x54e7e6b62956" }, "l1_data_gas": { "max_amount": "0x3000", "max_price_per_unit": "0x2246d22" } }, "tip": "0x5f5e100", "paymaster_data": [], "nonce_data_availability_mode": "L1", "fee_data_availability_mode": "L1", "version": "0x3" } } 52: Invalid transaction nonce: undefined )

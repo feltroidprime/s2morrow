@@ -1,0 +1,1739 @@
+Implement the following plan:
+
+# Plan: Test & Fix Demo App E2E Flow on Devnet
+
+## Context
+The demo app (`apps/demo/`) provides a web UI for deploying a Falcon post-quantum account on Starknet and sending STRK from it. The full flow needs to be tested on devnet (`localhost:5050`) and any issues fixed along the way.
+
+**Current state:**
+- Devnet is running at `localhost:5050` with 10 prefunded accounts
+- FalconAccount class hash `0x37c76...` is declared on devnet
+- Demo app is **NOT running** (port 3737 is down)
+- WASM artifacts exist in `apps/demo/public/wasm/`
+
+## Steps
+
+### 1. Start the demo dev server
+- Run `cd apps/demo && npx next dev --turbopack -H 0.0.0.0 -p 3737` in background
+- Wait for the server to be ready
+
+### 2. Navigate to the app with surf and verify initial load
+- `surf navigate "http://localhost:3737"`
+- Take screenshot to verify the page renders
+- Scroll to the "Account Deploy Flow" section
+
+### 3. Test the Prepare Deploy flow
+- Verify the devnet deployer dropdown is populated with prefunded accounts
+- Click "Prepare Deploy" button
+- Monitor for errors — check console for WASM loading issues, RPC errors, etc.
+- Verify the address is computed and displayed in "awaiting-funds" state
+
+### 4. Fund the computed address
+- Use devnet's mint endpoint to fund the address: `POST http://localhost:5050/mint` with `{"address":"0x...","amount":10000000000000000000,"unit":"FRI"}` (STRK)
+- Also mint ETH for gas: `POST http://localhost:5050/mint` with `{"address":"0x...","amount":10000000000000000000,"unit":"WEI"}`
+- Verify the balance poller picks up the balance in the UI
+
+### 5. Deploy the account
+- Click "Deploy Account" button
+- Monitor for errors — check console for signing issues, RPC failures
+- Verify the "Account Deployed" success message with tx hash and address
+
+### 6. Send STRK from the deployed account
+- In the SendTransaction component, set a recipient (a prefunded devnet account address)
+- Set amount to 0.001 STRK
+- Click "Send STRK"
+- Verify "Transaction Confirmed" message appears with tx hash
+
+### 7. Fix issues along the way
+- At each step, if errors occur: check browser console, network requests, and source code
+- Fix any bugs in the TypeScript/React code
+- Common potential issues:
+  - WASM loading failures (path/CORS issues)
+  - starknet.js API mismatches (v9.x breaking changes)
+  - RPC errors from devnet (wrong method names, missing params)
+  - Signing errors (FalconSigner integration)
+  - Transaction formatting issues (calldata, fee estimation)
+
+## Key files
+- `apps/demo/src/components/interactive/AccountDeployFlow.tsx` — deploy UI
+- `apps/demo/src/components/interactive/SendTransaction.tsx` — transfer UI
+- `apps/demo/src/components/interactive/accountDeployPipeline.ts` — deploy logic
+- `apps/demo/src/services/StarknetService.ts` — RPC interactions
+- `apps/demo/src/services/FalconSigner.ts` — signing integration
+- `apps/demo/src/services/FalconService.ts` — WASM bridge
+- `apps/demo/src/services/WasmRuntime.ts` — WASM loader
+- `apps/demo/src/config/networks.ts` — network config
+
+## Verification
+- Full E2E: page loads → prepare deploy → fund → deploy account → send STRK → confirmed
+- No console errors at any stage
+- Both deploy tx and transfer tx confirmed on devnet
+
+
+If you need specific details from before exiting plan mode (like exact code snippets, error messages, or content you generated), read the full transcript at: /home/felt/.REDACTED.jsonl
+
+---
+
+Base directory for this skill: /home/felt/.claude/skills/surf
+
+# Surf Browser Automation
+
+Control Chrome browser via CLI or Unix socket.
+
+## CLI Quick Reference
+
+```bash
+surf --help                    # Full help
+surf <group>                   # Group help (tab, scroll, page, wait, dialog, emulate, form, perf, ai)
+surf --help-full               # All commands
+surf --find <term>             # Search tools
+surf --help-topic <topic>      # Topic guide (refs, semantic, frames, devices, windows)
+```
+
+## Core Workflow
+
+```bash
+# 1. Navigate to page
+surf navigate "https://example.com"
+
+# 2. Read page to get element refs
+surf page.read
+
+# 3. Click by ref or coordinates
+surf click --ref "e1"
+surf click --x 100 --y 200
+
+# 4. Type text
+surf type --text "hello"
+
+# 5. Screenshot
+surf screenshot --output /tmp/shot.png
+```
+
+## AI Assistants (No API Keys)
+
+Query AI models using your browser's logged-in session. Must be logged into the respective service in Chrome.
+
+### ChatGPT
+```bash
+surf chatgpt "explain this code"
+surf chatgpt "summarize" --with-page              # Include current page context
+surf chatgpt "review" --model gpt-4o              # Specify model
+surf chatgpt "analyze" --file document.pdf        # With file attachment
+```
+
+### Gemini
+```bash
+surf gemini "explain quantum computing"
+surf gemini "summarize" --with-page               # Include page context
+surf gemini "analyze" --file data.csv             # Attach file
+surf gemini "a robot surfing" --generate-image /tmp/robot.png
+surf gemini "add sunglasses" --edit-image photo.jpg --output out.jpg
+surf gemini "summarize" --youtube "https://youtube.com/..."
+surf gemini "hello" --model gemini-2.5-flash      # Models: gemini-3-pro (default), gemini-2.5-pro, gemini-2.5-flash
+surf gemini "wide banner" --generate-image /tmp/banner.png --aspect-ratio 16:9
+```
+
+### Perplexity
+```bash
+surf perplexity "what is quantum computing"
+surf perplexity "explain this page" --with-page   # Include page context
+surf perplexity "deep dive" --mode research       # Research mode (Pro)
+surf perplexity "latest news" --model sonar       # Model selection (Pro)
+```
+
+### Grok (via x.com - requires X.com login in Chrome)
+```bash
+surf grok "what are the latest AI trends on X"    # Search X posts
+surf grok "analyze @username recent activity"     # Profile analysis  
+surf grok "summarize this page" --with-page       # Include page context
+surf grok "find viral AI posts" --deep-search     # DeepSearch mode
+surf grok "quick question" --model fast           # Models: auto, fast, expert, thinking (default)
+```
+
+**Grok Validation & Troubleshooting:**
+```bash
+# Validate Grok UI and check available models (no query sent)
+surf grok --validate
+
+# If models changed, save discovered models to surf.json config
+surf grok --validate --save-models
+```
+
+### AI Studio (via aistudio.google.com - requires Google login in Chrome)
+```bash
+surf aistudio "explain quantum computing"
+surf aistudio "redteam this" --with-page          # Include current page context
+surf aistudio "quick answer" --model gemini-3-flash-preview  # Model selection
+surf aistudio "analyze" --timeout 600             # Custom timeout (default: 300s)
+```
+
+**Why AI Studio over Gemini?** AI Studio gives access to less restricted Gemini models. For Gemini 3 Pro the difference can be significant with certain prompts. Downside: aggressive per-day rate limits on Pro and Flash models.
+
+**Model selection is best-effort:** Pass any AI Studio model id (e.g. `gemini-3.1-pro-preview`, `gemini-3-flash-preview`, `gemini-flash-lite-latest`). If the model isn't found, AI Studio uses whatever model was last selected in the UI.
+
+### AI Studio App Builder
+```bash
+surf aistudio.build "build a portfolio site"
+surf aistudio.build "todo app" --model gemini-3.1-pro-preview   # Model override
+surf aistudio.build "crm dashboard" --output ./out              # Extract zip to directory
+surf aistudio.build "game" --keep-open --timeout 600            # Keep tab open, 10min timeout
+```
+
+Automates AI Studio's App Builder at `aistudio.google.com/apps`. Types your prompt, clicks Build, waits for completion, downloads the generated zip, and optionally extracts it.
+
+- `--output <dir>` extracts the zip to a directory
+- `--model <id>` overrides the model in Advanced Settings
+- `--timeout <seconds>` build timeout (default: 600s)
+- `--keep-open` leaves the AI Studio tab open after completion
+
+Returns `zipPath`, `extractedPath`, `model`, `buildDuration`, and `tookMs`.
+
+### AI Tool Troubleshooting
+
+When AI queries fail, check these common issues:
+
+1. **Not logged in**: The error "login required" means you need to log into the service in Chrome (chatgpt.com, gemini.google.com, perplexity.ai, x.com, or aistudio.google.com)
+2. **Model selection failed**: The UI may have changed. Run `surf grok --validate` to check
+3. **Response timeout**: Thinking models (ChatGPT o1, Grok thinking) can take 45+ seconds. AI Studio builds can take several minutes.
+4. **Element not found**: The service's UI changed. Check for surf-cli updates
+
+**Debugging workflow for agents:**
+```bash
+# 1. Check if the service is accessible and UI is valid
+surf grok --validate
+
+# 2. If models mismatch, update the local settings
+surf grok --validate --save-models
+
+# 3. Retry with explicit model name from validation output
+surf grok "query" --model <model-from-validation>
+
+# 4. If still failing, try with longer timeout
+surf grok "query" --timeout 600
+```
+
+## Tab Management
+
+```bash
+surf tab.list
+surf tab.new "https://google.com"
+surf tab.switch 12345
+surf tab.close 12345
+surf tab.reload                # Reload current tab
+
+# Named tabs (aliases)
+surf tab.name myapp            # Name current tab
+surf tab.switch myapp          # Switch by name
+surf tab.named                 # List named tabs
+surf tab.unname myapp          # Remove name
+
+# Tab groups
+surf tab.group                 # Create/add to tab group
+surf tab.ungroup               # Remove from group
+surf tab.groups                # List all tab groups
+```
+
+## Window Management
+
+```bash
+surf window.list                              # List all windows
+surf window.list --tabs                       # Include tab details
+surf window.new                               # New window
+surf window.new --url "https://example.com"   # New window with URL
+surf window.new --incognito                   # New incognito window
+surf window.new --unfocused                   # Don't focus new window
+surf window.focus 12345                       # Focus window by ID
+surf window.close 12345                       # Close window
+surf window.resize --id 123 --width 1920 --height 1080
+surf window.resize --id 123 --state maximized # States: normal, minimized, maximized, fullscreen
+```
+
+**Window isolation for agents:**
+```bash
+# Create isolated window for agent work
+surf window.new "https://example.com"
+# Returns window ID, use with subsequent commands:
+surf --window-id 123 tab.list
+surf --window-id 123 go "https://other.com"
+```
+
+## Input Methods
+
+```bash
+# CDP method (real events) - default
+surf type --text "hello"
+surf click --x 100 --y 200
+
+# JS method (DOM manipulation) - for contenteditable
+surf type --text "hello" --selector "#input" --method js
+
+# Keys
+surf key Enter
+surf key "cmd+a"
+surf key.repeat --key Tab --count 5           # Repeat key presses
+
+# Hover and drag
+surf hover --ref e5
+surf drag --from-x 100 --from-y 100 --to-x 200 --to-y 200
+```
+
+## Page Inspection
+
+```bash
+surf page.read                 # Accessibility tree with refs + page text
+surf page.read --no-text       # Interactive elements only (no text content)
+surf page.read --ref e5        # Get specific element details
+surf page.read --depth 3       # Limit tree depth
+surf page.read --compact       # Minimal output for LLM efficiency
+surf page.text                 # Plain text content only
+surf page.state                # Modals, loading state, scroll info
+```
+
+## Semantic Element Location
+
+Find and act on elements by role, text, or label instead of refs:
+
+```bash
+# Find by ARIA role
+surf locate.role button --name "Submit" --action click
+surf locate.role textbox --name "Email" --action fill --value "test@example.com"
+surf locate.role link --all                    # Return all matches
+
+# Find by text content
+surf locate.text "Sign In" --action click
+surf locate.text "Accept" --exact --action click
+
+# Find form field by label
+surf locate.label "Username" --action fill --value "john"
+surf locate.label "Password" --action fill --value "secret"
+```
+
+**Actions:** `click`, `fill`, `hover`, `text` (get text content)
+
+## Text Search
+
+```bash
+surf search "login"                    # Find text in page
+surf search "Error" --case-sensitive   # Case-sensitive
+surf search "button" --limit 5         # Limit results
+surf find "login"                      # Alias for search
+```
+
+## Element Inspection
+
+```bash
+surf element.styles e5                 # Get computed styles by ref
+surf element.styles ".card"            # Or by CSS selector
+# Returns: font, color, background, border, padding, bounding box
+```
+
+## Scrolling
+
+```bash
+surf scroll.bottom
+surf scroll.top  
+surf scroll.to --y 500         # Scroll to Y position
+surf scroll.to --ref e5        # Scroll element into view
+surf scroll.by --y 200         # Scroll by amount
+surf scroll.info               # Get scroll position
+```
+
+## Waiting
+
+```bash
+surf wait 2                    # Wait 2 seconds
+surf wait.element ".loaded"    # Wait for element
+surf wait.network              # Wait for network idle
+surf wait.url "/success"       # Wait for URL pattern
+surf wait.dom --stable 100     # Wait for DOM stability
+surf wait.load                 # Wait for page load complete
+```
+
+## Dialog Handling
+
+```bash
+surf dialog.info               # Get current dialog type/message
+surf dialog.accept             # Accept (OK)
+surf dialog.accept --text "response"  # Accept prompt with text
+surf dialog.dismiss            # Dismiss (Cancel)
+```
+
+## Device/Network Emulation
+
+```bash
+# Network throttling
+surf emulate.network slow-3g   # Presets: slow-3g, fast-3g, 4g, offline
+surf emulate.network reset     # Disable throttling
+
+# CPU throttling  
+surf emulate.cpu 4             # 4x slower
+surf emulate.cpu 1             # Reset
+
+# Device emulation (19 presets)
+surf emulate.device "iPhone 14"
+surf emulate.device "Pixel 7"
+surf emulate.device --list     # List available devices
+
+# Custom viewport
+surf emulate.viewport --width 1280 --height 720
+surf emulate.touch --enable    # Enable touch emulation
+
+# Geolocation
+surf emulate.geo --lat 37.7749 --lon -122.4194
+surf emulate.geo --clear
+```
+
+## Form Automation
+
+```bash
+surf page.read                 # Get element refs first
+
+# Fill by ref
+surf form.fill --data '[{"ref":"e1","value":"John"},{"ref":"e2","value":"john@example.com"}]'
+
+# Checkboxes: true/false
+surf form.fill --data '[{"ref":"e7","value":true}]'
+
+# Dropdown selection
+surf select e5 "Option A"                    # By value (default)
+surf select e5 "Option A" "Option B"         # Multi-select
+surf select e5 --by label "Display Text"     # By visible label
+surf select e5 --by index 2                  # By index (0-based)
+```
+
+## File Upload
+
+```bash
+surf upload --ref e5 --files "/path/to/file.txt"
+surf upload --ref e5 --files "/path/file1.txt,/path/file2.txt"
+```
+
+## Iframe Handling
+
+```bash
+surf frame.list                # List frames with IDs
+surf frame.switch "FRAME_ID"   # Switch to iframe context
+surf frame.main                # Return to main frame
+surf frame.js --id "FRAME_ID" --code "return document.title"
+
+# After frame.switch, subsequent commands target that frame:
+surf frame.switch "iframe-1"
+surf page.read                 # Reads iframe content
+surf click e5                  # Clicks in iframe
+surf frame.main                # Back to main page
+```
+
+## Network Inspection
+
+```bash
+surf network                   # List captured requests
+surf network --stream          # Real-time network events
+surf network.get --id "req-123"   # Full request details
+surf network.body --id "req-123"  # Get response body
+surf network.curl --id "req-123"  # Generate curl command
+surf network.origins           # List origins with stats
+surf network.stats             # Capture statistics
+surf network.export            # Export all requests
+surf network.clear             # Clear captured requests
+```
+
+## Console
+
+```bash
+surf console                   # Get console messages
+surf console --stream          # Real-time console
+surf console --stream --level error  # Errors only
+```
+
+## JavaScript Execution
+
+```bash
+surf js "return document.title"
+surf js "document.querySelector('.btn').click()"
+```
+
+## Performance
+
+```bash
+surf perf.metrics              # Current metrics snapshot
+surf perf.start                # Start trace
+surf perf.stop                 # Stop and get results
+```
+
+## Screenshots
+
+```bash
+surf screenshot                           # Auto-saves to /tmp/surf-snap-*.png
+surf screenshot --output /tmp/shot.png    # Save to specific file
+surf screenshot --selector ".card"        # Element only
+surf screenshot --full-page               # Full page scroll capture
+surf screenshot --no-save                 # Return base64 only, don't save file
+```
+
+## Zoom
+
+```bash
+surf zoom                      # Get current zoom level
+surf zoom 1.5                  # Set zoom to 150%
+surf zoom 1                    # Reset to 100%
+```
+
+## Cookies & Storage
+
+```bash
+surf cookie.list               # List cookies for current page
+surf cookie.list --domain .google.com
+surf cookie.set --name "token" --value "abc123"
+surf cookie.get --name "token"
+surf cookie.clear              # Clear all cookies
+```
+
+## History & Bookmarks
+
+```bash
+surf history --query "github" --max 20
+surf bookmarks --query "docs"
+surf bookmark.add --url "https://..." --title "My Bookmark"
+surf bookmark.remove
+```
+
+## Health Checks & Smoke Tests
+
+```bash
+surf health --url "http://localhost:3000"
+surf smoke --urls "http://localhost:3000" "http://localhost:3000/about"
+surf smoke --urls "..." --screenshot /tmp/smoke
+```
+
+## Workflows
+
+Execute multi-step browser automation as a single command with smart auto-waits.
+
+### Inline Workflows
+
+```bash
+# Pipe-separated commands
+surf do 'go "https://example.com" | click e5 | screenshot'
+
+# Multi-step login flow
+surf do 'go "https://example.com/login" | type "user@example.com" --selector "#email" | type "pass" --selector "#password" | click --selector "button[type=submit]"'
+
+# Validate without executing
+surf do 'go "url" | click e5' --dry-run
+```
+
+### Named Workflows
+
+Save workflows as JSON files in `~/.surf/workflows/` (user) or `./.surf/workflows/` (project):
+
+```bash
+# List available workflows
+surf workflow.list
+
+# Show workflow details
+surf workflow.info my-workflow
+
+# Run by name with arguments
+surf do my-workflow --email "user@example.com" --password "secret"
+
+# Validate workflow file
+surf workflow.validate workflow.json
+```
+
+### Workflow JSON Format
+
+```json
+{
+  "name": "Login Flow",
+  "description": "Automate login process",
+  "args": {
+    "email": { "required": true },
+    "password": { "required": true },
+    "url": { "default": "https://example.com/login" }
+  },
+  "steps": [
+    { "tool": "navigate", "args": { "url": "%{url}" } },
+    { "tool": "type", "args": { "text": "%{email}", "selector": "input[name=email]" } },
+    { "tool": "type", "args": { "text": "%{password}", "selector": "input[name=password]" } },
+    { "tool": "click", "args": { "selector": "button[type=submit]" } },
+    { "tool": "screenshot", "args": {}, "as": "result" }
+  ]
+}
+```
+
+### Loops and Step Outputs
+
+```json
+{
+  "steps": [
+    // Capture step output for later use
+    { "tool": "js", "args": { "code": "return [1,2,3]" }, "as": "items" },
+    
+    // Fixed iterations
+    { "repeat": 5, "steps": [
+      { "tool": "click", "args": { "ref": "e5" } }
+    ]},
+    
+    // Iterate over array
+    { "each": "%{items}", "as": "item", "steps": [
+      { "tool": "js", "args": { "code": "console.log('%{item}')" } }
+    ]},
+    
+    // Repeat until condition
+    { "repeat": 20, "until": { "tool": "js", "args": { "code": "return done" } }, "steps": [...] }
+  ]
+}
+```
+
+### Workflow Options
+
+```bash
+--file, -f <path>     # Load from JSON file
+--dry-run             # Parse and validate without executing
+--on-error stop|continue  # Error handling (default: stop)
+--step-delay <ms>     # Delay between steps (default: 100, 0 to disable)
+--no-auto-wait        # Disable automatic waits
+--json                # Structured JSON output
+```
+
+**Auto-waits:** Commands automatically wait for completion:
+- Navigation (`go`, `back`, `forward`) → waits for page load
+- Clicks, key presses, form fills → waits for DOM stability
+- Tab switches → waits for tab to load
+
+**Why use `do`?** Instead of 6-8 separate CLI calls with LLM orchestration between each, a workflow executes deterministically. Faster, cheaper, and more reliable.
+
+## Error Diagnostics
+
+```bash
+# Auto-capture screenshot + console on failure
+surf wait.element ".missing" --auto-capture --timeout 2000
+# Saves to /tmp/surf-error-*.png
+```
+
+## Common Options
+
+```bash
+--tab-id <id>         # Target specific tab
+--window-id <id>      # Target specific window
+--json                # Raw JSON output  
+--auto-capture        # Screenshot + console on error
+--timeout <ms>        # Override default timeout
+```
+
+## Tips
+
+1. **First CDP operation is slow** (~5-8s) - debugger attachment overhead, subsequent calls fast
+2. **Use refs from page.read** for reliable element targeting over CSS selectors
+3. **JS method for contenteditable** - Modern editors (ChatGPT, Claude, Notion) need `--method js`
+4. **Named tabs for workflows** - `tab.name app` then `tab.switch app`
+5. **Auto-capture for debugging** - `--auto-capture` saves diagnostics on failure
+6. **AI tools use browser session** - Must be logged into the service (ChatGPT, Gemini, Perplexity, Grok, AI Studio), no API keys needed
+7. **Grok validation** - Run `surf grok --validate` if queries fail to check UI changes
+8. **Long timeouts for thinking models** - ChatGPT o1, Grok thinking can take 60+ seconds. AI Studio builds default to 600s.
+9. **AI Studio for unrestricted Gemini** - `surf aistudio` gives less filtered responses than `surf gemini` for the same models
+10. **Use `surf do` for multi-step tasks** - Reduces token overhead and improves reliability
+11. **Dry-run workflows first** - `surf do '...' --dry-run` validates without executing
+12. **Window isolation** - Use `window.new` + `--window-id` to keep agent work separate from your browsing
+13. **Semantic locators** - `locate.role`, `locate.text`, `locate.label` for more robust element finding
+14. **Frame context** - Use `frame.switch` before interacting with iframe content
+
+## Socket API
+
+For programmatic access:
+
+```bash
+echo '{"type":"tool_request","method":"execute_tool","params":{"tool":"tab.list","args":{}},"id":"1"}' | nc -U /tmp/surf.sock
+```
+
+
+ARGUMENTS: navigate to http://localhost:3737
+
+---
+
+[Request interrupted by user]
+
+---
+
+Base directory for this skill: /home/felt/.claude/plugins/cache/superpowers-marketplace/superpowers/4.1.1/skills/systematic-debugging
+
+# Systematic Debugging
+
+## Overview
+
+Random fixes waste time and create new bugs. Quick patches mask underlying issues.
+
+**Core principle:** ALWAYS find root cause before attempting fixes. Symptom fixes are failure.
+
+**Violating the letter of this process is violating the spirit of debugging.**
+
+## The Iron Law
+
+```
+NO FIXES WITHOUT ROOT CAUSE INVESTIGATION FIRST
+```
+
+If you haven't completed Phase 1, you cannot propose fixes.
+
+## When to Use
+
+Use for ANY technical issue:
+- Test failures
+- Bugs in production
+- Unexpected behavior
+- Performance problems
+- Build failures
+- Integration issues
+
+**Use this ESPECIALLY when:**
+- Under time pressure (emergencies make guessing tempting)
+- "Just one quick fix" seems obvious
+- You've already tried multiple fixes
+- Previous fix didn't work
+- You don't fully understand the issue
+
+**Don't skip when:**
+- Issue seems simple (simple bugs have root causes too)
+- You're in a hurry (rushing guarantees rework)
+- Manager wants it fixed NOW (systematic is faster than thrashing)
+
+## The Four Phases
+
+You MUST complete each phase before proceeding to the next.
+
+### Phase 1: Root Cause Investigation
+
+**BEFORE attempting ANY fix:**
+
+1. **Read Error Messages Carefully**
+   - Don't skip past errors or warnings
+   - They often contain the exact solution
+   - Read stack traces completely
+   - Note line numbers, file paths, error codes
+
+2. **Reproduce Consistently**
+   - Can you trigger it reliably?
+   - What are the exact steps?
+   - Does it happen every time?
+   - If not reproducible → gather more data, don't guess
+
+3. **Check Recent Changes**
+   - What changed that could cause this?
+   - Git diff, recent commits
+   - New dependencies, config changes
+   - Environmental differences
+
+4. **Gather Evidence in Multi-Component Systems**
+
+   **WHEN system has multiple components (CI → build → signing, API → service → database):**
+
+   **BEFORE proposing fixes, add diagnostic instrumentation:**
+   ```
+   For EACH component boundary:
+     - Log what data enters component
+     - Log what data exits component
+     - Verify environment/config propagation
+     - Check state at each layer
+
+   Run once to gather evidence showing WHERE it breaks
+   THEN analyze evidence to identify failing component
+   THEN investigate that specific component
+   ```
+
+   **Example (multi-layer system):**
+   ```bash
+   # Layer 1: Workflow
+   echo "=== Secrets available in workflow: ==="
+   echo "IDENTITY: ${IDENTITY:+SET}${IDENTITY:-UNSET}"
+
+   # Layer 2: Build script
+   echo "=== Env vars in build script: ==="
+   env | grep IDENTITY || echo "IDENTITY not in environment"
+
+   # Layer 3: Signing script
+   echo "=== Keychain state: ==="
+   security list-keychains
+   security find-identity -v
+
+   # Layer 4: Actual signing
+   codesign --sign "$IDENTITY" --verbose=4 "$APP"
+   ```
+
+   **This reveals:** Which layer fails (secrets → workflow ✓, workflow → build ✗)
+
+5. **Trace Data Flow**
+
+   **WHEN error is deep in call stack:**
+
+   See `root-cause-tracing.md` in this directory for the complete backward tracing technique.
+
+   **Quick version:**
+   - Where does bad value originate?
+   - What called this with bad value?
+   - Keep tracing up until you find the source
+   - Fix at source, not at symptom
+
+### Phase 2: Pattern Analysis
+
+**Find the pattern before fixing:**
+
+1. **Find Working Examples**
+   - Locate similar working code in same codebase
+   - What works that's similar to what's broken?
+
+2. **Compare Against References**
+   - If implementing pattern, read reference implementation COMPLETELY
+   - Don't skim - read every line
+   - Understand the pattern fully before applying
+
+3. **Identify Differences**
+   - What's different between working and broken?
+   - List every difference, however small
+   - Don't assume "that can't matter"
+
+4. **Understand Dependencies**
+   - What other components does this need?
+   - What settings, config, environment?
+   - What assumptions does it make?
+
+### Phase 3: Hypothesis and Testing
+
+**Scientific method:**
+
+1. **Form Single Hypothesis**
+   - State clearly: "I think X is the root cause because Y"
+   - Write it down
+   - Be specific, not vague
+
+2. **Test Minimally**
+   - Make the SMALLEST possible change to test hypothesis
+   - One variable at a time
+   - Don't fix multiple things at once
+
+3. **Verify Before Continuing**
+   - Did it work? Yes → Phase 4
+   - Didn't work? Form NEW hypothesis
+   - DON'T add more fixes on top
+
+4. **When You Don't Know**
+   - Say "I don't understand X"
+   - Don't pretend to know
+   - Ask for help
+   - Research more
+
+### Phase 4: Implementation
+
+**Fix the root cause, not the symptom:**
+
+1. **Create Failing Test Case**
+   - Simplest possible reproduction
+   - Automated test if possible
+   - One-off test script if no framework
+   - MUST have before fixing
+   - Use the `superpowers:test-driven-development` skill for writing proper failing tests
+
+2. **Implement Single Fix**
+   - Address the root cause identified
+   - ONE change at a time
+   - No "while I'm here" improvements
+   - No bundled refactoring
+
+3. **Verify Fix**
+   - Test passes now?
+   - No other tests broken?
+   - Issue actually resolved?
+
+4. **If Fix Doesn't Work**
+   - STOP
+   - Count: How many fixes have you tried?
+   - If < 3: Return to Phase 1, re-analyze with new information
+   - **If ≥ 3: STOP and question the architecture (step 5 below)**
+   - DON'T attempt Fix #4 without architectural discussion
+
+5. **If 3+ Fixes Failed: Question Architecture**
+
+   **Pattern indicating architectural problem:**
+   - Each fix reveals new shared state/coupling/problem in different place
+   - Fixes require "massive refactoring" to implement
+   - Each fix creates new symptoms elsewhere
+
+   **STOP and question fundamentals:**
+   - Is this pattern fundamentally sound?
+   - Are we "sticking with it through sheer inertia"?
+   - Should we refactor architecture vs. continue fixing symptoms?
+
+   **Discuss with your human partner before attempting more fixes**
+
+   This is NOT a failed hypothesis - this is a wrong architecture.
+
+## Red Flags - STOP and Follow Process
+
+If you catch yourself thinking:
+- "Quick fix for now, investigate later"
+- "Just try changing X and see if it works"
+- "Add multiple changes, run tests"
+- "Skip the test, I'll manually verify"
+- "It's probably X, let me fix that"
+- "I don't fully understand but this might work"
+- "Pattern says X but I'll adapt it differently"
+- "Here are the main problems: [lists fixes without investigation]"
+- Proposing solutions before tracing data flow
+- **"One more fix attempt" (when already tried 2+)**
+- **Each fix reveals new problem in different place**
+
+**ALL of these mean: STOP. Return to Phase 1.**
+
+**If 3+ fixes failed:** Question the architecture (see Phase 4.5)
+
+## your human partner's Signals You're Doing It Wrong
+
+**Watch for these redirections:**
+- "Is that not happening?" - You assumed without verifying
+- "Will it show us...?" - You should have added evidence gathering
+- "Stop guessing" - You're proposing fixes without understanding
+- "Ultrathink this" - Question fundamentals, not just symptoms
+- "We're stuck?" (frustrated) - Your approach isn't working
+
+**When you see these:** STOP. Return to Phase 1.
+
+## Common Rationalizations
+
+| Excuse | Reality |
+|--------|---------|
+| "Issue is simple, don't need process" | Simple issues have root causes too. Process is fast for simple bugs. |
+| "Emergency, no time for process" | Systematic debugging is FASTER than guess-and-check thrashing. |
+| "Just try this first, then investigate" | First fix sets the pattern. Do it right from the start. |
+| "I'll write test after confirming fix works" | Untested fixes don't stick. Test first proves it. |
+| "Multiple fixes at once saves time" | Can't isolate what worked. Causes new bugs. |
+| "Reference too long, I'll adapt the pattern" | Partial understanding guarantees bugs. Read it completely. |
+| "I see the problem, let me fix it" | Seeing symptoms ≠ understanding root cause. |
+| "One more fix attempt" (after 2+ failures) | 3+ failures = architectural problem. Question pattern, don't fix again. |
+
+## Quick Reference
+
+| Phase | Key Activities | Success Criteria |
+|-------|---------------|------------------|
+| **1. Root Cause** | Read errors, reproduce, check changes, gather evidence | Understand WHAT and WHY |
+| **2. Pattern** | Find working examples, compare | Identify differences |
+| **3. Hypothesis** | Form theory, test minimally | Confirmed or new hypothesis |
+| **4. Implementation** | Create test, fix, verify | Bug resolved, tests pass |
+
+## When Process Reveals "No Root Cause"
+
+If systematic investigation reveals issue is truly environmental, timing-dependent, or external:
+
+1. You've completed the process
+2. Document what you investigated
+3. Implement appropriate handling (retry, timeout, error message)
+4. Add monitoring/logging for future investigation
+
+**But:** 95% of "no root cause" cases are incomplete investigation.
+
+## Supporting Techniques
+
+These techniques are part of systematic debugging and available in this directory:
+
+- **`root-cause-tracing.md`** - Trace bugs backward through call stack to find original trigger
+- **`defense-in-depth.md`** - Add validation at multiple layers after finding root cause
+- **`condition-based-waiting.md`** - Replace arbitrary timeouts with condition polling
+
+**Related skills:**
+- **superpowers:test-driven-development** - For creating failing test case (Phase 4, Step 1)
+- **superpowers:verification-before-completion** - Verify fix worked before claiming success
+
+## Real-World Impact
+
+From debugging sessions:
+- Systematic approach: 15-30 minutes to fix
+- Random fixes approach: 2-3 hours of thrashing
+- First-time fix rate: 95% vs 40%
+- New bugs introduced: Near zero vs common
+
+
+ARGUMENTS: find the root cause of why we can't use surf properly here. https://github.com/nicobailon/surf-cli
+
+---
+
+[Request interrupted by user for tool use]
+
+---
+
+continue, i updated falcon-rs
+
+---
+
+[Request interrupted by user]
+
+---
+
+i'm using brave browser.
+
+---
+
+This session is being continued from a previous conversation that ran out of context. The summary below covers the earlier portion of the conversation.
+
+Analysis:
+Let me chronologically analyze the conversation:
+
+1. **Initial Setup**: The user asked to implement a plan for testing and fixing the Demo App E2E flow on devnet. The plan had 7 steps: start dev server, verify page load, test prepare deploy, fund address, deploy account, send STRK, and fix issues along the way.
+
+2. **Reading Key Files**: I read all the key files:
+   - `apps/demo/src/config/networks.ts` - network configuration with devnet at localhost:5050
+   - `apps/demo/package.json` - dependencies including starknet@^9.2.1
+   - `apps/demo/src/components/interactive/AccountDeployFlow.tsx` - main deploy UI component
+   - `apps/demo/src/components/interactive/accountDeployPipeline.ts` - deploy logic with Effect
+   - `apps/demo/src/services/StarknetService.ts` - RPC interactions
+   - `apps/demo/src/services/FalconSigner.ts` - signing integration extending SignerInterface
+   - `apps/demo/src/services/FalconService.ts` - WASM bridge
+   - `apps/demo/src/services/WasmRuntime.ts` - WASM loader
+   - `apps/demo/src/components/interactive/SendTransaction.tsx` - transfer UI
+   - `apps/demo/src/services/errors.ts` - error types
+   - `apps/demo/src/services/types.ts` - domain types
+   - `apps/demo/next.config.mjs` - Next.js config
+
+3. **Step 1 - Start Dev Server**: Successfully started with `npx next dev --turbopack -H 0.0.0.0 -p 3737`. Server compiled cleanly.
+
+4. **Step 2 - Page Load Verification**: Used surf CLI to navigate. Had issues with surf losing tab context (chrome://newtab tabs being created). User interrupted to debug surf issues with `/superpowers:systematic-debugging`. Root cause: surf navigation creates stray chrome://newtab tabs that become the active tab, and Chrome blocks CDP on chrome:// URLs. Fix: close stray tabs and explicitly switch to app tab.
+
+5. **Step 3 - Prepare Deploy**: Clicked "Prepare Deploy" button. Worked successfully - steps 1-3 got green checkmarks, step 4 showed the computed address with 0.0000 STRK balance.
+
+6. **Step 4 - Fund Address**: Initially tried curl but RTK proxy intercepted it. Tried `/mint` REST endpoint but got 404. Found that devnet uses JSON-RPC method `devnet_mint` instead. Successfully minted 10 STRK and 10 ETH. Balance showed "10.0000 STRK — Ready to deploy!" in UI.
+
+7. **Step 5 - Deploy Account (FIRST ATTEMPT)**: Clicked "Deploy Account". Got error: "Account: invalid signature" (`0x4163636f756e743a20696e76616c6964207369676e6174757265`). The contract's `__validate_deploy__` rejected the Falcon signature.
+
+8. **Investigation of signature error**: 
+   - Checked starknet.js v9.2.1 hash computation - it matched the default Signer exactly
+   - Signature had correct length (61 elements)
+   - User interrupted saying "continue, i updated falcon-rs"
+
+9. **WASM Rebuild**: 
+   - First build without `--features wasm` produced 1.3K stub (no exports)
+   - Second build with `--features wasm` produced 301K with all 8 exports
+   - Copied to `apps/demo/public/wasm/`
+   - Reloaded page, re-ran prepare + fund + deploy flow
+   - Same "Account: invalid signature" error
+
+10. **Root Cause Analysis of Signature Format**: 
+    - Analyzed signature structure by finding `fff...` pattern (last slot of PackedPolynomial512)
+    - Found `fff` pattern at indices 28 and 57
+    - Last element was `0x2`
+    - This meant Rust serialized: `[s1(29), mul_hint(29), salt_data(2), salt_len(1)]`
+    - But Cairo Serde expects: `[s1(29), salt_len(1), salt_data(2), mul_hint(29)]`
+
+11. **The Fix**: Read `/home/felt/PycharmProjects/falcon-rs/src/wasm.rs` and found the bug at line 268:
+    - Old code: `[packed_s1(29), packed_hint(29), salt(2), salt_len(1)]`
+    - Fixed to: `[packed_s1(29), salt_len(1), salt_data(2), packed_hint(29)]`
+    - This matches Cairo's `Serde<PackedFalconSignatureWithHint>` layout
+
+12. **After fix**: Rebuilt WASM, copied, reloaded page, re-ran the flow. User's browser (Brave) crashed at one point, had to relaunch. After relaunching and re-running, still got "Try Again" error. The page text still shows "invalid signature" style error. However, the browser kept losing CDP context making it hard to fully verify.
+
+The user said "i'm using brave browser" when Chrome wasn't found.
+
+The current state: We fixed the serialization order bug in falcon-rs/src/wasm.rs, rebuilt WASM, but the deploy is still failing with "invalid signature". The page shows "Try Again" button indicating an error. Need to investigate further - possibly the fix wasn't picked up (browser cache), or there's another issue.
+
+Actually, wait - let me re-examine. After the fix, the page was reloaded and a new prepare was done. The `locate.role button --name "Deploy Account"` was clicked. Then after 20 seconds, the page showed step indicators without checkmarks (steps 2-5) and "Try Again" button. But I didn't see the actual error message text to confirm it's still "invalid signature" vs a different error. The large hex dump from page.read contains what looks like the RPC error with the full transaction params.
+
+Looking more carefully at the page.read output after the fix attempt, I see the same pattern of constructor_calldata (29 elements) and signature data. But I need to check if the signature elements are now in the correct order. Looking at the addresses repeated in the output, I see the contract address, class hash, and selector appearing - this looks like the error message from the RPC call.
+
+The last attempt after the fix still shows an error. There could be additional issues beyond the serialization order, or the WASM cache wasn't properly cleared.
+
+Let me also note: The user's messages were:
+1. Initial plan request
+2. "[Request interrupted by user]" + `/superpowers:systematic-debugging` for surf issues
+3. "[Request interrupted by user]continue, i updated falcon-rs"
+4. "i'm using brave browser."
+5. Summary request
+
+Summary:
+1. Primary Request and Intent:
+   The user asked to implement a detailed E2E testing plan for the demo app (`apps/demo/`) on Starknet devnet (`localhost:5050`). The plan involves 7 steps: start the dev server, verify page load, test Prepare Deploy flow, fund the computed address, deploy the Falcon account, send STRK from the deployed account, and fix any issues encountered along the way. The goal is a full working flow: page loads → prepare deploy → fund → deploy account → send STRK → confirmed, with no console errors.
+
+2. Key Technical Concepts:
+   - **Falcon-512**: Post-quantum signature scheme used for Starknet account abstraction
+   - **WASM bridge**: Rust (`falcon-rs`) compiled to WASM for browser-side Falcon signing
+   - **starknet.js v9.2.1**: JS library for Starknet RPC interactions, Account, SignerInterface
+   - **Effect-TS**: Used throughout for service composition, error handling (ManagedRuntime, Layer, Effect.Service)
+   - **Cairo Serde serialization**: The on-chain contract deserializes signature data using Cairo's `Serde` derive macro — field order must match exactly
+   - **PackedPolynomial512**: 29 felt252 slots encoding 512 Zq values via base-Q Horner encoding
+   - **PackedFalconSignatureWithHint**: Cairo struct with fields `signature.s1` (PackedPolynomial512), `signature.salt` (Array<felt252>), `hint.mul_hint` (PackedPolynomial512)
+   - **Hint-based verification**: Off-chain computes `mul_hint = INTT(NTT(s1) * pk_ntt)`, on-chain verifies with 2 forward NTTs
+   - **Devnet JSON-RPC**: Uses `devnet_mint` and `devnet_getPredeployedAccounts` methods (NOT REST endpoints like `/mint`)
+   - **surf CLI**: Browser automation tool for Brave/Chrome via CDP extension
+   - **wasm-pack**: Build tool for Rust→WASM, requires `--features wasm` flag for falcon-rs
+
+3. Files and Code Sections:
+
+   - **`/home/felt/PycharmProjects/falcon-rs/src/wasm.rs`** (CRITICAL - bug fix applied here)
+     - Contains the `sign_for_starknet` WASM export that produces the 61-element felt252 signature array
+     - **BUG FOUND AND FIXED**: Serialization order mismatch with Cairo's Serde layout
+     - Old code (line 268):
+       ```rust
+       // 11. Build output: [packed_s1(29), packed_hint(29), salt(2), salt_len(1)] = 61 elements
+       let mut result: Vec<String> = Vec::with_capacity(61);
+       for f in &packed_s1 {
+           result.push(format!("0x{}", f.to_hex()));
+       }
+       for f in &packed_hint {
+           result.push(format!("0x{}", f.to_hex()));
+       }
+       for f in &salt {
+           result.push(format!("0x{}", f.to_hex()));
+       }
+       // Salt length as felt252
+       result.push(format!("0x{:x}", salt.len()));
+       ```
+     - New code:
+       ```rust
+       // 11. Build output matching Cairo Serde<PackedFalconSignatureWithHint> order:
+       //     [packed_s1(29), salt_len(1), salt_data(2), packed_hint(29)] = 61 elements
+       //
+       //     Cairo struct layout (Serde order):
+       //       signature.s1:   PackedPolynomial512  (29 felt252)
+       //       signature.salt: Array<felt252>       (1 length + N elements)
+       //       hint.mul_hint:  PackedPolynomial512  (29 felt252)
+       let mut result: Vec<String> = Vec::with_capacity(61);
+       for f in &packed_s1 {
+           result.push(format!("0x{}", f.to_hex()));
+       }
+       // Salt as Array<felt252>: length first, then data
+       result.push(format!("0x{:x}", salt.len()));
+       for f in &salt {
+           result.push(format!("0x{}", f.to_hex()));
+       }
+       for f in &packed_hint {
+           result.push(format!("0x{}", f.to_hex()));
+       }
+       ```
+     - Also updated the doc comment to match the new format
+
+   - **`/home/felt/PycharmProjects/falcon-rs/Cargo.toml`**
+     - Features: `wasm = ["wasm-bindgen", "js-sys", "getrandom/js", "shake"]`
+     - Must build with `--features wasm` flag
+
+   - **`apps/demo/src/config/networks.ts`** — Devnet config: rpcUrl `http://localhost:5050`, classHash `0x37c76...`
+   
+   - **`apps/demo/src/components/interactive/AccountDeployFlow.tsx`** — Main deploy UI with step indicators, balance polling, prepare/deploy handlers
+   
+   - **`apps/demo/src/components/interactive/accountDeployPipeline.ts`** — Effect-based deploy pipeline: `prepareAccountDeployEffect` (keygen→pack→computeAddress) and `deployAccountEffect` (checkBalance→deployAccount)
+   
+   - **`apps/demo/src/services/StarknetService.ts`** — RPC service with `computeDeployAddress`, `getBalance`, `deployAccount`, `sendTransaction`, `fetchPrefundedAccounts`. Uses `new Account({ provider, address, signer })` for starknet.js v9.
+   
+   - **`apps/demo/src/services/FalconSigner.ts`** — Custom `SignerInterface` implementation. `signDeployAccountTransaction` computes tx hash via `hash.calculateDeployAccountTransactionHash` then calls `_signHash` which calls `FalconService.signForStarknet`. Hash computation matches starknet.js default Signer exactly.
+   
+   - **`apps/demo/src/services/FalconService.ts`** — WASM bridge service. `signForStarknet` calls `wasm.sign_for_starknet(secretKey, txHash, pkNtt)` returning `string[]`.
+   
+   - **`apps/demo/src/services/WasmRuntime.ts`** — WASM loader with `isValidWasmModule` runtime validation. Loads from `/wasm/falcon_rs.js`.
+   
+   - **`apps/demo/src/components/interactive/SendTransaction.tsx`** — Send STRK UI component with recipient/amount inputs.
+   
+   - **`apps/demo/src/services/errors.ts`** — Tagged error types: `WasmLoadError`, `KeygenError`, `SigningError`, `AccountDeployError`, `TransactionSignError`, `TransactionSubmitError`, etc.
+   
+   - **`apps/demo/src/services/types.ts`** — Domain types including `FalconKeypair`, `PackedPublicKey { slots: ReadonlyArray<string> }`, `DevnetAccount`.
+   
+   - **`apps/demo/public/wasm/falcon_rs_bg.wasm`** and **`falcon_rs.js`** — WASM artifacts rebuilt from falcon-rs with the serialization fix. 8 exports: `keygen`, `sign`, `verify`, `create_verification_hint`, `pack_public_key_wasm`, `public_key_length`, `salt_length`, `sign_for_starknet`.
+
+   - **`apps/demo/next.config.mjs`** — Next.js config with turbopack root and webpack asyncWebAssembly experiment.
+
+   - **Cairo contract files (read by explore agent)**:
+     - `packages/falcon_account/src/preset.cairo` — `__validate_deploy__` entry point
+     - `packages/falcon_account/src/account.cairo` — `_is_valid_signature` deserializes `PackedFalconSignatureWithHint` via Serde, calls `verify_packed`
+     - `packages/falcon/src/types.cairo` — Defines `PackedFalconSignatureWithHint { signature: PackedFalconSignature, hint: PackedFalconVerificationHint }`, `PackedFalconSignature { s1: PackedPolynomial512, salt: Array<felt252> }`, `PackedFalconVerificationHint { mul_hint: PackedPolynomial512 }`
+
+4. Errors and Fixes:
+
+   - **Surf "Cannot control this page" errors**: 
+     - Root cause: surf navigation creates stray `chrome://newtab/` tabs that become active; Chrome blocks CDP on chrome:// URLs
+     - Fix: Close stray newtab tabs and explicitly `surf tab.switch <id>` to the app tab
+     - This was a recurring operational issue throughout testing
+
+   - **Surf "Connection refused. Native host not running"**:
+     - Caused by closing the last tab which closed the browser entirely
+     - Fix: Relaunch browser with `brave-browser http://localhost:3737`
+     - User clarified they use Brave browser (not Chrome/Chromium)
+
+   - **Devnet `/mint` endpoint returning 404**:
+     - The REST `/mint` endpoint doesn't exist on this devnet version
+     - Fix: Use JSON-RPC method `devnet_mint` via POST to `http://localhost:5050`
+
+   - **RTK proxy intercepting curl commands**:
+     - curl commands were being rewritten by the RTK hook
+     - Fix: Use python3 `urllib.request` instead of curl for HTTP requests
+
+   - **WASM build producing 1.3K stub (no exports)**:
+     - Built without `--features wasm` flag
+     - Fix: `wasm-pack build --target web --out-dir /tmp/falcon-wasm-out --features wasm`
+
+   - **"Account: invalid signature" error (MAIN BUG)**:
+     - Root cause: Rust `sign_for_starknet` serialized fields as `[s1(29), mul_hint(29), salt_data(2), salt_len(1)]` but Cairo's `Serde<PackedFalconSignatureWithHint>` expects `[s1(29), salt_len(1), salt_data(2), mul_hint(29)]`
+     - Identified by finding the `ffffffffffffffff` pattern in packed polynomial slots at indices 28 and 57, proving mul_hint came right after s1 instead of after salt
+     - Fix: Reordered the serialization in `wasm.rs` to match Cairo Serde layout
+     - **Status: Fix applied and WASM rebuilt, but deploy still showing error after the fix. May need further investigation — possibly browser WASM cache not cleared, or additional issue.**
+
+5. Problem Solving:
+   - Successfully completed: dev server startup, page load verification, prepare deploy flow, address funding
+   - Ongoing: Deploy still fails after the serialization fix. The "Try Again" button appears after the latest deploy attempt. Need to verify the fix is actually being used (browser cache issue?) and potentially investigate other causes if the serialization fix alone doesn't resolve it. The surf CDP connection keeps dropping, making browser-based verification difficult.
+
+6. All User Messages:
+   - **Message 1**: "Implement the following plan: [detailed 7-step E2E test plan with context about devnet running, class hash declared, WASM artifacts existing]" — with reference to a previous planning session transcript
+   - **Message 2**: "[Request interrupted by user]" + `/superpowers:systematic-debugging find the root cause of why we can't use surf properly here. https://github.com/nicobailon/surf-cli`
+   - **Message 3**: "[Request interrupted by user]continue, i updated falcon-rs" — User indicated they updated the falcon-rs Rust source code
+   - **Message 4**: "i'm using brave browser." — Clarification when Chrome binary wasn't found
+   - **Message 5**: Summary request (current message)
+
+7. Pending Tasks (from task list):
+   - Task #5: Deploy the Falcon account (in_progress) — deploy still failing after serialization fix
+   - Task #6: Send STRK from deployed account (pending) — blocked by #5
+
+8. Current Work:
+   I was testing the deploy account flow after fixing the signature serialization order bug in `falcon-rs/src/wasm.rs`. The fix reordered the felt252 array from `[s1, mul_hint, salt_data, salt_len]` to `[s1, salt_len, salt_data, mul_hint]` to match Cairo's Serde layout. After rebuilding WASM with `wasm-pack build --target web --features wasm`, copying artifacts to `apps/demo/public/wasm/`, and reloading the page, I re-ran the full flow (prepare → fund → deploy). The page shows "Try Again" button, indicating the deploy still failed. I was about to investigate whether:
+   1. The browser properly loaded the new WASM (cache issue)
+   2. There are additional serialization or signing issues beyond the field ordering
+
+9. Optional Next Step:
+   Investigate why deploy still fails after the serialization fix. Specifically:
+   1. Verify the new WASM is actually loaded by checking the signature element order (element 29 should now be `0x2` for salt length, not a packed polynomial value)
+   2. If serialization is now correct, investigate other potential causes: tx hash computation mismatch, Poseidon hash-to-point inconsistency between Rust and Cairo, or the salt encoding format
+   3. The user's original request was: "Implement the following plan: Test & Fix Demo App E2E Flow on Devnet" — we're on step 5 (Deploy the account) which is still failing.
+
+If you need specific details from before compaction (like exact code snippets, error messages, or content you generated), read the full transcript at: /home/felt/.REDACTED.jsonl
+Please continue the conversation from where we left off without asking the user any further questions. Continue with the last task that you were asked to work on.
+
+---
+
+[Request interrupted by user]
+
+---
+
+ONLY USE SURF CLI ON BRAVE BROWSER.
+
+---
+
+[Request interrupted by user for tool use]
+
+---
+
+We have type error. Intead of iterating through the webapp, interact with devnet and sncast only to go faster and debug more easily the cairo - rpc workflow.
+
+---
+
+This session is being continued from a previous conversation that ran out of context. The summary below covers the earlier portion of the conversation.
+
+Analysis:
+Let me chronologically analyze the entire conversation:
+
+1. **Session Start**: This is a continuation of a previous conversation that ran out of context. The summary from the previous conversation provides extensive context about testing the demo app E2E flow on devnet.
+
+2. **Previous session established**:
+   - Dev server running at localhost:3737
+   - Devnet running at localhost:5050
+   - FalconAccount class hash declared
+   - Serialization order fix applied in falcon-rs/src/wasm.rs (reordered from [s1, mul_hint, salt_data, salt_len] to [s1, salt_len, salt_data, mul_hint])
+   - WASM rebuilt and deployed
+   - Deploy still failing after serialization fix
+
+3. **This session's work**:
+
+   a. **Checked WASM artifacts and source** - Confirmed timestamps show WASM was built after source fix
+   
+   b. **Added debug logging to FalconSigner.ts** - Added console.log statements to capture signature elements at indices 28-32 and 60
+   
+   c. **Struggled with surf CLI** - Browser tab management issues, stray chrome://newtab tabs
+   
+   d. **User interrupted**: "ONLY USE SURF CLI ON BRAVE BROWSER." - Told to stop trying Playwright
+   
+   e. **Relaunched Brave browser, ran deploy flow again**:
+      - Prepare Deploy → Fund → Deploy Account
+      - Got new error: `'bad pack'` instead of `'invalid signature'`
+      - This confirmed the serialization order fix worked!
+   
+   f. **Investigated 'bad pack' error**:
+      - Found in `packages/falcon/src/packing.cairo` lines 311, 333
+      - The `downcast(packed).expect('bad pack')` fails when u128 > Acc8 (Q^9 - 1)
+      - Wrote Python script to check all packed u128 values from the RPC error
+      - ALL values (s1, mul_hint, and even public key) had u128 halves exceeding Q^9 - 1
+   
+   g. **ROOT CAUSE FOUND: `Felt::to_hex()` returns Montgomery form!**
+      - Added Rust test `test_to_hex_vs_to_bytes_be` in packing.rs
+      - `Felt(1).to_hex()` = `7FFFFFFFFFFFDF0FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFE1` (Montgomery R mod P)
+      - `Felt(1).to_bytes_be()` gives canonical value `1`
+      - `to_hex()` and `to_bytes_be()` produce DIFFERENT values
+      - The WASM module was using `f.to_hex()` everywhere, sending Montgomery-encoded values instead of canonical
+   
+   h. **Applied fix in wasm.rs**:
+      - Added `felt_to_hex()` function using `to_bytes_be()` for canonical representation
+      - Replaced all `f.to_hex()` calls with `felt_to_hex(f)` 
+      - Rebuilt WASM and deployed
+   
+   i. **Tested again - 'bad pack' resolved, new error**:
+      - Packed values now correctly within Q^9 - 1 bounds
+      - New error: `"Could not reach the end of the program"` - out of gas
+      - L2 gas limit was 3.2M but Falcon verification needs ~13.2M
+   
+   j. **Added explicit resource bounds in StarknetService.ts**:
+      - Set l2_gas to 50M (0x2FAF080)
+      - Initially used string values, got TypeScript type error (needs bigint)
+      - Fixed to use bigint literals (0x2FAF080n)
+   
+   k. **User interrupted again**: "We have type error. Instead of iterating through the webapp, interact with devnet and sncast only to go faster and debug more easily the cairo - rpc workflow."
+   
+   l. **Explored sncast** - Found sncast can't do custom Falcon signatures (only ECDSA)
+   
+   m. **Started looking for starknet.js in node_modules** to build a CLI script - starknet.js dist not found at expected paths
+
+4. **Key files modified in this session**:
+
+   - `/home/felt/PycharmProjects/falcon-rs/src/wasm.rs` - Added `felt_to_hex()`, replaced `to_hex()` calls
+   - `/home/felt/PycharmProjects/falcon-rs/src/packing.rs` - Added hex_tests module (diagnostic, should be cleaned up)
+   - `/home/felt/PycharmProjects/s2morrow/apps/demo/src/services/FalconSigner.ts` - Added debug logging
+   - `/home/felt/PycharmProjects/s2morrow/apps/demo/src/services/StarknetService.ts` - Added explicit resource bounds
+
+5. **User messages to capture**:
+   - Initial continuation request
+   - "ONLY USE SURF CLI ON BRAVE BROWSER."
+   - "We have type error. Instead of iterating through the webapp, interact with devnet and sncast only to go faster and debug more easily the cairo - rpc workflow."
+
+6. **Current state**: The user wants to bypass the webapp and use direct RPC/CLI interaction to debug the deploy. The Montgomery fix is applied, packing works, but the deploy still fails with "Could not reach the end of the program" (gas issue). Resource bounds were increased but need to be tested. The user wants a faster iteration cycle via direct CLI tools rather than browser automation.
+
+Summary:
+1. Primary Request and Intent:
+   The user asked to continue implementing a detailed E2E testing plan for the demo app (`apps/demo/`) on Starknet devnet (`localhost:5050`). The plan has 7 steps: start dev server, verify page load, test Prepare Deploy flow, fund computed address, deploy Falcon account, send STRK, fix issues along the way. Steps 1-4 were completed in a prior session. This session focused on step 5 (deploying the Falcon account), which has been blocked by multiple bugs discovered and fixed along the way. Most recently, the user explicitly requested: **"Instead of iterating through the webapp, interact with devnet and sncast only to go faster and debug more easily the cairo - rpc workflow."**
+
+2. Key Technical Concepts:
+   - **Falcon-512**: Post-quantum signature scheme for Starknet account abstraction
+   - **WASM bridge**: falcon-rs compiled to WASM via wasm-pack for browser signing
+   - **lambdaworks Montgomery form bug**: `Felt::to_hex()` returns Montgomery representation (`x * R mod P`), NOT the canonical value. `to_bytes_be()` returns canonical. This was the ROOT CAUSE of the `'bad pack'` error.
+   - **Base-Q Horner packing**: 512 Zq values (mod 12289) packed into 29 felt252 slots, each split into lo/hi u128 halves (9 values per u128)
+   - **Cairo BoundedInt unpacking**: `downcast(u128)` to `Acc8 = BoundedInt<0, Q^9-1>` fails if value exceeds bound
+   - **Starknet resource bounds**: Falcon verification needs ~63K steps (~13.2M L2 gas); default fee estimation produces only ~3.2M
+   - **starknet.js v9**: Uses `Account`, `SignerInterface`, `hash.calculateDeployAccountTransactionHash`
+   - **Effect-TS**: Used throughout for service composition
+   - **sncast**: Cannot deploy Falcon accounts (only supports ECDSA signing)
+   - **surf CLI**: Browser automation tool for Brave; has tab management quirks with chrome://newtab
+
+3. Files and Code Sections:
+
+   - **`/home/felt/PycharmProjects/falcon-rs/src/wasm.rs`** (CRITICAL - two fixes applied across sessions)
+     - Contains `sign_for_starknet` and `pack_public_key_wasm` WASM exports
+     - **Fix 1 (prior session)**: Serialization order changed from `[s1, mul_hint, salt_data, salt_len]` to `[s1, salt_len, salt_data, mul_hint]` matching Cairo Serde layout
+     - **Fix 2 (this session)**: Added `felt_to_hex()` function, replaced all `f.to_hex()` with `felt_to_hex(f)`
+     ```rust
+     /// Convert a Felt to a canonical hex string (NOT Montgomery form).
+     ///
+     /// `Felt::to_hex()` returns the Montgomery representation which is WRONG for
+     /// external consumption. Use `to_bytes_be()` instead to get the actual value.
+     fn felt_to_hex(f: &crate::poseidon_hash::Felt) -> String {
+         let bytes = f.to_bytes_be();
+         let hex: String = bytes.iter().map(|b| format!("{b:02x}")).collect();
+         // Strip leading zeros but keep at least one character
+         let stripped = hex.trim_start_matches('0');
+         if stripped.is_empty() { "0".to_string() } else { stripped.to_string() }
+     }
+     ```
+     - All `f.to_hex()` calls replaced: lines 191, 278, 283, 286
+     - The serialization output section (lines 269-289):
+     ```rust
+     // 11. Build output matching Cairo Serde<PackedFalconSignatureWithHint> order:
+     //     [packed_s1(29), salt_len(1), salt_data(2), packed_hint(29)] = 61 elements
+     let mut result: Vec<String> = Vec::with_capacity(61);
+     for f in &packed_s1 {
+         result.push(format!("0x{}", felt_to_hex(f)));
+     }
+     // Salt as Array<felt252>: length first, then data
+     result.push(format!("0x{:x}", salt.len()));
+     for f in &salt {
+         result.push(format!("0x{}", felt_to_hex(f)));
+     }
+     for f in &packed_hint {
+         result.push(format!("0x{}", felt_to_hex(f)));
+     }
+     ```
+
+   - **`/home/felt/PycharmProjects/falcon-rs/src/packing.rs`** (diagnostic tests added)
+     - Added `hex_tests` module at end of file with `test_to_hex_vs_to_bytes_be` and `test_packing_hex_values`
+     - These tests PROVED the Montgomery form bug: `Felt(1).to_hex()` = Montgomery R, not 1
+     - NOTE: These test additions should be cleaned up (they have a `num_bigint` dependency added)
+
+   - **`/home/felt/PycharmProjects/s2morrow/apps/demo/src/services/FalconSigner.ts`** (debug logging added)
+     - Added console.log statements in `_signHash` to capture signature structure:
+     ```typescript
+     if (Exit.isSuccess(exit)) {
+       console.log("[FalconSigner] txHash:", txHash)
+       console.log("[FalconSigner] sig length:", exit.value.length)
+       console.log("[FalconSigner] sig[28] (last s1):", exit.value[28])
+       console.log("[FalconSigner] sig[29] (salt_len):", exit.value[29])
+       console.log("[FalconSigner] sig[30] (salt[0]):", exit.value[30])
+       console.log("[FalconSigner] sig[31] (salt[1]):", exit.value[31])
+       console.log("[FalconSigner] sig[32] (first hint):", exit.value[32])
+       console.log("[FalconSigner] sig[60] (last hint):", exit.value[60])
+       return exit.value
+     }
+     ```
+
+   - **`/home/felt/PycharmProjects/s2morrow/apps/demo/src/services/StarknetService.ts`** (resource bounds added)
+     - Modified `deployAccount` to pass explicit resource bounds (50M L2 gas):
+     ```typescript
+     const result = yield* Effect.tryPromise({
+       try: () =>
+         account.deployAccount(
+           {
+             classHash,
+             constructorCalldata,
+             addressSalt: salt,
+             contractAddress: address,
+           },
+           {
+             // Falcon-512 verification is ~63K steps (~13.2M L2 gas).
+             // Auto-estimation often fails for compute-heavy contracts,
+             // so we set explicit resource bounds.
+             resourceBounds: {
+               l2_gas: { max_amount: 0x2FAF080n, max_price_per_unit: 0x174876E800n },
+               l1_gas: { max_amount: 0x0n, max_price_per_unit: 0x174876E800n },
+               l1_data_gas: { max_amount: 0x3000n, max_price_per_unit: 0x174876E800n },
+             },
+           },
+         ),
+       catch: (error) =>
+         new AccountDeployError({ message: String(error) }),
+     })
+     ```
+
+   - **`/home/felt/PycharmProjects/s2morrow/packages/falcon/src/packing.cairo`** (read for investigation)
+     - `unpack_9_full` at line 311: `let acc8: Acc8 = downcast(packed).expect('bad pack');`
+     - `unpack_8` at line 333: `let acc7: Acc7 = downcast(packed).expect('bad pack');`
+     - `Acc8 = BoundedInt<0, 6392178558614694273495691177456939008>` (= Q^9 - 1)
+     - `unpack_public_key` splits felt252 → u256, then unpacks `.low` and `.high` as u128
+
+   - **`/home/felt/PycharmProjects/falcon-rs/src/serialize.rs`** (verified correct)
+     - Uses `to_bytes_be()` (not `to_hex()`), so test vector generation is correct
+     - `felt_to_json_value` uses `f.to_bytes_be()` → `BigUint::from_bytes_be` → decimal string
+
+   - **WASM artifacts**: Rebuilt and deployed to `apps/demo/public/wasm/` (falcon_rs_bg.wasm ~301K, falcon_rs.js ~21.8K)
+
+4. Errors and Fixes:
+
+   - **Error: `'bad pack'` from Cairo contract during deploy validation**
+     - Root cause: `Felt::to_hex()` in lambdaworks returns Montgomery representation, not canonical value
+     - All packed u128 values exceeded Acc8 bound (Q^9 - 1) because Montgomery encoding produces much larger numbers
+     - Fix: Created `felt_to_hex()` function using `to_bytes_be()` for canonical output, replaced all `f.to_hex()` calls in wasm.rs
+     - Verified fix: After rebuild, packed values are within bounds (e.g., sig[28] went from 64-hex-char Montgomery to 28-hex-char canonical)
+
+   - **Error: `"Could not reach the end of the program"` after packing fix**
+     - Root cause: L2 gas limit of 3.2M insufficient for Falcon verification (~13.2M L2 gas)
+     - Fee estimation produces too-low value because simulation itself may hit step limits
+     - Fix: Added explicit resource bounds in StarknetService.ts (50M L2 gas)
+     - Status: **NOT YET TESTED** — user interrupted before testing
+
+   - **Error: TypeScript type error on resource bounds**
+     - Used string values like `"0x2FAF080"` for max_amount but starknet.js v9 expects `bigint`
+     - Fix: Changed to bigint literals: `0x2FAF080n`
+     - There are also pre-existing test file type errors (not caused by us)
+
+   - **User feedback: "ONLY USE SURF CLI ON BRAVE BROWSER"**
+     - Was trying to use Playwright MCP which required Chrome, but user uses Brave
+     - Switched back to surf CLI exclusively
+
+   - **User feedback: "Instead of iterating through the webapp, interact with devnet and sncast only"**
+     - Browser automation via surf was slow and fragile
+     - User wants direct CLI/RPC interaction for faster debugging
+
+5. Problem Solving:
+   - **SOLVED**: Serialization order mismatch (prior session) — reordered to match Cairo Serde
+   - **SOLVED**: Montgomery form in `to_hex()` — replaced with `to_bytes_be()` based canonical conversion
+   - **SOLVED**: Identified gas insufficiency — added explicit 50M L2 gas resource bounds
+   - **ONGOING**: Deploy still needs to be tested with the gas fix AND without the webapp (user wants CLI approach)
+   - **ONGOING**: sncast cannot help (ECDSA only), need to build a Node.js or direct RPC script
+   - **NOT STARTED**: Step 6 (Send STRK from deployed account)
+
+6. All User Messages:
+   - "ONLY USE SURF CLI ON BRAVE BROWSER." — After I tried to use Playwright MCP browser
+   - "[Request interrupted by user] We have type error. Instead of iterating through the webapp, interact with devnet and sncast only to go faster and debug more easily the cairo - rpc workflow." — After deploy attempt with resource bounds showed type errors, user wants to skip webapp and use direct CLI/RPC
+
+7. Pending Tasks:
+   - Task #5 [in_progress]: Deploy the Falcon account — needs testing with gas fix, using direct RPC (not webapp)
+   - Task #6 [pending]: Send STRK from deployed account — blocked by #5
+   - Clean up debug console.log in FalconSigner.ts (temporary)
+   - Clean up hex_tests in falcon-rs/src/packing.rs (diagnostic)
+
+8. Current Work:
+   Was attempting to build a direct CLI approach to test the deploy, bypassing the webapp entirely per user's request. Explored sncast (can't do custom signatures), then tried to locate starknet.js in node_modules to build a Node.js script but couldn't find the dist files at expected paths. The user's explicit instruction was: **"Instead of iterating through the webapp, interact with devnet and sncast only to go faster and debug more easily the cairo - rpc workflow."**
+
+   The two fixes (Montgomery `felt_to_hex` + 50M L2 gas resource bounds) have been applied but NOT yet tested together. The packed values are confirmed correct (within Q^9 bounds) but the deploy transaction has not been successfully submitted with sufficient gas.
+
+9. Optional Next Step:
+   Build a standalone script (Node.js or Python) to test the deploy flow directly against devnet RPC at localhost:5050, bypassing the webapp entirely. This script needs to:
+   1. Call the WASM (or use Rust directly via `cargo test`) to generate a keypair, pack the public key, compute a deploy tx hash, and sign it
+   2. Submit the `starknet_addDeployAccountTransaction` JSON-RPC call with explicit high resource bounds (50M L2 gas)
+   3. Check the transaction result
+   
+   The most practical approach may be to write a Rust integration test in falcon-rs that generates the full deploy transaction payload and prints it, then submit via `curl`/Python to the devnet RPC. Alternatively, write a Python script using starknet.py or raw JSON-RPC calls.
+   
+   User's exact words: "Instead of iterating through the webapp, interact with devnet and sncast only to go faster and debug more easily the cairo - rpc workflow."
+
+If you need specific details from before compaction (like exact code snippets, error messages, or content you generated), read the full transcript at: /home/felt/.REDACTED.jsonl
+Please continue the conversation from where we left off without asking the user any further questions. Continue with the last task that you were asked to work on.
+
+---
+
+This session is being continued from a previous conversation that ran out of context. The summary below covers the earlier portion of the conversation.
+
+Analysis:
+Let me chronologically analyze the conversation carefully:
+
+1. **Session Start**: This is a continuation of a previous conversation that ran out of context. The session summary provides extensive context about testing the demo app E2E flow on devnet.
+
+2. **Previous session established key fixes**:
+   - Serialization order fix in falcon-rs/src/wasm.rs (reordered from [s1, mul_hint, salt_data, salt_len] to [s1, salt_len, salt_data, mul_hint])
+   - Montgomery form fix: `Felt::to_hex()` returns Montgomery representation, not canonical. Fixed by creating `felt_to_hex()` using `to_bytes_be()`
+   - Resource bounds added to StarknetService.ts (50M L2 gas)
+
+3. **This session's work**:
+
+   a. **Explored demo app dependencies** - Used Task agents to understand package.json, WASM files, tsconfig, starknet.js entry points, and WASM loading patterns
+
+   b. **Built Node.js WASM package** - `wasm-pack build --target nodejs --features wasm --no-default-features` successfully built to `/home/felt/PycharmProjects/falcon-rs/pkg/`
+
+   c. **Discovered devnet mint API** - Found that devnet uses JSON-RPC method `devnet_mint` not a REST `/mint` endpoint
+
+   d. **Created CLI deploy script** at `apps/demo/scripts/deploy-falcon.mjs` - Standalone Node.js script that bypasses the webapp for faster debugging
+
+   e. **First successful deploy attempt** - Steps 1-4 worked (keygen, pack, compute address, fund). Step 5 (deploy) failed with `'Account: invalid signature'`
+
+   f. **Investigated hash-to-point implementations** - Used Task agents to compare Rust and Cairo implementations. Result: they match perfectly.
+
+   g. **Investigated Cairo verify flow** - Used Task agent to trace the exact validation path in the account contract.
+
+   h. **Ran Cairo cross-language tests** - All 9 tests pass (hash_to_point, packing, verify, verify_packed, etc.)
+
+   i. **Wrote Rust integration test** (`test_sign_for_starknet.rs`) - Replicates sign_for_starknet logic and verifies output. All checks pass including NTT product check, norm check (30164698 <= 34034726), and algebraic identity.
+
+   j. **Added println! debugging to Cairo contract** - Added to `account.cairo` (_is_valid_signature, validate_transaction) and `falcon.cairo` (verify, verify_packed, norm check)
+
+   k. **Restarted devnet with readable logs** - Killed old devnet, started new one with `> /tmp/devnet.log`
+
+   l. **Key discovery from devnet logs**: 
+      - tx_hash: MATCHES between signer and contract
+      - salt[0], salt[1]: MATCH between JS and Cairo
+      - s1[0]: MATCHES (96 in both)
+      - pk[0]: MATCHES (11367 in both)
+      - msg_point: MATCHES (verified via Rust test)
+      - BUT norm is ~6 billion (should be ~30 million)!
+
+   m. **Current state**: All inputs match between Rust/JS and Cairo, yet the norm is wildly wrong. Was about to investigate whether there's a mismatch between the secret key's `h` polynomial (used in `sign_prehashed`) and the public key's `h_ntt` (stored in the contract and used for `generate_mul_hint`).
+
+4. **User messages to capture**:
+   - Continuation request (implicit from session start)
+   - "Note that you can use println!(\"{:?}\", s); in cairo and it will print out in devnet logs"
+
+5. **Key files modified in this session**:
+   - `apps/demo/scripts/deploy-falcon.mjs` - Created CLI deploy script
+   - `packages/falcon_account/src/account.cairo` - Added println! debugging
+   - `packages/falcon/src/falcon.cairo` - Added println! debugging
+   - `falcon-rs/tests/test_sign_for_starknet.rs` - Created by agent
+   - `falcon-rs/tests/test_msg_point.rs` - Created to compare msg_point
+
+6. **Current investigation thread**: 
+   The fundamental mystery is: all inputs (tx_hash, salt, s1, pk, msg_point) match between Rust and Cairo, yet the norm is ~200x the bound. The last thing being investigated was whether there's a mismatch between `sk.h_fft` (used in signing via `sign_prehashed`) and `pk_ntt` (used in `generate_mul_hint`). This could happen if the FFT representation in the secret key doesn't correspond to the NTT representation in the public key.
+
+Let me look at the key files and code snippets to include.
+
+Summary:
+1. Primary Request and Intent:
+   The user asked to continue implementing a detailed E2E testing plan for the demo app (`apps/demo/`) on Starknet devnet (`localhost:5050`). The plan has 7 steps: start dev server, verify page load, test Prepare Deploy flow, fund computed address, deploy Falcon account, send STRK, fix issues along the way. Steps 1-4 were completed in prior sessions. This session focused exclusively on step 5 (deploying the Falcon-512 account), which has been blocked by multiple bugs discovered and fixed along the way. The user explicitly requested: **"Instead of iterating through the webapp, interact with devnet and sncast only to go faster and debug more easily the cairo - rpc workflow."** The user also noted: **"Note that you can use println!(\"{:?}\", s); in cairo and it will print out in devnet logs"**.
+
+2. Key Technical Concepts:
+   - **Falcon-512**: Post-quantum signature scheme for Starknet account abstraction
+   - **WASM bridge**: falcon-rs compiled to WASM via wasm-pack for both browser (`--target web`) and Node.js (`--target nodejs`)
+   - **Base-Q Horner packing**: 512 Zq values (mod 12289) packed into 29 felt252 slots, 9 values per u128 half
+   - **Poseidon hash-to-point**: `poseidon_hash_span(message || salt)` → seed, 22 squeeze permutations → 512 Zq coefficients
+   - **Hint-based verification**: Off-chain compute `mul_hint = INTT(NTT(s1) * pk_ntt)`, on-chain verify `NTT(s1) * pk_ntt == NTT(mul_hint)` + norm check
+   - **Signature norm bound**: `||s0||^2 + ||s1||^2 <= SIG_BOUND_512 = 34034726`
+   - **starknet.js v9**: Uses `Account`, `SignerInterface`, `hash.calculateDeployAccountTransactionHash`
+   - **Effect-TS**: Used in the webapp services (not in CLI script)
+   - **Devnet JSON-RPC**: Uses `devnet_mint` method (NOT REST `/mint` endpoint), `devnet_getPredeployedAccounts`
+   - **lambdaworks Montgomery form bug**: `Felt::to_hex()` returns Montgomery representation — fixed in prior session with `felt_to_hex()` using `to_bytes_be()`
+   - **Cairo println! debugging**: Works on devnet, output goes to devnet stdout (not RPC error response)
+   - **sign_prehashed**: Returns `(Vec<i32>, Vec<i32>)` for (s0, s1), guarantees `||s0||^2 + ||s1||^2 <= SIG_BOUND` before returning
+
+3. Files and Code Sections:
+
+   - **`/home/felt/PycharmProjects/s2morrow/apps/demo/scripts/deploy-falcon.mjs`** (CREATED this session)
+     - Standalone CLI script that bypasses the webapp for direct devnet testing
+     - Uses Node.js WASM package from `/home/felt/PycharmProjects/falcon-rs/pkg/`
+     - Uses starknet.js from `../node_modules/starknet/dist/index.mjs`
+     - Contains `FalconSignerCLI` class extending `SignerInterface`
+     - Currently configured with debug class hash `0x6c579c4b1c45bfeb88bd796bee7bb49fa710a6da297334c3c235e865315f952` (println! version)
+     - Original class hash: `0x37c7626b50ba517835c9556b53bce57cb6633704bb702f8c2f13a44cf151d5`
+     - Key sections include: mint via JSON-RPC, s1 coefficient unpacking for debug, resource bounds with bigint:
+     ```javascript
+     const result = await account.deployAccount(
+       { classHash: CLASS_HASH, constructorCalldata, addressSalt: salt, contractAddress: address },
+       {
+         resourceBounds: {
+           l2_gas: { max_amount: 0x2FAF080n, max_price_per_unit: 0x174876E800n },
+           l1_gas: { max_amount: 0x0n, max_price_per_unit: 0x174876E800n },
+           l1_data_gas: { max_amount: 0x3000n, max_price_per_unit: 0x174876E800n },
+         },
+       },
+     )
+     ```
+
+   - **`/home/felt/PycharmProjects/s2morrow/packages/falcon_account/src/account.cairo`** (MODIFIED - println debugging)
+     - Added println! to `validate_transaction` and `_is_valid_signature` for debugging
+     ```cairo
+     fn validate_transaction(self: @ComponentState<TContractState>) -> felt252 {
+         let tx_info = starknet::get_tx_info().unbox();
+         let tx_hash = tx_info.transaction_hash;
+         let signature = tx_info.signature;
+         println!("validate_transaction: tx_hash={}", tx_hash);
+         println!("validate_transaction: sig_len={}", signature.len());
+         assert(self._is_valid_signature(tx_hash, signature), Errors::INVALID_SIGNATURE);
+         starknet::VALIDATED
+     }
+     ```
+     - `_is_valid_signature` prints deser status, pk.s0, and verify_packed result
+
+   - **`/home/felt/PycharmProjects/s2morrow/packages/falcon/src/falcon.cairo`** (MODIFIED - println debugging)
+     - Added println! to `verify` function for salt, message, msg_point values
+     ```cairo
+     pub fn verify<H, +HashToPoint<H>, +Drop<H>>(...) -> bool {
+         println!("verify: message[0]={}", *message[0]);
+         let salt_span = sig_with_hint.signature.salt.span();
+         println!("verify: salt_len={}", salt_span.len());
+         if salt_span.len() > 0 { println!("verify: salt[0]={}", *salt_span[0]); }
+         if salt_span.len() > 1 { println!("verify: salt[1]={}", *salt_span[1]); }
+         let msg_point = HashToPoint::<H>::hash_to_point(message, salt_span);
+         let mp0: felt252 = (*msg_point[0]).into();
+         let mp1: felt252 = (*msg_point[1]).into();
+         println!("verify: msg_point[0]={}, msg_point[1]={}", mp0, mp1);
+         verify_with_msg_point(pk, sig_with_hint, msg_point.span())
+     }
+     ```
+     - Added println to `verify_packed` for pk[0], s1[0], hint[0] after unpacking
+     - Added norm print: `println!("verify: norm={}, bound={}, pass={}", norm_u64, SIG_BOUND_512, norm_u64 <= SIG_BOUND_512);`
+
+   - **`/home/felt/PycharmProjects/falcon-rs/src/wasm.rs`** (NOT modified this session, but critical reference)
+     - Contains `sign_for_starknet` function (lines 210-290) — the core WASM signing entry point
+     - Contains `felt_to_hex` function (lines 296-302) — canonical hex conversion using `to_bytes_be()`
+     - Contains `getrandom_salt` function — generates 62 random bytes for 2 felt252 salt values
+     - Key signing flow: parse tx_hash → generate random salt → hash_to_point → sign_prehashed → generate_mul_hint → pack s1 and hint → output 61 hex strings
+
+   - **`/home/felt/PycharmProjects/falcon-rs/tests/test_msg_point.rs`** (CREATED this session)
+     - Verified that Rust and Cairo produce identical msg_point for the same inputs
+     - Used actual deploy attempt values: tx_hash, salt[0], salt[1]
+     - Result: msg_point[0]=4127, msg_point[1]=9859 — MATCHES Cairo output
+
+   - **`/home/felt/PycharmProjects/falcon-rs/tests/test_sign_for_starknet.rs`** (CREATED by agent this session)
+     - Full integration test replicating sign_for_starknet logic
+     - Verifies pack/unpack roundtrip, NTT product check, norm check, algebraic identity
+     - All checks pass: norm=30164698 <= 34034726
+
+   - **`/home/felt/PycharmProjects/falcon-rs/pkg/`** (BUILT this session)
+     - Node.js WASM package built with `wasm-pack build --target nodejs --features wasm --no-default-features`
+     - CJS module, main entry: `falcon_rs.js`, WASM binary: `falcon_rs_bg.wasm`
+
+   - **`/home/felt/PycharmProjects/s2morrow/packages/falcon/src/types.cairo`** (READ for reference)
+     - Serde order: `PackedFalconSignatureWithHint` = signature (s1: PackedPolynomial512(29) + salt: Array<felt252>) + hint (mul_hint: PackedPolynomial512(29))
+     - Total: 29 + 1 + N + 29 = 59 + N elements (N=salt length=2, total=61)
+
+   - **`/home/felt/PycharmProjects/falcon-rs/src/falcon.rs`** (READ for investigation)
+     - `sign_prehashed` at line 509: takes `&[i16; N]` hash_point, returns `(Vec<i32>, Vec<i32>)` for (s0, s1)
+     - Guarantees norm <= SIG_BOUND (34034726) before returning
+     - Uses `sk.h_fft` internally for polynomial arithmetic (FFT domain, NOT NTT domain)
+
+   - **`/home/felt/PycharmProjects/s2morrow/apps/demo/src/services/StarknetService.ts`** (modified in prior session)
+     - Has explicit resource bounds for deploy: l2_gas 50M (0x2FAF080n)
+
+   - **`/home/felt/PycharmProjects/s2morrow/apps/demo/src/services/FalconSigner.ts`** (has debug logging from prior session)
+
+   - **`/home/felt/PycharmProjects/s2morrow/snfoundry.toml`** and **`accounts.json`** (used for sncast)
+     - Profile `[sncast.devnet]` with url `http://localhost:5050` and account `devnet-default`
+
+4. Errors and Fixes:
+
+   - **Mint endpoint 404**: Script used REST `/mint` endpoint but devnet uses JSON-RPC `devnet_mint` method
+     - Fixed by changing to JSON-RPC call: `{"method":"devnet_mint","params":{"address":"...","amount":...,"unit":"FRI"}}`
+
+   - **wasm-pack --out-dir flag error**: `--out-dir` requires nightly Cargo
+     - Fixed by using default output directory `pkg/`
+
+   - **rtk filtering curl/grep output**: The `rtk` tool was intercepting shell commands and filtering output
+     - Fixed by using `/usr/bin/curl` directly or using the Grep tool instead of grep command
+
+   - **Cairo println! compile errors**: 
+     - `BoundedInt<0,12288>` doesn't implement `Display` — Fixed by casting to felt252 first: `let pk0: felt252 = (*pk_coeffs[0]).into();`
+     - Ambiguous `.len()` method on `Array<felt252>` — Fixed by removing the salt_len print entirely (simplified to just "deser OK")
+
+   - **sncast declare errors**: 
+     - Wrong arg order (`--url` before subcommand) — Fixed
+     - Missing `--package` flag for multi-package workspace — Fixed with `--package falcon_account`
+     - Accounts file not found when not in project root — Fixed by running from project root
+
+   - **Devnet stdout to deleted file**: Previous devnet process had stdout redirected to a now-deleted temp file
+     - Fixed by killing and restarting devnet with `> /tmp/devnet.log 2>&1`
+
+   - **User feedback**: "Note that you can use println!(\"{:?}\", s); in cairo and it will print out in devnet logs" — Led to adding println! debugging to Cairo contract
+
+5. Problem Solving:
+
+   **SOLVED (prior sessions)**:
+   - Serialization order mismatch — reordered to match Cairo Serde
+   - Montgomery form in `to_hex()` — replaced with `to_bytes_be()` based canonical conversion
+   - Gas insufficiency — added explicit 50M L2 gas resource bounds
+   - `'bad pack'` error — resolved by Montgomery fix
+
+   **SOLVED (this session)**:
+   - Built standalone CLI deploy script for faster iteration
+   - Confirmed hash-to-point matches between Rust and Cairo (cross-language tests + direct comparison)
+   - Confirmed all Cairo cross-language tests pass (9/9)
+   - Confirmed Rust integration test passes (norm, NTT product, algebraic identity)
+   - Confirmed tx_hash, salt, s1[0], pk[0], msg_point all MATCH between JS/WASM and Cairo contract
+
+   **ONGOING - THE CORE MYSTERY**:
+   Despite ALL inputs matching between Rust/WASM and Cairo, the norm computed by Cairo is ~6 billion (should be ~30 million). This means `s0 = msg_point - mul_hint` has massive coefficients, implying mul_hint doesn't correspond to the correct s1*h product for this msg_point.
+   
+   Key devnet debug output showing the problem:
+   ```
+   verify_packed: pk[0]=11367, s1[0]=96, hint[0]=5151
+   verify: message[0]=1339595486662559044899913326272185404826882646987319249184658130072064052914
+   verify: salt_len=2
+   verify: salt[0]=5139056080007344347319843616582375969222764210972633046010931637624667765
+   verify: salt[1]=324247466887516741054782019829689305608872836227764512342341162034815729
+   verify: msg_point[0]=890, msg_point[1]=5015
+   verify: norm=6507201118, bound=34034726, pass=false
+   ```
+   
+   **Leading hypothesis being investigated**: Possible mismatch between `sk.h_fft` (FFT-domain `h` used in `sign_prehashed` for polynomial arithmetic) and `pk_ntt` (NTT-domain `h` used in `generate_mul_hint`). The signing algorithm uses FFT internally, while the hint generation uses NTT. If the public key's NTT-domain representation doesn't correspond to the secret key's FFT-domain representation of the same polynomial, the hint would be wrong. Was examining `keygen_with_seed` and `keygen_with_rng` in falcon.rs to trace how `h` flows from keygen to both the secret key and verifying key.
+
+6. All User Messages:
+   - (Implicit continuation request from session start — the plan file directs continuation of the deploy testing)
+   - "Note that you can use println!(\"{:?}\", s); in cairo and it will print out in devnet logs" — received while reading account.cairo, directed the debugging approach
+
+7. Pending Tasks:
+   - Task #5 [in_progress]: Deploy the Falcon account — the core ongoing task
+   - Task #6 [pending]: Send STRK from deployed account — blocked by #5
+   - Clean up println! debug code from Cairo files after debugging
+   - Clean up hex_tests in falcon-rs/src/packing.rs (from prior session)
+   - Clean up debug console.log in FalconSigner.ts (from prior session)
+   - Restore original class hash in deploy script after debugging
+
+8. Current Work:
+   Investigating why the Falcon signature verification norm is ~6 billion (should be ~30 million) despite ALL inputs matching between the Rust WASM signer and the Cairo contract on devnet. The last action was examining the `keygen` function in `falcon-rs/src/falcon.rs` to understand how the public key `h_ntt` relates to the secret key's internal `h_fft` representation.
+
+   Specifically, was running this grep just before the summary was requested:
+   ```
+   Grep for "fn keygen|h_ntt|VerifyingKey" in falcon-rs/src/falcon.rs
+   ```
+   Which showed `keygen_with_seed` at line 348 and `keygen_with_rng` at line 372.
+
+   The hypothesis being explored: `sign_prehashed` uses the secret key's internal FFT representation of `h` to compute `(s0, s1)` such that `s0 + s1*h = msg_point`. Then `generate_mul_hint(&s1_u16, &pk_u16)` computes `INTT(NTT(s1) * pk_ntt)` where `pk_ntt` comes from the verifying key. If `pk_ntt` (NTT-domain) doesn't represent the same polynomial `h` as `sk.h_fft` (FFT-domain), then `mul_hint ≠ s1*h` and `s0 = msg_point - mul_hint` would have a huge norm.
+
+9. Optional Next Step:
+   Read `keygen_with_rng` in `/home/felt/PycharmProjects/falcon-rs/src/falcon.rs` (line 372+) to trace how `h` flows into both the `SecretKey` (as FFT-domain `h_fft`) and the `VerifyingKey` (as NTT-domain `h_ntt`). Specifically verify that `VerifyingKey.h_ntt = NTT(h)` and `SecretKey` uses the same `h` polynomial for signing. If they use different transforms or different representations of `h`, this would explain the norm mismatch. Then write a Rust test that verifies `INTT(pk_ntt) == h` and `s0 + s1*h = msg_point` using the time-domain `h`.
+
+If you need specific details from before compaction (like exact code snippets, error messages, or content you generated), read the full transcript at: /home/felt/.REDACTED.jsonl
+Please continue the conversation from where we left off without asking the user any further questions. Continue with the last task that you were asked to work on.
+
+---
+
+commit this

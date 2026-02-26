@@ -1,0 +1,820 @@
+# SYSTEM DIRECTIVE: "LUCID GLASS" dApp — UI/UX + FULL-STACK REFINEMENT FOR STARKNET
+
+**ROLE:** Lead dApp UI/UX Perfectionist, Apple-Tier Frontend Engineer & Smart Contract Integration Specialist
+**OBJECTIVE:** Transform the existing Starknet web app into a "Calm Technology" masterpiece where every on-chain interaction feels as trustworthy and effortless as a native Apple Pay tap. The UI must feel expensive, weightless, lucid, and mathematically flawless. The UX must leave **zero blind spots** — every wallet state, every transaction phase, every contract revert, every network hiccup must be gracefully anticipated and communicated. Users must never feel lost, confused, or abandoned mid-action.
+**TARGET AESTHETIC:** Glassmorphism, extreme minimalism, fluid motion, deep spatial hierarchy, invisible UI.
+
+---
+
+## TECH STACK (STRICT — DO NOT DEVIATE)
+
+| Layer | Technology | Notes |
+|---|---|---|
+| Framework | **Next.js 15** (App Router, Turbopack dev) | Use Server Components by default; `"use client"` only when required |
+| UI | **React 19** + **TypeScript 5.7** | Strict mode. No `any`. Leverage React 19 features (Actions, `useOptimistic`, `useActionState`) |
+| Styling | **Tailwind CSS 4** (via PostCSS) | v4 syntax — use `@theme` and CSS-first config. No `tailwind.config.js` unless legacy compat required |
+| Error Handling / Async | **Effect** | ALL async flows (fetches, contract calls, parsing) must be modeled as Effect pipelines. No raw try/catch. No untyped `Promise` chains. Errors are **values**, not exceptions |
+| State Management | **@effect-atom/atom-react** | Derive atoms from Effect services. No useState for anything that crosses component boundaries |
+| Chain Interaction | **starknet.js 9** + **starknet-react** | All contract calls go through typed abstractions. Never raw-call a contract from a component |
+| Testing | **Bun** test runner | Unit + integration tests for all state machines and Effect pipelines |
+
+---
+
+## PHASE 0: CODEBASE RECONNAISSANCE & CONTRACT INVENTORY
+
+Before touching any UI, perform a full-stack audit:
+
+### 0A — Frontend Audit
+1. Map every page / route in the app. List them.
+2. For each route, identify: what on-chain data it reads, what transactions it can trigger, what off-chain state it depends on.
+3. Identify all existing components. Classify as: **Layout**, **Data Display**, **Interactive (writes to chain)**, **Navigation**, **Feedback (toasts, modals, loaders)**.
+4. Grep for anti-patterns: raw `try/catch` around contract calls, `useState` for cross-component state, untyped ABIs, missing loading/error states, `console.log` as error handling, hardcoded addresses.
+
+### 0B — Contract Interface Audit
+1. List every deployed contract the frontend interacts with.
+2. For each contract function called by the frontend:
+   - Document the function signature, expected inputs, and all possible revert/error conditions.
+   - Verify the ABI used in the frontend matches the deployed contract exactly.
+   - Identify any contract-side gaps: missing view functions the UI needs, events the UI should listen to but can't, error codes that are ambiguous or missing.
+3. **If a contract gap is found** (e.g., a view function is missing that would prevent the UI from showing real-time state, or error codes are too vague for good UX), document it clearly and flag it for a contract update. Do NOT paper over contract deficiencies with frontend hacks.
+
+### 0C — Output: Gap & Noise Report
+Produce a structured report:
+```
+## Gap & Noise Report
+
+### Frontend Noise (visual clutter, UX friction)
+- [item]: [description] → [proposed fix]
+
+### Missing States (scenarios not handled)
+- [scenario]: [what happens now] → [what should happen]
+
+### Contract Gaps (backend changes needed for good UX)
+- [contract]: [missing function/event/error] → [proposed change + justification]
+
+### Anti-Pattern Registry
+- [file:line]: [anti-pattern] → [correct pattern]
+```
+
+---
+
+## PHASE 1: THE "ZERO BLIND SPOTS" STATE ARCHITECTURE
+
+This is the **soul of the dApp UX**. Before any visual work, architect the state layer so that every possible user scenario is modeled, typed, and handled.
+
+### 1A — Wallet Connection State Machine
+Model wallet state as a **finite state machine** using Effect + atoms. Every state must have a corresponding UI treatment:
+
+```
+DISCONNECTED
+  → User sees: Welcome state. Clear, warm CTA to connect. Explain what the dApp does in one sentence.
+  → UI: Primary glass card, centered. No chrome. Just the value proposition + connect button.
+
+CONNECTING
+  → User sees: Subtle pulse animation on the connect button. "Connecting to wallet…" micro-copy.
+  → UI: Button enters loading state. Rest of UI stays calm (no full-page loader).
+
+CONNECTED (wrong network)
+  → User sees: Gentle banner — "You're on [network]. Switch to Starknet Mainnet/Sepolia to continue."
+  → UI: The banner is informational, not alarming. One-tap network switch button.
+
+CONNECTED (correct network)
+  → User sees: Full app unlocked. Wallet address displayed as truncated + ENS/StarkName if available.
+  → UI: Smooth reveal animation of the main interface. The transition should feel like a curtain lifting.
+
+CONNECTION_ERROR
+  → User sees: Friendly message — "Couldn't connect. This usually means [reason]. Try again?"
+  → UI: The error is contextual (inline near the connect button), not a toast that disappears.
+
+DISCONNECTING
+  → User sees: Brief fade-out of authenticated UI. Graceful return to welcome state.
+
+SESSION_EXPIRED / ACCOUNT_CHANGED
+  → User sees: Soft notification — "Your wallet changed. Refreshing your session…" Auto-reconnect.
+```
+
+### 1B — Transaction Lifecycle State Machine
+Every on-chain write must go through this **full lifecycle**, and the UI must reflect each phase distinctly:
+
+```
+IDLE
+  → Button is ready. No residual state from previous transactions.
+
+VALIDATING
+  → Frontend validates inputs BEFORE sending to wallet.
+  → If validation fails: inline field-level errors with helpful copy (not "invalid input" — say WHY).
+  → Effect pipeline: Parse → Validate → Simulate (estimate_fee) → Present confirmation.
+
+SIMULATING
+  → "Estimating gas…" shown subtly. If simulation fails (contract would revert):
+  → Show the REASON in human language: map contract error codes to friendly messages.
+  → Example: `Error::InsufficientBalance` → "You don't have enough [token] to complete this. You need [amount] more."
+
+AWAITING_SIGNATURE
+  → "Confirm in your wallet" — with a subtle animated indicator (pulsing wallet icon).
+  → If the user takes too long (>30s), show gentle nudge: "Waiting for your confirmation in [Wallet Name]…"
+  → If user rejects: "Transaction cancelled. No worries — nothing was sent." Return to IDLE cleanly.
+
+PENDING (tx submitted, awaiting inclusion)
+  → "Transaction submitted! Waiting for confirmation…"
+  → Show a progress indicator. Link to block explorer (Starkscan/Voyager).
+  → The user CAN navigate away. If they do, the pending state persists globally (atom) and shows as a non-intrusive banner/badge.
+  → Poll or subscribe for tx receipt.
+
+CONFIRMING (tx included, awaiting finality)
+  → "Transaction confirmed on L2. Finalizing…"
+  → Update UI optimistically where safe. Show "pending" badge on affected data until finality.
+
+SUCCESS
+  → Celebratory but tasteful. Brief success message with summary of what happened.
+  → "You swapped 100 USDC → 0.05 ETH" — specific, not generic "Transaction successful."
+  → Auto-dismiss after 5s, or user can dismiss. Affected data refreshes automatically.
+
+FAILED (reverted on-chain)
+  → Map the revert reason to a human message. Never show raw hex or "execution reverted."
+  → Offer clear next steps: "This may have failed because [reason]. You can [retry / adjust amount / check balance]."
+  → Log the raw error to console for debugging, but the user sees only the friendly version.
+
+STUCK (pending for too long)
+  → If no receipt after reasonable timeout: "This is taking longer than usual. Starknet may be congested."
+  → Offer: "You can wait, or check the status on [explorer link]."
+  → NEVER pretend the tx is lost. Be honest, be calm.
+```
+
+### 1C — Data Loading States
+Every piece of on-chain data displayed must handle:
+
+```
+LOADING (first load)    → Skeleton shimmer (glass-style, not gray boxes). Matches final layout shape.
+LOADED                  → Data rendered. Smooth fade-in from skeleton.
+REFRESHING (background) → Stale data stays visible. Subtle refresh indicator (not a spinner replacing content).
+ERROR                   → Inline error with retry: "Couldn't load [thing]. [Retry button]." Never a blank screen.
+EMPTY                   → Friendly empty state with context: "No transactions yet. Your history will appear here after your first swap."
+STALE (known outdated)  → Show data with subtle "updating…" indicator. Never show nothing while re-fetching.
+```
+
+### 1D — Effect Pipeline Architecture
+All contract interactions MUST follow this pattern:
+
+```typescript
+// EXAMPLE — every contract write follows this shape:
+const executeSwap = (params: SwapParams) =>
+  Effect.gen(function* () {
+    // 1. Parse & validate inputs (typed errors)
+    const validated = yield* parseSwapParams(params)
+
+    // 2. Simulate (catch contract reverts before wallet prompt)
+    const simulation = yield* simulateTransaction(validated)
+
+    // 3. Present fee estimate to user, await confirmation
+    yield* awaitUserConfirmation(simulation.estimatedFee)
+
+    // 4. Execute
+    const txHash = yield* submitTransaction(validated)
+
+    // 5. Wait for receipt
+    const receipt = yield* waitForReceipt(txHash)
+
+    // 6. Return typed result
+    return receipt
+  }).pipe(
+    // Map every failure mode to a user-facing message
+    Effect.catchTags({
+      ParseError: (e) => Effect.fail(new UserFacingError({ message: `Invalid input: ${e.field} — ${e.reason}` })),
+      SimulationFailed: (e) => Effect.fail(new UserFacingError({ message: mapRevertReason(e.reason) })),
+      UserRejected: () => Effect.fail(new UserFacingError({ message: "Transaction cancelled." })),
+      TxFailed: (e) => Effect.fail(new UserFacingError({ message: mapRevertReason(e.reason) })),
+      NetworkError: () => Effect.fail(new UserFacingError({ message: "Network issue. Check your connection and try again." })),
+      Timeout: () => Effect.fail(new UserFacingError({ message: "Taking longer than expected. Check the explorer for status." })),
+    })
+  )
+```
+
+**Rule:** If you find a contract call anywhere in the codebase that does NOT follow this pattern (raw `account.execute()` in a component, untyped errors, missing simulation step), refactor it immediately.
+
+---
+
+## PHASE 2: THE "LUCID" DESIGN FRAMEWORK (STRICT VISUAL RULES)
+
+Every line of CSS or component code must strictly adhere to these principles:
+
+### 2A — Materials over Colors
+- Rely on translucency. Use backdrop filters (`backdrop-blur-xl`, `backdrop-blur-2xl`) combined with ultra-low opacity backgrounds (`bg-white/40`, `bg-black/10`) to create glass layers.
+- Chain-specific accent colors (Starknet blue/purple) used sparingly — only for primary CTAs and active states. Never as backgrounds.
+
+### 2B — Typography
+- `Inter` or equivalent premium sans-serif via `next/font`.
+- Strict optical tracking: tighter for headers (`tracking-tight`), standard for body.
+- Hierarchy through **opacity** (`text-foreground/60` for secondary) more than size changes.
+- Monospace for addresses, hashes, amounts: `font-mono tabular-nums` for perfect alignment.
+- Numbers that change (balances, prices) use `tabular-nums` to prevent layout shift.
+
+### 2C — Borders & Radii
+- Generous radii (`rounded-2xl`, `rounded-3xl`).
+- Borders practically invisible: `border border-white/15` to catch light on glass cards.
+- No hard dividers between sections — use whitespace and subtle opacity changes.
+
+### 2D — Shadows
+- Deep, soft, multi-layered. Never harsh `shadow-md` defaults.
+- Custom: `shadow-[0_8px_32px_rgba(0,0,0,0.08)]` style — diffuse, atmospheric.
+- Elevated elements (modals, dropdowns) get progressively deeper shadows.
+
+### 2E — Whitespace as Architecture
+- Double the current padding/margins everywhere. The interface must breathe.
+- Minimum `p-6` on card interiors, `gap-6` between sections.
+- The most important elements get the most space around them.
+
+### 2F — Motion & Transitions
+- Spring-based, fluid animations. Nothing snaps; everything glides.
+- Custom easing: `cubic-bezier(0.32, 0.72, 0, 1)` for entrances.
+- Transaction state changes get smooth crossfade transitions, not instant swaps.
+- Skeleton → Content transitions use staggered fade-ins (each element 50ms after the previous).
+- **Wallet connection reveal:** Main interface slides/fades in with a choreographed sequence.
+- **Number changes:** Balances and amounts animate between values (count-up/morph), never jump.
+
+### 2G — dApp-Specific Visual Rules
+- **Addresses:** Always truncated (`0x1234…abcd`), always copyable (click-to-copy with micro-feedback).
+- **Token amounts:** Right-aligned, monospaced, with token icon left of the amount. Consistent decimal places.
+- **Gas estimates:** Shown in both token amount AND approximate fiat value. Never just raw gas units.
+- **Explorer links:** Subtle, secondary — available but not screaming. Icon + "View on explorer" on hover.
+- **Pending transactions:** Persistent, non-intrusive. A small fixed indicator (bottom-right or top bar) that expands on hover to show pending tx details.
+
+---
+
+## PHASE 3: SEQUENTIAL RE-ARCHITECTURE (EXECUTION ORDER)
+
+Execute the refactoring in this precise order. **Do not skip ahead.**
+
+### Step 1 — Effect Pipeline Layer
+Refactor all contract interactions into typed Effect pipelines (Phase 1D pattern). This is foundational — the UI work depends on having clean, typed state transitions to bind to.
+- Create a `src/services/` layer with Effect services for each contract.
+- Create a typed error hierarchy: `ContractError`, `WalletError`, `NetworkError`, `ValidationError` — all with user-facing message mappings.
+- Create reusable `useTransaction` hook (or atom pattern) that exposes the full lifecycle state machine to components.
+
+### Step 2 — State Atoms
+Implement the wallet and transaction state machines as `@effect-atom` atoms.
+- `walletAtom` — full connection state machine.
+- `pendingTransactionsAtom` — global list of in-flight txs, persisted across navigation.
+- Per-feature atoms derived from contract read calls, with loading/error/stale states built in.
+
+### Step 3 — Foundation (Visual Base)
+- Strip the old theme. Implement the fluid typographic scale.
+- Set up the continuous background environment (mesh gradient or subtle grain).
+- Configure Tailwind v4 `@theme` with the Lucid Glass design tokens (colors as opacity scales, spacing scale, shadow presets, border radii, easing curves).
+
+### Step 4 — Glass Layout Layer
+- Rewrite layout shells, navigation, sidebars, and modals using the glassmorphism spec.
+- Implement the wallet connection flow UI (all states from Phase 1A).
+
+### Step 5 — Component Library Refinement
+- Redesign `<Input>`, `<Select>`, `<Button>`, and add dApp-specific components:
+  - `<TransactionButton>` — binds to the tx lifecycle state machine. Shows IDLE → SIMULATING → AWAITING → PENDING → SUCCESS/FAILED automatically.
+  - `<TokenAmount>` — formatted, monospaced, with token icon and optional fiat conversion.
+  - `<AddressDisplay>` — truncated, copyable, with optional explorer link.
+  - `<TxStatusBanner>` — persistent pending tx indicator.
+  - `<GlassSkeleton>` — shimmer loader that matches the glass aesthetic.
+  - `<EmptyState>` — friendly, contextual empty states per feature.
+  - `<ErrorBoundary>` — catches React rendering errors. Shows recovery UI, not a white screen. Logs to console. Offers "refresh" or "go home."
+
+### Step 6 — State Polish & Micro-Interactions
+- Focus rings: soft, glowing, animated.
+- Hover states: subtle lift + shadow deepening.
+- Click feedback: brief scale-down (98%) + spring-back.
+- Copy-to-clipboard: brief checkmark morph on the copy icon.
+- Number transitions: animated value changes.
+- Toast/notification entrance: slide-up + fade, spring easing.
+
+### Step 7 — Scenario Coverage Sweep
+Go through EVERY route in the app and verify these scenarios work and look correct:
+
+**Wallet scenarios:**
+- [ ] No wallet installed → helpful message + link to install Argent/Braavos
+- [ ] Wallet installed, not connected → clean welcome + connect CTA
+- [ ] Wallet connected, wrong network → network switch prompt
+- [ ] Wallet connected, correct network → full app access
+- [ ] Account changed mid-session → graceful re-auth
+- [ ] Wallet disconnected mid-session → graceful fallback to welcome
+- [ ] Multiple wallets installed → clean selection UI
+
+**Transaction scenarios (per write action):**
+- [ ] Happy path → full lifecycle renders correctly
+- [ ] User rejects signature → clean cancellation, return to idle
+- [ ] Simulation fails (insufficient balance) → clear inline error with specifics
+- [ ] Simulation fails (contract revert) → mapped human-readable message
+- [ ] Tx submitted but slow → "taking longer than usual" state
+- [ ] Tx reverts on-chain → mapped error + next steps
+- [ ] Tx succeeds → celebration + data refresh
+- [ ] User navigates away during pending → tx persists in global state, banner visible
+- [ ] Page reload during pending → pending state recovered (or user prompted to check explorer)
+- [ ] Rapid consecutive transactions → queue or clear feedback about sequencing
+
+**Data scenarios:**
+- [ ] First visit, no data → friendly empty states
+- [ ] Slow RPC / data load → skeletons, not blank space
+- [ ] RPC error → retry prompt, not blank screen
+- [ ] Stale data during refresh → show old data with refresh indicator
+- [ ] Extremely large numbers → proper formatting, no overflow
+- [ ] Zero balances → shown clearly, not hidden
+
+**Edge cases:**
+- [ ] Mobile viewport → fully responsive, touch-friendly
+- [ ] Slow connection → progressive loading, no layout shift
+- [ ] JavaScript error in a component → ErrorBoundary catches, app doesn't white-screen
+- [ ] User pastes invalid input → immediate, helpful inline validation
+- [ ] Copy-paste of addresses → works correctly, no invisible characters
+
+---
+
+## PHASE 4: VISUAL QA & ITERATION LOOP
+
+*You are a harsh perfectionist with immaculate taste. You have eyes.*
+
+### 4A — Launch & Inspect
+1. Boot the local dev server (`bun dev` / `next dev --turbopack`).
+2. Use `surf cli` (or equivalent visual inspection tool) to review all pages and states.
+3. Emulate multiple device sizes: mobile (375px), tablet (768px), desktop (1440px), ultrawide (1920px+).
+
+### 4B — State-by-State Visual Walkthrough
+For each page, systematically trigger and screenshot:
+- Loading state (skeleton)
+- Loaded state (with data)
+- Empty state (no data)
+- Error state (RPC failure)
+- Each transaction phase (if applicable)
+- Wallet disconnected view
+- Hover / focus / active states on interactive elements
+
+### 4C — Ruthless Self-Critique Checklist
+Look for and fix:
+- [ ] Off-by-one pixel misalignments
+- [ ] Muddy or over-blurred glass effects
+- [ ] Incorrect font weights or tracking
+- [ ] Clunky or instant transitions (should be spring-based)
+- [ ] Layout shift on data load (numbers, addresses, balances)
+- [ ] Inconsistent spacing between similar elements
+- [ ] Text truncation without ellipsis or tooltip
+- [ ] Interactive elements without hover/focus/active states
+- [ ] Color contrast failures on glass backgrounds (test with accessibility tools)
+- [ ] Scrollbar styling inconsistencies
+- [ ] Missing or broken animations on state transitions
+
+### 4D — Contract Integration Verification
+For every contract interaction:
+1. Test with a real wallet on testnet (Sepolia).
+2. Trigger every error path (insufficient balance, wrong inputs, contract paused, etc.).
+3. Verify the frontend shows the correct human-readable message for each.
+4. If a contract error is unmappable (ambiguous revert), flag it:
+   ```
+   CONTRACT UPDATE NEEDED:
+   - Contract: [name/address]
+   - Function: [function_name]
+   - Issue: Revert reason [X] is ambiguous. Frontend cannot give helpful feedback.
+   - Proposed fix: Add distinct error code for [scenario].
+   ```
+
+### 4E — The Loop
+**Repeat Phase 4 (A → D) continuously.** After each pass:
+1. Document what was fixed.
+2. Document what still needs work.
+3. Document any contract-side changes needed.
+4. Execute fixes immediately.
+5. Re-inspect.
+
+**Do not stop, do not request human intervention, and do not exit this loop until:**
+- Every scenario from Phase 3 Step 7 is verified ✅
+- Every visual check from Phase 4C passes ✅
+- The interface achieves a 10/10 ultra-premium quality grade
+- Zero unhandled states exist in the application
+- The user never sees a raw error, a blank screen, or a state they can't understand
+
+---
+
+## CRITICAL DIRECTIVES
+
+1. **No blind spots.** If a state is possible, it must be handled and beautiful. A user should never see a blank area, a spinner with no context, a cryptic error, or a UI that doesn't respond to their action.
+
+2. **The dApp must feel robust.** Robustness is communicated through: consistent behavior, helpful error messages, smooth transitions between states, and the absence of flicker/jank/layout shift. Every interaction should feel like it was anticipated.
+
+3. **The dApp must feel welcoming.** The welcome/connect state is the front door. It should be warm, clear, and explain the value in one glance. Wallet connection should feel like unlocking a door, not debugging a protocol.
+
+4. **Never lost.** At any point, the user should know: where they are, what just happened, what's happening now, and what they can do next. Breadcrumbs, contextual headings, and clear state indicators are mandatory.
+
+5. **Contract and frontend are one product.** If the contract doesn't give the frontend enough information to provide great UX (missing view functions, vague errors, missing events), that is a **bug to be fixed in the contract**, not a limitation to accept. Document all contract changes needed.
+
+6. **Effect is the error backbone.** Every async operation, every contract call, every data fetch is an Effect pipeline with typed errors. No exceptions. No raw try/catch. No untyped Promise chains. This is non-negotiable — it's what makes the "zero blind spots" guarantee possible.
+
+7. **Test what matters.** Every Effect pipeline gets a Bun test. Every state machine gets a Bun test. If a user can trigger a state, there's a test proving the app handles it correctly.
+
+---
+
+## COMMAND
+
+Acknowledge this protocol. Execute Phase 0 (Codebase Reconnaissance) immediately based on the provided codebase. Then seamlessly and autonomously execute Phases 1 through 4. Loop Phase 4 continuously. Use `surf cli` as your visual validation layer. Do not stop until the dApp is mathematically flawless, every scenario is covered, and the experience earns a 10/10 from the harshest critic.
+
+---
+
+Base directory for this skill: /home/felt/.claude/plugins/cache/superpowers-marketplace/superpowers/4.1.1/skills/writing-plans
+
+# Writing Plans
+
+## Overview
+
+Write comprehensive implementation plans assuming the engineer has zero context for our codebase and questionable taste. Document everything they need to know: which files to touch for each task, code, testing, docs they might need to check, how to test it. Give them the whole plan as bite-sized tasks. DRY. YAGNI. TDD. Frequent commits.
+
+Assume they are a skilled developer, but know almost nothing about our toolset or problem domain. Assume they don't know good test design very well.
+
+**Announce at start:** "I'm using the writing-plans skill to create the implementation plan."
+
+**Context:** This should be run in a dedicated worktree (created by brainstorming skill).
+
+**Save plans to:** `docs/plans/YYYY-MM-DD-<feature-name>.md`
+
+## Bite-Sized Task Granularity
+
+**Each step is one action (2-5 minutes):**
+- "Write the failing test" - step
+- "Run it to make sure it fails" - step
+- "Implement the minimal code to make the test pass" - step
+- "Run the tests and make sure they pass" - step
+- "Commit" - step
+
+## Plan Document Header
+
+**Every plan MUST start with this header:**
+
+```markdown
+# [Feature Name] Implementation Plan
+
+> **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
+
+**Goal:** [One sentence describing what this builds]
+
+**Architecture:** [2-3 sentences about approach]
+
+**Tech Stack:** [Key technologies/libraries]
+
+---
+```
+
+## Task Structure
+
+```markdown
+### Task N: [Component Name]
+
+**Files:**
+- Create: `exact/path/to/file.py`
+- Modify: `exact/path/to/existing.py:123-145`
+- Test: `tests/exact/path/to/test.py`
+
+**Step 1: Write the failing test**
+
+```python
+def test_specific_behavior():
+    result = function(input)
+    assert result == expected
+```
+
+**Step 2: Run test to verify it fails**
+
+Run: `pytest tests/path/test.py::test_name -v`
+Expected: FAIL with "function not defined"
+
+**Step 3: Write minimal implementation**
+
+```python
+def function(input):
+    return expected
+```
+
+**Step 4: Run test to verify it passes**
+
+Run: `pytest tests/path/test.py::test_name -v`
+Expected: PASS
+
+**Step 5: Commit**
+
+```bash
+git add tests/path/test.py src/path/file.py
+git commit -m "feat: add specific feature"
+```
+```
+
+## Remember
+- Exact file paths always
+- Complete code in plan (not "add validation")
+- Exact commands with expected output
+- Reference relevant skills with @ syntax
+- DRY, YAGNI, TDD, frequent commits
+
+## Execution Handoff
+
+After saving the plan, offer execution choice:
+
+**"Plan complete and saved to `docs/plans/<filename>.md`. Two execution options:**
+
+**1. Subagent-Driven (this session)** - I dispatch fresh subagent per task, review between tasks, fast iteration
+
+**2. Parallel Session (separate)** - Open new session with executing-plans, batch execution with checkpoints
+
+**Which approach?"**
+
+**If Subagent-Driven chosen:**
+- **REQUIRED SUB-SKILL:** Use superpowers:subagent-driven-development
+- Stay in this session
+- Fresh subagent per task + code review
+
+**If Parallel Session chosen:**
+- Guide them to open new session in worktree
+- **REQUIRED SUB-SKILL:** New session uses superpowers:executing-plans
+
+---
+
+This session is being continued from a previous conversation that ran out of context. The summary below covers the earlier portion of the conversation.
+
+Analysis:
+Let me chronologically analyze the conversation:
+
+1. **User's Initial Request**: A massive, detailed system directive called "LUCID GLASS" dApp — a comprehensive UI/UX refinement plan for a Starknet web app. The directive has 4 phases:
+   - Phase 0: Codebase Reconnaissance & Contract Inventory
+   - Phase 1: "Zero Blind Spots" State Architecture (wallet connection state machine, transaction lifecycle, data loading states, Effect pipeline architecture)
+   - Phase 2: "Lucid" Design Framework (glassmorphism, typography, borders, shadows, whitespace, motion)
+   - Phase 3: Sequential Re-Architecture (7 steps)
+   - Phase 4: Visual QA & Iteration Loop
+
+2. **Phase 0 Execution**: I launched 3 parallel exploration agents to audit:
+   - Frontend routes and components
+   - Anti-patterns in codebase
+   - Services and contract layer
+   - Current CSS and design tokens
+
+3. **Phase 0 Findings**:
+   - Single-page Next.js 15 app with 3 interactive sections
+   - Already uses Effect + @effect-atom for state management
+   - Already uses Tailwind CSS v4 with glass design tokens
+   - Already uses starknet.js 9
+   - Anti-patterns found: debug console.logs in FalconSigner, untyped ABI result, inline glass styles, missing tabular-nums, generic error messages
+   - Strong foundations but inconsistent styling application
+
+4. **Plan Creation**: I used the writing-plans skill to create a 12-task implementation plan saved to `docs/plans/2026-02-26-lucid-glass-dapp.md`
+
+5. **Execution Approach**: User chose "Parallel subagents" for maximum speed
+
+6. **Task Tracking Setup**: Created 7 tasks with dependencies:
+   - Task 1: CSS design tokens (no deps)
+   - Task 2: Migrate inline styles (blocked by 1)
+   - Task 3: Remove debug logging (no deps)
+   - Task 4: Create UI component library (no deps)
+   - Task 5: Integrate UI components + error mapping + tx feedback (blocked by 1, 2, 4)
+   - Task 6: Polish landing + responsive + micro-interactions (blocked by 5)
+   - Task 7: Write tests (blocked by 4, 5)
+
+7. **Wave 1 Execution** (Tasks 1, 3, 4 in parallel):
+   - Task 3 (FalconSigner debug logging): Haiku agent failed due to permissions, I did it directly
+   - Task 1 (CSS): Agent struggled with Edit/Bash permissions but managed via Write to rewrite the full file
+   - Task 4 (UI components): Agent created all 7 files successfully (CopyButton, AddressDisplay, GlassSkeleton, EmptyState, StatusBadge, TokenAmount, ExplorerLink)
+
+8. **Wave 2 Execution** (Tasks 2 + 5):
+   - Created `error-messages.ts` service file directly
+   - Dispatched background agent for landing/non-interactive component style migrations
+   - Started directly editing SignVerifyPanel.tsx, SendTransaction.tsx, AccountDeployFlow.tsx
+   - Background agent completed all 12 edits across 7 files for landing components
+
+9. **Current state when summary was requested**:
+   - I had just replaced `extractFailureMessage` in AccountDeployFlow.tsx with `extractUserMessage`
+   - Still need to finish AccountDeployFlow.tsx edits (inline style migration, UI component integration, deploying state feedback, warning card, deployed card, error card)
+   - Tasks 2 and 5 are in_progress
+   - Tasks 6 and 7 are pending
+
+Let me catalog all the files that were modified/created:
+
+**Created files:**
+- `docs/plans/2026-02-26-lucid-glass-dapp.md` - Implementation plan
+- `apps/demo/src/services/error-messages.ts` - Error-to-user-message mapping
+- `apps/demo/src/components/ui/CopyButton.tsx`
+- `apps/demo/src/components/ui/AddressDisplay.tsx`
+- `apps/demo/src/components/ui/GlassSkeleton.tsx`
+- `apps/demo/src/components/ui/EmptyState.tsx`
+- `apps/demo/src/components/ui/StatusBadge.tsx`
+- `apps/demo/src/components/ui/TokenAmount.tsx`
+- `apps/demo/src/components/ui/ExplorerLink.tsx`
+
+**Modified files:**
+- `apps/demo/src/app/globals.css` - Added glass utility classes, animations, scrollbar
+- `apps/demo/src/services/FalconSigner.ts` - Removed debug console.logs
+- `apps/demo/src/components/interactive/SignVerifyPanel.tsx` - Migrated inline styles, added animate-fade-in, tabular-nums
+- `apps/demo/src/components/interactive/SendTransaction.tsx` - Migrated styles, integrated ExplorerLink, extractUserMessage, added sending state card
+- `apps/demo/src/components/interactive/AccountDeployFlow.tsx` - Started migration (imports added, extractFailureMessage replaced)
+- `apps/demo/src/components/landing/NavHeader.tsx` - glass-btn migration (by agent)
+- `apps/demo/src/components/landing/Hero.tsx` - tabular-nums (by agent)
+- `apps/demo/src/components/landing/WhyPostQuantum.tsx` - stagger-child (by agent)
+- `apps/demo/src/components/interactive/PipelineVisualizer.tsx` - glass-btn, glass-card-active/success, tabular-nums (by agent)
+- `apps/demo/src/components/interactive/HexDisplay.tsx` - glass-display (by agent)
+- `apps/demo/src/components/interactive/KeyManagementPanel.tsx` - glass-btn, glass-display (by agent)
+- `apps/demo/src/components/ThemeToggle.tsx` - glass-btn (by agent)
+
+Now let me trace the exact state of AccountDeployFlow.tsx - what's been done and what remains:
+- ✅ Added imports for extractUserMessage, AddressDisplay, ExplorerLink, TokenAmount
+- ✅ Removed extractFailureMessage function
+- ✅ Changed first extractFailureMessage call to extractUserMessage
+- ❌ Still need to change second extractFailureMessage call (line ~199 for deploy error)
+- ❌ Still need to migrate inline styles (select, buttons, address display, status cards)
+- ❌ Still need to integrate AddressDisplay, ExplorerLink, TokenAmount components
+- ❌ Still need to add deploying state feedback card
+- ❌ Need to remove unused Cause import
+
+Also need to clean up unused imports in SendTransaction.tsx (Cause was removed from import but still need to verify).
+
+Summary:
+1. Primary Request and Intent:
+   The user provided a comprehensive system directive called "LUCID GLASS" dApp to transform an existing Falcon-512 Starknet demo app into a premium glassmorphism dApp with "zero blind spots." The directive specifies 4 phases:
+   - **Phase 0**: Full codebase audit (frontend, contracts, anti-patterns)
+   - **Phase 1**: State architecture with Effect pipelines, wallet/transaction state machines, typed error handling
+   - **Phase 2**: Visual design framework (glassmorphism, typography, animations, spatial hierarchy)
+   - **Phase 3**: Sequential re-architecture (Effect pipelines → state atoms → CSS foundation → glass layout → component library → micro-interactions → scenario coverage)
+   - **Phase 4**: Continuous visual QA loop using surf CLI
+   
+   The user explicitly chose **"Parallel subagents"** execution approach for maximum speed when asked.
+
+2. Key Technical Concepts:
+   - **Next.js 15** App Router with Turbopack, React 19, TypeScript 5.7
+   - **Tailwind CSS 4** with `@theme` CSS-first config (not tailwind.config.js)
+   - **Effect** library for typed error handling (Schema.TaggedError, Effect.fn, Effect.tryPromise)
+   - **@effect-atom/atom-react** for state management (Atom.make, Atom.keepAlive, useAtomValue, useAtomSet)
+   - **starknet.js 9** for Starknet RPC interaction
+   - **Glassmorphism design system**: backdrop-filter blur, glass-bg/glass-border CSS variables, shadow glows
+   - **Falcon-512** post-quantum signature scheme (WASM-based crypto operations)
+   - **ManagedRuntime** pattern for Effect service composition (Layer.mergeAll, Layer.provide)
+   - **Branded types**: TxHash, ContractAddress via Schema.brand
+   - **Custom easing**: `cubic-bezier(0.32, 0.72, 0, 1)` used throughout
+
+3. Files and Code Sections:
+
+   - **`apps/demo/src/app/globals.css`** — Core design system CSS
+     - Modified by background agent to add glass utility classes, micro-interaction animations, and scrollbar styling
+     - Added `.glass-input`, `.glass-select`, `.glass-display`, `.glass-btn` form control classes
+     - Added `.glass-card-success`, `.glass-card-error`, `.glass-card-active`, `.glass-card-warning` status modifier classes
+     - Added `@keyframes fade-in`, `scale-in`, `pulse-glow`, `slide-up` with `.animate-*` utility classes
+     - Added `.stagger-delay-1` through `.stagger-delay-5` for animation delays
+     - Added custom scrollbar styling with glass tokens
+     - All animations respect `prefers-reduced-motion: reduce`
+
+   - **`apps/demo/src/services/error-messages.ts`** — NEW: Typed error-to-user-message mapping
+     - Created directly by me
+     - Maps all 11 AppError types to human-readable messages
+     - Contains `mapErrorToUserMessage(error: AppError): string` with switch on `error._tag`
+     - Contains `extractUserMessage<A, E>(exit: Exit.Exit<A, E>, fallback: string): string` helper
+     - Special handling for AccountDeployError (INSUFFICIENT_ACCOUNT_BALANCE, CONTRACT_ALREADY_DEPLOYED), TransactionSubmitError (nonce, INSUFFICIENT), DevnetFetchError
+     ```typescript
+     export function mapErrorToUserMessage(error: AppError): string {
+       switch (error._tag) {
+         case "WasmLoadError":
+           return "Failed to load the cryptography module. Try refreshing the page."
+         case "InsufficientFundsError":
+           return `Insufficient STRK balance at ${error.address.slice(0, 10)}\u2026${error.address.slice(-4)}. Send at least ${error.required} wei to continue.`
+         // ... all 11 error types mapped
+       }
+     }
+     ```
+
+   - **`apps/demo/src/services/FalconSigner.ts`** — Removed 8 debug console.log statements
+     - Lines 104-111 removed from `_signHash` method
+     - Before: 8 console.log statements logging txHash, sig length, sig bytes
+     - After: Just `if (Exit.isSuccess(exit)) { return exit.value }`
+
+   - **`apps/demo/src/components/ui/CopyButton.tsx`** — NEW: Reusable copy-to-clipboard button
+     - Uses `glass-btn` class, shows "✓ Copied" for 2s after click
+     ```typescript
+     export function CopyButton({ value, label = "Copy", className = "" }: CopyButtonProps)
+     ```
+
+   - **`apps/demo/src/components/ui/AddressDisplay.tsx`** — NEW: Truncated address with copy + explorer link
+     - Uses `glass-display` class, truncates to first 10 + last 4 chars
+     ```typescript
+     export function AddressDisplay({ address, label, explorerBaseUrl, full = false }: AddressDisplayProps)
+     ```
+
+   - **`apps/demo/src/components/ui/GlassSkeleton.tsx`** — NEW: Loading shimmer placeholder
+     - Configurable lines count, last line at 60% width, uses `skeleton-shimmer` class
+
+   - **`apps/demo/src/components/ui/EmptyState.tsx`** — NEW: Contextual empty state with optional CTA
+
+   - **`apps/demo/src/components/ui/StatusBadge.tsx`** — NEW: Pill badge with 5 variants (success/error/warning/info/pending)
+     - Pending variant has animated pulsing dot
+
+   - **`apps/demo/src/components/ui/TokenAmount.tsx`** — NEW: Formatted bigint token display
+     ```typescript
+     export function TokenAmount({ amount, decimals = 18, symbol = "STRK", className = "" }: TokenAmountProps)
+     ```
+
+   - **`apps/demo/src/components/ui/ExplorerLink.tsx`** — NEW: Block explorer link (tx or contract)
+     ```typescript
+     export function ExplorerLink({ baseUrl, txHash, address, className = "" }: ExplorerLinkProps)
+     ```
+
+   - **`apps/demo/src/components/interactive/SignVerifyPanel.tsx`** — Migrated inline styles
+     - Input: `style={{ background/border }}` → `className="glass-input ..."`
+     - Success result card: inline `style={{ boxShadow, borderColor }}` → `glass-card-success` or `glass-card-error` class + `animate-fade-in`
+     - Error card: → `glass-card-static glass-card-error animate-fade-in`
+     - Try Again button: → `glass-btn`
+     - Duration display: added `tabular-nums`
+
+   - **`apps/demo/src/components/interactive/SendTransaction.tsx`** — Major refactor
+     - Removed `Cause` import (no longer needed)
+     - Added `extractUserMessage` and `ExplorerLink` imports
+     - Error handling: replaced manual `Cause.failureOption` → `extractUserMessage(exit, "Transaction failed")`
+     - Both input fields: `style={{ background/border }}` → `glass-input`
+     - Added sending state card with `glass-card-active animate-fade-in` and pulse-glow indicator
+     - Success card: → `glass-card-success animate-fade-in`, integrated `<ExplorerLink>`, added `tabular-nums`
+     - Error card: → `glass-card-error animate-fade-in`
+
+   - **`apps/demo/src/components/interactive/AccountDeployFlow.tsx`** — PARTIALLY DONE
+     - Added imports: `extractUserMessage`, `AddressDisplay`, `ExplorerLink`, `TokenAmount`
+     - Removed `extractFailureMessage` function definition entirely
+     - Changed first `extractFailureMessage` call to `extractUserMessage` (prepare error)
+     - **STILL NEEDS**: second `extractFailureMessage` → `extractUserMessage` (deploy error), inline style migrations, UI component integrations, deploying state feedback card
+
+   - **Landing/other components modified by background agent:**
+     - `NavHeader.tsx`: network selector group `style` → `glass-btn` class
+     - `Hero.tsx`: stat values added `tabular-nums`
+     - `WhyPostQuantum.tsx`: cards added `stagger-child` class
+     - `PipelineVisualizer.tsx`: toolbar `style` → `glass-btn`, step cards `style` → `glass-card-active`/`glass-card-success`, step count added `tabular-nums`
+     - `HexDisplay.tsx`: `style={{ background }}` → `glass-display` class (both single-value and array-value)
+     - `KeyManagementPanel.tsx`: Import/Export buttons `style` → `glass-btn`, NTT display `style` → `glass-display`
+     - `ThemeToggle.tsx`: button `style` → `glass-btn`
+
+   - **Key read-only files for context:**
+     - `apps/demo/src/services/errors.ts` — 12 typed error classes using Schema.TaggedError
+     - `apps/demo/src/services/types.ts` — Domain types (FalconKeypair, PackedPublicKey, VerificationStep, DeployStep, etc.)
+     - `apps/demo/src/atoms/starknet.ts` — DeployStep union type with 10 states, networkAtom with localStorage persistence
+     - `apps/demo/src/atoms/falcon.ts` — wasmStatusAtom, keypairAtom, signatureAtom, packedKeyAtom, verificationStepAtom
+     - `apps/demo/src/config/networks.ts` — NetworkConfig with devnet/sepolia/mainnet, class hashes
+     - `apps/demo/src/services/StarknetService.ts` — RPC service with Effect pipelines, hardcoded resource bounds for Falcon (~50M L2 gas)
+     - `apps/demo/src/components/interactive/accountDeployPipeline.ts` — prepareAccountDeployEffect, deployAccountEffect
+
+4. Errors and Fixes:
+   - **Haiku agent permission denied**: Task 3 (remove debug logging) dispatched to haiku model agent, which couldn't get Edit/Write/Bash permissions. Fixed by doing the edit directly in the main session.
+   - **CSS agent permission denied for Edit**: Task 1 agent had Edit denied, then Bash denied, then tried Write and succeeded by rewriting the entire file. The agent ultimately completed before I stopped it.
+   - **UI component agent CopyButton.tsx first Write denied**: The first Write attempt for CopyButton.tsx was denied, but the agent retried and it succeeded on the second attempt. All other files were created successfully.
+   - **No user feedback on errors** — user did not intervene on any of these permission issues.
+
+5. Problem Solving:
+   - Solved the parallel execution strategy by grouping tasks into waves based on file dependencies
+   - Wave 1 (independent): Tasks 1 (CSS), 3 (FalconSigner), 4 (UI components) — all touch different files
+   - Wave 2 (dependent on Wave 1): Tasks 2 + 5 combined — split into background agent for non-overlapping files and direct edits for shared files
+   - Handled subagent permission issues by doing critical edits directly when agents failed
+   - Created error-messages.ts as an independent new file while waiting for background agents
+
+6. All User Messages:
+   - **Message 1** (massive): The complete "LUCID GLASS" dApp system directive with detailed phases, tech stack requirements, state machine specifications, visual design rules, execution order, and QA loop instructions. Key quote: "Acknowledge this protocol. Execute Phase 0 (Codebase Reconnaissance) immediately. Then seamlessly and autonomously execute Phases 1 through 4."
+   - **Message 2** (answer to question): User selected **"Parallel subagents"** — "I dispatch multiple independent tasks simultaneously via parallel subagents for maximum speed"
+
+7. Pending Tasks:
+   - **Task 2** [in_progress]: Migrate inline styles to glass utility classes — landing components done by agent, AccountDeployFlow.tsx partially done
+   - **Task 5** [in_progress]: Integrate UI components + error mapping + tx feedback — SignVerifyPanel and SendTransaction done, AccountDeployFlow.tsx partially done
+   - **Task 6** [pending, blocked by 5]: Polish landing sections + responsive + micro-interactions (stagger animations, mobile nav, responsive pass, button press feedback, consistent focus rings)
+   - **Task 7** [pending, blocked by 4, 5]: Write tests for error-messages.ts, TokenAmount, CopyButton, AddressDisplay, StatusBadge
+
+8. Current Work:
+   I was in the middle of editing **`AccountDeployFlow.tsx`** for Tasks 2 + 5 combined. Specifically:
+   
+   **Completed on AccountDeployFlow.tsx:**
+   - Added imports for `extractUserMessage`, `AddressDisplay`, `ExplorerLink`, `TokenAmount`
+   - Removed the `extractFailureMessage` helper function
+   - Changed first error message call: `extractFailureMessage(prepareExit, ...)` → `extractUserMessage(prepareExit, ...)`
+   
+   **Still needed on AccountDeployFlow.tsx:**
+   - Change second error message call: `extractFailureMessage(deployExit, "Account deployment failed")` → `extractUserMessage(deployExit, "Account deployment failed")` (around the handleDeploy function)
+   - Remove unused `Cause` from the import statement (was used by the now-deleted `extractFailureMessage`)
+   - Migrate devnet account select: `style={{ background, border }}` → `glass-select` class
+   - Migrate address display box (line ~347): Replace manual address display with `<AddressDisplay>` component
+   - Migrate copy button: Replace manual clipboard button with integrated `<CopyButton>` via AddressDisplay
+   - Replace balance display with `<TokenAmount>` component
+   - Migrate warning card (classHash === "0x0"): `style={{ borderColor, boxShadow }}` → `glass-card-warning` class
+   - Migrate deployed success card: `style={{ boxShadow, borderColor }}` → `glass-card-success`, integrate `<ExplorerLink>`
+   - Migrate error card: `style={{ boxShadow, borderColor }}` → `glass-card-error`
+   - Migrate ghost buttons: `style={{ background, border }}` → `glass-btn`
+   - Add deploying state feedback card (when `deployStep.step === "deploying"`) with `glass-card-active animate-fade-in` and pulse-glow indicator
+   - Add `animate-fade-in` to success/error result cards
+   - Add `active:scale-[0.98]` to primary buttons for press feedback
+
+9. Optional Next Step:
+   Continue editing `AccountDeployFlow.tsx` to complete the remaining inline style migrations and UI component integrations. The last edit made was:
+   ```
+   extractFailureMessage(prepareExit, "Failed to prepare deployment") → extractUserMessage(prepareExit, "Failed to prepare deployment")
+   ```
+   The immediate next edit should be changing the second `extractFailureMessage` call in `handleDeploy`:
+   ```typescript
+   message: extractFailureMessage(deployExit, "Account deployment failed"),
+   ```
+   to:
+   ```typescript
+   message: extractUserMessage(deployExit, "Account deployment failed"),
+   ```
+   Then proceed with the remaining inline style migrations and UI component integrations in that same file, followed by completing Tasks 6 and 7.
+
+If you need specific details from before compaction (like exact code snippets, error messages, or content you generated), read the full transcript at: /home/felt/.REDACTED.jsonl
+Please continue the conversation from where we left off without asking the user any further questions. Continue with the last task that you were asked to work on.
+
+---
+
+commit this

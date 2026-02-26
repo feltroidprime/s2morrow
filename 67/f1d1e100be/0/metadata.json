@@ -1,0 +1,33 @@
+{
+  "cli_version": "0.4.2",
+  "checkpoint_id": "67f1d1e100be",
+  "session_id": "2dc9e661-eaff-49a3-a646-8e9028601667",
+  "strategy": "manual-commit",
+  "created_at": "2026-02-26T17:21:33.049178034Z",
+  "branch": "frontend",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/demo/src/components/interactive/SendTransaction.tsx",
+    "apps/demo/src/services/StarknetService.ts"
+  ],
+  "agent": "Claude Code",
+  "transcript_identifier_at_start": "d3baf63d-feec-4f59-bdef-d95b4b5a4c1a",
+  "checkpoint_transcript_start": 1661,
+  "transcript_lines_at_start": 1661,
+  "token_usage": {
+    "input_tokens": 14,
+    "cache_creation_tokens": 18627,
+    "cache_read_tokens": 1583717,
+    "output_tokens": 14079,
+    "api_call_count": 12
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-02-26T17:21:32.33860431Z",
+    "agent_lines": 0,
+    "human_added": 134,
+    "human_modified": 47,
+    "human_removed": 0,
+    "total_committed": 162,
+    "agent_percentage": 0
+  }
+}

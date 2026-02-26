@@ -1,0 +1,5 @@
+make demo-serve
+
+---
+
+add this to a small section in the readme

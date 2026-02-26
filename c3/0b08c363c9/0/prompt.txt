@@ -1,0 +1,823 @@
+Implement the following plan:
+
+# SYSTEM DIRECTIVE: ULTRA-PREMIUM "LUCID GLASS" UI/UX REFINEMENT — Falcon-512 Demo
+
+**ROLE:** Lead UI/UX Perfectionist & Apple-Tier Frontend Engineer
+**OBJECTIVE:** Transform the Falcon-512 post-quantum signature demo into a "Calm Technology" masterpiece. The UI must feel expensive, weightless, lucid, and mathematically flawless — mirroring top-tier Apple software or high-end cryptography dashboards like Fireblocks or Ledger Live.
+**TARGET AESTHETIC:** Glassmorphism, extreme minimalism, fluid motion, deep spatial hierarchy, invisible UI.
+
+---
+
+## PROJECT CONTEXT
+
+This is a **Next.js 15 + Tailwind CSS 4 + TypeScript** single-page app at `apps/demo/`. It demonstrates Falcon-512 post-quantum signature verification on Starknet. The app has 5 scrollable sections anchored by hash navigation:
+
+| Section | Component File | Current State |
+|---------|---------------|---------------|
+| **Hero** | `Hero.tsx` | Large heading + 2 CTA buttons + 3 stat cards (Steps: 63K, Calldata: 62, Storage: 29). Solid dark slate bg, flat cards with muted borders. |
+| **Why Post-Quantum** | `WhyPostQuantum.tsx` | 4-card info grid (Quantum Threat, Account Abstraction, Falcon-512, Hint-Based Verification). Flat `bg-falcon-surface` cards, visible borders. |
+| **Performance Stats** | `PerformanceStats.tsx` | Data table (verify, hash_to_point, NTT operations) + callout box. Flat table with alternating rows, no visual hierarchy. |
+| **Verification Playground** | `VerificationPlayground.tsx` → `KeyManagementPanel.tsx` + `SignVerifyPanel.tsx` | 2-column grid. Generate/Import/Export buttons, message input, Sign & Verify action, hex result display. Solid button fills, standard inputs. |
+| **Pipeline Visualizer** | `PipelineVisualizer.tsx` + `PipelineStepCard.tsx` | 6-step verification pipeline with Play/Pause/Step/Reset. Cards show pending/active/complete states. Flat cards, simple dot indicators, basic transitions. |
+| **Account Deploy Flow** | `AccountDeployFlow.tsx` + `SendTransaction.tsx` | 5-step numbered list (Generate → Pack → Compute → Fund → Deploy). Step indicators with number badges, expandable active steps. Monolithic, dense layout. |
+
+**Navigation:** Sticky `NavHeader.tsx` with Falcon-512 brand, section links, and Devnet/Sepolia/Mainnet toggle.
+**Theme:** Dark mode default (`#0f172a` bg, `#1e293b` surface), light mode available via floating `ThemeToggle.tsx`.
+**State:** Effect-Atom atoms in `atoms/falcon.ts`, `atoms/starknet.ts`, `atoms/pipeline.ts`.
+**Styling:** Tailwind CSS 4 with `@theme` block defining `falcon-*` color tokens in `globals.css`.
+
+---
+
+## PHASE 1: SYSTEMIC NOISE AUDIT — Current Problems
+
+Audit the codebase at `apps/demo/src/` and identify these specific issues:
+
+### Visual Clutter
+1. **Harsh borders everywhere** — Cards use `border border-falcon-muted/20` creating visible bounding boxes. Pipeline step cards, info cards, and deploy steps all have hard outlines.
+2. **Heavy opaque backgrounds** — `bg-falcon-surface` (`#1e293b`) is a solid, heavy slab. No translucency or depth. Every card is the same flat rectangle on the same flat background.
+3. **Aggressive button fills** — `bg-falcon-primary` (indigo) and `bg-falcon-accent` (cyan) are fully saturated solid fills. No gradient, no glass, no subtlety.
+4. **Redundant labels** — Section headers are large and bold but lack typographic finesse. "Verification Playground", "Account Deploy Flow" feel utilitarian.
+5. **Cramped spacing** — `px-6 py-20` gives inadequate breathing room. Cards use `p-4`/`p-6` with `gap-4` — too tight for a premium feel.
+6. **No motion** — Zero animations except the pipeline pulse dot. No entrance animations, no hover transitions, no scroll-triggered reveals.
+7. **Flat hierarchy** — All cards sit at the same visual depth. No layering, no parallax, no spatial separation. The page is a flat stack.
+8. **Monospace overuse** — Hex values, step counts, and code displays all use `font-mono` without visual distinction between data types.
+9. **Theme toggle is crude** — Floating emoji button (☀️/🌙) with a basic border feels like a prototype element.
+
+### Strategy: "Explicit UI" → "Implicit UI"
+- **Remove visible borders.** Use backdrop blur + ultra-low-opacity backgrounds to define regions.
+- **Replace solid backgrounds** with translucent glass layers over a rich gradient environment.
+- **Typography as hierarchy.** Use weight, tracking, and opacity instead of size alone.
+- **Whitespace doubles.** Every margin and padding increases by 1.5-2x.
+- **Motion as feedback.** Spring-based transitions on every state change, scroll-triggered entrances.
+
+---
+
+## PHASE 2: THE "LUCID" DESIGN FRAMEWORK (STRICT RULES)
+
+Every line of CSS/component code must follow these principles:
+
+### Materials over Colors
+- **Glass cards:** `backdrop-blur-xl bg-white/[0.04]` (dark) or `backdrop-blur-xl bg-white/40` (light) instead of solid `bg-falcon-surface`.
+- **Layered glass:** Nav bar gets heavier blur (`backdrop-blur-2xl bg-falcon-bg/70`), content cards get lighter blur.
+- **Surface hierarchy:** Background → Ground glass → Raised glass → Floating glass (each layer slightly more opaque).
+
+### Typography
+- Font: Inter (already in Next.js) with tight tracking on headings (`tracking-[-0.02em]`), normal for body.
+- **Hierarchy via opacity only for secondary text:** `text-falcon-text/90` primary, `text-falcon-text/50` secondary, `text-falcon-text/30` tertiary — not different sizes.
+- Section headings: `text-4xl font-semibold tracking-tight` (not bold — semibold is more refined).
+- Monospace data: `font-mono text-falcon-accent/70 text-xs` for hex values — subtle, not screaming.
+
+### Borders & Radii
+- **No visible borders on cards.** Replace with `border border-white/[0.06]` — barely perceptible edge that catches light.
+- `rounded-2xl` for all cards (16px), `rounded-xl` for buttons (12px), `rounded-full` for pills/badges.
+- Pipeline step cards: `rounded-3xl` (24px) for a softer, more organic feel.
+
+### Shadows
+- **Multi-layer colored shadows** on glass cards:
+  ```
+  shadow-[0_0_0_1px_rgba(255,255,255,0.03),0_8px_40px_-12px_rgba(0,0,0,0.4)]
+  ```
+- Active/hover states add a subtle glow derived from `falcon-primary`:
+  ```
+  shadow-[0_0_30px_-5px_rgba(99,102,241,0.15)]
+  ```
+- Success states glow green, error states glow red — soft, not harsh.
+
+### Whitespace as Architecture
+- Section padding: `py-32` (128px) instead of `py-20` (80px).
+- Card padding: `p-8` or `p-10` instead of `p-6`.
+- Grid gaps: `gap-6` or `gap-8` instead of `gap-4`.
+- Max content width: `max-w-6xl` instead of `max-w-5xl` — give it room.
+
+### Motion
+- **Entrance animations:** Sections fade+slide up on scroll using Intersection Observer (or CSS `@starting-style` with `transition`).
+- **Hover transitions:** Cards lift slightly (`translate-y-[-2px]`) with shadow deepening. `transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]`.
+- **Pipeline step transitions:** Active step expands with spring animation. Complete steps subtly shrink/dim.
+- **Button hover:** Scale 1.02, shadow bloom. `transition-all duration-200`.
+- **Glass shimmer:** On hover, a subtle gradient sweep across the card surface (CSS `background-position` animation on a gradient overlay).
+- **Respect `prefers-reduced-motion`** — all motion behind `motion-safe:` prefix.
+
+### Background Environment
+- Replace flat `bg-falcon-bg` with a **rich gradient mesh**:
+  ```css
+  background: radial-gradient(ellipse at 20% 50%, rgba(99,102,241,0.08) 0%, transparent 50%),
+              radial-gradient(ellipse at 80% 20%, rgba(6,182,212,0.06) 0%, transparent 50%),
+              radial-gradient(ellipse at 50% 100%, rgba(16,185,129,0.04) 0%, transparent 50%),
+              #0f172a;
+  ```
+- A subtle noise/grain texture overlay at 2-3% opacity for depth.
+- Light mode: similar mesh but with softer pastels on white.
+
+---
+
+## PHASE 3: SEQUENTIAL RE-ARCHITECTURE
+
+Execute in this exact order. All files are under `apps/demo/src/`.
+
+### Step 1: Foundation — `globals.css` + `layout.tsx`
+1. Extend `@theme` block with new glass tokens:
+   - `--glass-bg`, `--glass-border`, `--glass-shadow`, `--glass-blur`
+   - Dark/light variants
+2. Add mesh gradient background to `body` via `globals.css`.
+3. Add subtle grain texture (CSS-only: `background-image: url("data:image/svg+xml,...")` or tiny repeated noise).
+4. Import Inter with optical sizing from `next/font/google` in `layout.tsx` if not already.
+5. Set base `antialiased` and `selection:bg-falcon-primary/20` styles.
+
+### Step 2: The Glass Layer — NavHeader, Cards, Containers
+1. **`NavHeader.tsx`** — Rewrite to glass nav: `backdrop-blur-2xl bg-falcon-bg/60 border-b border-white/[0.06]`. Network selector: pill-style toggle with glass background, active state uses subtle fill.
+2. **`Hero.tsx`** — Stat cards become glass: `backdrop-blur-xl bg-white/[0.04] border border-white/[0.06] rounded-2xl`. CTA buttons: primary gets a subtle gradient (`from-falcon-primary to-falcon-primary/80`), secondary stays ghost glass.
+3. **`WhyPostQuantum.tsx`** — Info cards: glass treatment, generous `p-8`, icon or emoji accent at top.
+4. **`PerformanceStats.tsx`** — Table becomes a glass card with rows separated by `border-white/[0.04]` dividers. Monospace values get accent color.
+5. **All sections** — Wrap each in a container with `max-w-6xl mx-auto px-8` and `py-32`.
+
+### Step 3: Component Subtraction — Interactive Elements
+1. **Buttons (`KeyManagementPanel.tsx`, `SignVerifyPanel.tsx`, `AccountDeployFlow.tsx`):**
+   - Primary: Subtle gradient fill + glass border. No heavy solid color.
+   - Secondary: Ghost glass (`bg-white/[0.04] border-white/[0.08]`).
+   - Hover: Scale 1.02, shadow bloom.
+   - Disabled: Lower opacity + no hover effects.
+2. **Text inputs (`SignVerifyPanel.tsx`, `SendTransaction.tsx`):**
+   - Remove visible border. Use `bg-white/[0.03]` with `focus:bg-white/[0.06]` and `focus:ring-1 focus:ring-falcon-primary/30`.
+   - Placeholder text: `text-falcon-text/20`.
+3. **Select/dropdown (`AccountDeployFlow.tsx`):**
+   - Glass dropdown with backdrop blur.
+4. **`HexDisplay.tsx`** — Monospace data in a subtle glass pill with `text-falcon-accent/60 text-xs`.
+
+### Step 4: Section-Specific Polish
+
+#### `PipelineVisualizer.tsx` + `PipelineStepCard.tsx`
+- Cards: glass treatment with state-dependent glow.
+- **Pending:** Dim glass, muted text, dot indicator at 30% opacity.
+- **Active:** Glass with primary glow ring (`ring-1 ring-falcon-primary/30 shadow-[0_0_30px_-5px_rgba(99,102,241,0.2)]`), animated pulse dot, expanded content area with smooth height transition.
+- **Complete:** Glass with success tint (`bg-emerald-500/[0.04]`), checkmark replaces dot, subtle green glow.
+- Play/Pause/Step/Reset controls: pill-shaped glass buttons in a glass toolbar.
+- Step count display: refined monospace with `text-falcon-accent/50`.
+
+#### `AccountDeployFlow.tsx`
+- Step indicators: Replace number badges with a vertical progress line connecting glass step cards.
+- Active step: Expanded glass card with content, primary glow.
+- Completed: Subtle checkmark, success tint.
+- "Prepare Deploy" / "Deploy" buttons: Large, centered, glass-primary with gradient.
+- Success/Error result cards: Glass with colored glow (green/red), not solid colored backgrounds.
+
+#### `ThemeToggle.tsx`
+- Redesign as a minimal glass pill toggle. Sun/moon as subtle SVG icons (not emoji). Smooth rotation transition on toggle.
+
+### Step 5: State Polish
+1. **Focus rings:** Replace default `ring-2 ring-falcon-primary` with `ring-1 ring-falcon-primary/40` + outer glow shadow. Animated appearance.
+2. **Hover states:** Cards: `hover:bg-white/[0.06] hover:translate-y-[-1px] hover:shadow-lg`. Buttons: `hover:scale-[1.02] hover:shadow-xl`. Links: opacity transition.
+3. **Loading states:** Skeleton shimmers use glass gradient animation instead of gray pulses.
+4. **Scroll-triggered entrances:** Each section fades in + slides up 20px as it enters the viewport. Stagger child elements by 50ms.
+
+---
+
+## PHASE 4: VISUAL QA & ITERATION LOOP (SURF CLI)
+
+*You are a harsh perfectionist with immaculate taste. You have eyes.*
+
+1. **Boot the dev server** if not running: `cd apps/demo && pnpm dev` (should be on `localhost:3000`).
+2. **Screenshot every section** after each phase step using `surf screenshot`.
+3. **Check dark AND light mode** — toggle with the theme button, verify both look premium.
+4. **Emulate devices:**
+   - `surf emulate.device "iPhone 14"` — check mobile layout
+   - `surf emulate.viewport --width 1440 --height 900` — check desktop
+5. **Inspect motion:** Use `surf screenshot` before/after hover states and pipeline transitions.
+6. **Ruthless self-critique checklist:**
+   - [ ] No visible hard borders anywhere
+   - [ ] Glass cards are distinguishable from background but not "boxed"
+   - [ ] Typography hierarchy reads naturally (scan test: can you understand the page in 3 seconds?)
+   - [ ] Monospace data is subtle, not dominant
+   - [ ] Buttons feel pressable, not flat
+   - [ ] Pipeline states are immediately distinguishable
+   - [ ] Deploy flow progress is clear without counting numbers
+   - [ ] Spacing feels luxurious, not cramped
+   - [ ] Background mesh gradient is subtle, not distracting
+   - [ ] Light mode is equally refined, not an afterthought
+   - [ ] No pixel misalignments between cards in a grid
+   - [ ] All interactive elements have smooth hover/focus transitions
+
+7. **Loop Phase 4 continuously.** Fix any issue found, screenshot again, critique again. Do not stop until every item passes.
+
+---
+
+## KEY FILES TO MODIFY
+
+```
+apps/demo/src/app/globals.css          — Theme tokens, mesh gradient, grain texture
+apps/demo/src/app/layout.tsx           — Font setup, antialiased
+apps/demo/src/app/page.tsx             — Section spacing, scroll animations
+apps/demo/src/components/NavHeader.tsx  — Glass nav bar
+apps/demo/src/components/Hero.tsx       — Glass stat cards, refined CTAs
+apps/demo/src/components/WhyPostQuantum.tsx  — Glass info cards
+apps/demo/src/components/PerformanceStats.tsx — Glass table
+apps/demo/src/components/VerificationPlayground.tsx — Layout refinement
+apps/demo/src/components/KeyManagementPanel.tsx — Glass buttons, inputs
+apps/demo/src/components/SignVerifyPanel.tsx — Glass inputs, result cards
+apps/demo/src/components/HexDisplay.tsx — Subtle monospace display
+apps/demo/src/components/PipelineVisualizer.tsx — Glass controls toolbar
+apps/demo/src/components/PipelineStepCard.tsx — Glass state cards with glow
+apps/demo/src/components/AccountDeployFlow.tsx — Glass step cards, progress line
+apps/demo/src/components/SendTransaction.tsx — Glass form, result cards
+apps/demo/src/components/ThemeToggle.tsx — Minimal glass pill toggle
+```
+
+---
+
+**COMMAND:**
+Acknowledge this protocol. Execute Phase 1 (Noise Audit) immediately based on the codebase at `apps/demo/src/`, then seamlessly and autonomously execute Phases 2 through 4. Use parallel agents for independent component work.
+
+**CRITICAL DIRECTIVE:** You must loop Phase 4 continuously. Use `surf` CLI as your visual validation layer to review, critique, and refine the UI. Do not stop, do not request human intervention, and do not exit this loop until the interface is mathematically flawless and achieves a 10/10 ultra-premium quality grade.
+
+
+If you need specific details from before exiting plan mode (like exact code snippets, error messages, or content you generated), read the full transcript at: /home/felt/.REDACTED.jsonl
+
+---
+
+[Request interrupted by user]
+
+---
+
+ONLY USE SURF CLI
+
+---
+
+Base directory for this skill: /home/felt/.claude/skills/surf
+
+# Surf Browser Automation
+
+Control Chrome browser via CLI or Unix socket.
+
+## CLI Quick Reference
+
+```bash
+surf --help                    # Full help
+surf <group>                   # Group help (tab, scroll, page, wait, dialog, emulate, form, perf, ai)
+surf --help-full               # All commands
+surf --find <term>             # Search tools
+surf --help-topic <topic>      # Topic guide (refs, semantic, frames, devices, windows)
+```
+
+## Core Workflow
+
+```bash
+# 1. Navigate to page
+surf navigate "https://example.com"
+
+# 2. Read page to get element refs
+surf page.read
+
+# 3. Click by ref or coordinates
+surf click --ref "e1"
+surf click --x 100 --y 200
+
+# 4. Type text
+surf type --text "hello"
+
+# 5. Screenshot
+surf screenshot --output /tmp/shot.png
+```
+
+## AI Assistants (No API Keys)
+
+Query AI models using your browser's logged-in session. Must be logged into the respective service in Chrome.
+
+### ChatGPT
+```bash
+surf chatgpt "explain this code"
+surf chatgpt "summarize" --with-page              # Include current page context
+surf chatgpt "review" --model gpt-4o              # Specify model
+surf chatgpt "analyze" --file document.pdf        # With file attachment
+```
+
+### Gemini
+```bash
+surf gemini "explain quantum computing"
+surf gemini "summarize" --with-page               # Include page context
+surf gemini "analyze" --file data.csv             # Attach file
+surf gemini "a robot surfing" --generate-image /tmp/robot.png
+surf gemini "add sunglasses" --edit-image photo.jpg --output out.jpg
+surf gemini "summarize" --youtube "https://youtube.com/..."
+surf gemini "hello" --model gemini-2.5-flash      # Models: gemini-3-pro (default), gemini-2.5-pro, gemini-2.5-flash
+surf gemini "wide banner" --generate-image /tmp/banner.png --aspect-ratio 16:9
+```
+
+### Perplexity
+```bash
+surf perplexity "what is quantum computing"
+surf perplexity "explain this page" --with-page   # Include page context
+surf perplexity "deep dive" --mode research       # Research mode (Pro)
+surf perplexity "latest news" --model sonar       # Model selection (Pro)
+```
+
+### Grok (via x.com - requires X.com login in Chrome)
+```bash
+surf grok "what are the latest AI trends on X"    # Search X posts
+surf grok "analyze @username recent activity"     # Profile analysis  
+surf grok "summarize this page" --with-page       # Include page context
+surf grok "find viral AI posts" --deep-search     # DeepSearch mode
+surf grok "quick question" --model fast           # Models: auto, fast, expert, thinking (default)
+```
+
+**Grok Validation & Troubleshooting:**
+```bash
+# Validate Grok UI and check available models (no query sent)
+surf grok --validate
+
+# If models changed, save discovered models to surf.json config
+surf grok --validate --save-models
+```
+
+### AI Studio (via aistudio.google.com - requires Google login in Chrome)
+```bash
+surf aistudio "explain quantum computing"
+surf aistudio "redteam this" --with-page          # Include current page context
+surf aistudio "quick answer" --model gemini-3-flash-preview  # Model selection
+surf aistudio "analyze" --timeout 600             # Custom timeout (default: 300s)
+```
+
+**Why AI Studio over Gemini?** AI Studio gives access to less restricted Gemini models. For Gemini 3 Pro the difference can be significant with certain prompts. Downside: aggressive per-day rate limits on Pro and Flash models.
+
+**Model selection is best-effort:** Pass any AI Studio model id (e.g. `gemini-3.1-pro-preview`, `gemini-3-flash-preview`, `gemini-flash-lite-latest`). If the model isn't found, AI Studio uses whatever model was last selected in the UI.
+
+### AI Studio App Builder
+```bash
+surf aistudio.build "build a portfolio site"
+surf aistudio.build "todo app" --model gemini-3.1-pro-preview   # Model override
+surf aistudio.build "crm dashboard" --output ./out              # Extract zip to directory
+surf aistudio.build "game" --keep-open --timeout 600            # Keep tab open, 10min timeout
+```
+
+Automates AI Studio's App Builder at `aistudio.google.com/apps`. Types your prompt, clicks Build, waits for completion, downloads the generated zip, and optionally extracts it.
+
+- `--output <dir>` extracts the zip to a directory
+- `--model <id>` overrides the model in Advanced Settings
+- `--timeout <seconds>` build timeout (default: 600s)
+- `--keep-open` leaves the AI Studio tab open after completion
+
+Returns `zipPath`, `extractedPath`, `model`, `buildDuration`, and `tookMs`.
+
+### AI Tool Troubleshooting
+
+When AI queries fail, check these common issues:
+
+1. **Not logged in**: The error "login required" means you need to log into the service in Chrome (chatgpt.com, gemini.google.com, perplexity.ai, x.com, or aistudio.google.com)
+2. **Model selection failed**: The UI may have changed. Run `surf grok --validate` to check
+3. **Response timeout**: Thinking models (ChatGPT o1, Grok thinking) can take 45+ seconds. AI Studio builds can take several minutes.
+4. **Element not found**: The service's UI changed. Check for surf-cli updates
+
+**Debugging workflow for agents:**
+```bash
+# 1. Check if the service is accessible and UI is valid
+surf grok --validate
+
+# 2. If models mismatch, update the local settings
+surf grok --validate --save-models
+
+# 3. Retry with explicit model name from validation output
+surf grok "query" --model <model-from-validation>
+
+# 4. If still failing, try with longer timeout
+surf grok "query" --timeout 600
+```
+
+## Tab Management
+
+```bash
+surf tab.list
+surf tab.new "https://google.com"
+surf tab.switch 12345
+surf tab.close 12345
+surf tab.reload                # Reload current tab
+
+# Named tabs (aliases)
+surf tab.name myapp            # Name current tab
+surf tab.switch myapp          # Switch by name
+surf tab.named                 # List named tabs
+surf tab.unname myapp          # Remove name
+
+# Tab groups
+surf tab.group                 # Create/add to tab group
+surf tab.ungroup               # Remove from group
+surf tab.groups                # List all tab groups
+```
+
+## Window Management
+
+```bash
+surf window.list                              # List all windows
+surf window.list --tabs                       # Include tab details
+surf window.new                               # New window
+surf window.new --url "https://example.com"   # New window with URL
+surf window.new --incognito                   # New incognito window
+surf window.new --unfocused                   # Don't focus new window
+surf window.focus 12345                       # Focus window by ID
+surf window.close 12345                       # Close window
+surf window.resize --id 123 --width 1920 --height 1080
+surf window.resize --id 123 --state maximized # States: normal, minimized, maximized, fullscreen
+```
+
+**Window isolation for agents:**
+```bash
+# Create isolated window for agent work
+surf window.new "https://example.com"
+# Returns window ID, use with subsequent commands:
+surf --window-id 123 tab.list
+surf --window-id 123 go "https://other.com"
+```
+
+## Input Methods
+
+```bash
+# CDP method (real events) - default
+surf type --text "hello"
+surf click --x 100 --y 200
+
+# JS method (DOM manipulation) - for contenteditable
+surf type --text "hello" --selector "#input" --method js
+
+# Keys
+surf key Enter
+surf key "cmd+a"
+surf key.repeat --key Tab --count 5           # Repeat key presses
+
+# Hover and drag
+surf hover --ref e5
+surf drag --from-x 100 --from-y 100 --to-x 200 --to-y 200
+```
+
+## Page Inspection
+
+```bash
+surf page.read                 # Accessibility tree with refs + page text
+surf page.read --no-text       # Interactive elements only (no text content)
+surf page.read --ref e5        # Get specific element details
+surf page.read --depth 3       # Limit tree depth
+surf page.read --compact       # Minimal output for LLM efficiency
+surf page.text                 # Plain text content only
+surf page.state                # Modals, loading state, scroll info
+```
+
+## Semantic Element Location
+
+Find and act on elements by role, text, or label instead of refs:
+
+```bash
+# Find by ARIA role
+surf locate.role button --name "Submit" --action click
+surf locate.role textbox --name "Email" --action fill --value "test@example.com"
+surf locate.role link --all                    # Return all matches
+
+# Find by text content
+surf locate.text "Sign In" --action click
+surf locate.text "Accept" --exact --action click
+
+# Find form field by label
+surf locate.label "Username" --action fill --value "john"
+surf locate.label "Password" --action fill --value "secret"
+```
+
+**Actions:** `click`, `fill`, `hover`, `text` (get text content)
+
+## Text Search
+
+```bash
+surf search "login"                    # Find text in page
+surf search "Error" --case-sensitive   # Case-sensitive
+surf search "button" --limit 5         # Limit results
+surf find "login"                      # Alias for search
+```
+
+## Element Inspection
+
+```bash
+surf element.styles e5                 # Get computed styles by ref
+surf element.styles ".card"            # Or by CSS selector
+# Returns: font, color, background, border, padding, bounding box
+```
+
+## Scrolling
+
+```bash
+surf scroll.bottom
+surf scroll.top  
+surf scroll.to --y 500         # Scroll to Y position
+surf scroll.to --ref e5        # Scroll element into view
+surf scroll.by --y 200         # Scroll by amount
+surf scroll.info               # Get scroll position
+```
+
+## Waiting
+
+```bash
+surf wait 2                    # Wait 2 seconds
+surf wait.element ".loaded"    # Wait for element
+surf wait.network              # Wait for network idle
+surf wait.url "/success"       # Wait for URL pattern
+surf wait.dom --stable 100     # Wait for DOM stability
+surf wait.load                 # Wait for page load complete
+```
+
+## Dialog Handling
+
+```bash
+surf dialog.info               # Get current dialog type/message
+surf dialog.accept             # Accept (OK)
+surf dialog.accept --text "response"  # Accept prompt with text
+surf dialog.dismiss            # Dismiss (Cancel)
+```
+
+## Device/Network Emulation
+
+```bash
+# Network throttling
+surf emulate.network slow-3g   # Presets: slow-3g, fast-3g, 4g, offline
+surf emulate.network reset     # Disable throttling
+
+# CPU throttling  
+surf emulate.cpu 4             # 4x slower
+surf emulate.cpu 1             # Reset
+
+# Device emulation (19 presets)
+surf emulate.device "iPhone 14"
+surf emulate.device "Pixel 7"
+surf emulate.device --list     # List available devices
+
+# Custom viewport
+surf emulate.viewport --width 1280 --height 720
+surf emulate.touch --enable    # Enable touch emulation
+
+# Geolocation
+surf emulate.geo --lat 37.7749 --lon -122.4194
+surf emulate.geo --clear
+```
+
+## Form Automation
+
+```bash
+surf page.read                 # Get element refs first
+
+# Fill by ref
+surf form.fill --data '[{"ref":"e1","value":"John"},{"ref":"e2","value":"john@example.com"}]'
+
+# Checkboxes: true/false
+surf form.fill --data '[{"ref":"e7","value":true}]'
+
+# Dropdown selection
+surf select e5 "Option A"                    # By value (default)
+surf select e5 "Option A" "Option B"         # Multi-select
+surf select e5 --by label "Display Text"     # By visible label
+surf select e5 --by index 2                  # By index (0-based)
+```
+
+## File Upload
+
+```bash
+surf upload --ref e5 --files "/path/to/file.txt"
+surf upload --ref e5 --files "/path/file1.txt,/path/file2.txt"
+```
+
+## Iframe Handling
+
+```bash
+surf frame.list                # List frames with IDs
+surf frame.switch "FRAME_ID"   # Switch to iframe context
+surf frame.main                # Return to main frame
+surf frame.js --id "FRAME_ID" --code "return document.title"
+
+# After frame.switch, subsequent commands target that frame:
+surf frame.switch "iframe-1"
+surf page.read                 # Reads iframe content
+surf click e5                  # Clicks in iframe
+surf frame.main                # Back to main page
+```
+
+## Network Inspection
+
+```bash
+surf network                   # List captured requests
+surf network --stream          # Real-time network events
+surf network.get --id "req-123"   # Full request details
+surf network.body --id "req-123"  # Get response body
+surf network.curl --id "req-123"  # Generate curl command
+surf network.origins           # List origins with stats
+surf network.stats             # Capture statistics
+surf network.export            # Export all requests
+surf network.clear             # Clear captured requests
+```
+
+## Console
+
+```bash
+surf console                   # Get console messages
+surf console --stream          # Real-time console
+surf console --stream --level error  # Errors only
+```
+
+## JavaScript Execution
+
+```bash
+surf js "return document.title"
+surf js "document.querySelector('.btn').click()"
+```
+
+## Performance
+
+```bash
+surf perf.metrics              # Current metrics snapshot
+surf perf.start                # Start trace
+surf perf.stop                 # Stop and get results
+```
+
+## Screenshots
+
+```bash
+surf screenshot                           # Auto-saves to /tmp/surf-snap-*.png
+surf screenshot --output /tmp/shot.png    # Save to specific file
+surf screenshot --selector ".card"        # Element only
+surf screenshot --full-page               # Full page scroll capture
+surf screenshot --no-save                 # Return base64 only, don't save file
+```
+
+## Zoom
+
+```bash
+surf zoom                      # Get current zoom level
+surf zoom 1.5                  # Set zoom to 150%
+surf zoom 1                    # Reset to 100%
+```
+
+## Cookies & Storage
+
+```bash
+surf cookie.list               # List cookies for current page
+surf cookie.list --domain .google.com
+surf cookie.set --name "token" --value "abc123"
+surf cookie.get --name "token"
+surf cookie.clear              # Clear all cookies
+```
+
+## History & Bookmarks
+
+```bash
+surf history --query "github" --max 20
+surf bookmarks --query "docs"
+surf bookmark.add --url "https://..." --title "My Bookmark"
+surf bookmark.remove
+```
+
+## Health Checks & Smoke Tests
+
+```bash
+surf health --url "http://localhost:3000"
+surf smoke --urls "http://localhost:3000" "http://localhost:3000/about"
+surf smoke --urls "..." --screenshot /tmp/smoke
+```
+
+## Workflows
+
+Execute multi-step browser automation as a single command with smart auto-waits.
+
+### Inline Workflows
+
+```bash
+# Pipe-separated commands
+surf do 'go "https://example.com" | click e5 | screenshot'
+
+# Multi-step login flow
+surf do 'go "https://example.com/login" | type "user@example.com" --selector "#email" | type "pass" --selector "#password" | click --selector "button[type=submit]"'
+
+# Validate without executing
+surf do 'go "url" | click e5' --dry-run
+```
+
+### Named Workflows
+
+Save workflows as JSON files in `~/.surf/workflows/` (user) or `./.surf/workflows/` (project):
+
+```bash
+# List available workflows
+surf workflow.list
+
+# Show workflow details
+surf workflow.info my-workflow
+
+# Run by name with arguments
+surf do my-workflow --email "user@example.com" --password "secret"
+
+# Validate workflow file
+surf workflow.validate workflow.json
+```
+
+### Workflow JSON Format
+
+```json
+{
+  "name": "Login Flow",
+  "description": "Automate login process",
+  "args": {
+    "email": { "required": true },
+    "password": { "required": true },
+    "url": { "default": "https://example.com/login" }
+  },
+  "steps": [
+    { "tool": "navigate", "args": { "url": "%{url}" } },
+    { "tool": "type", "args": { "text": "%{email}", "selector": "input[name=email]" } },
+    { "tool": "type", "args": { "text": "%{password}", "selector": "input[name=password]" } },
+    { "tool": "click", "args": { "selector": "button[type=submit]" } },
+    { "tool": "screenshot", "args": {}, "as": "result" }
+  ]
+}
+```
+
+### Loops and Step Outputs
+
+```json
+{
+  "steps": [
+    // Capture step output for later use
+    { "tool": "js", "args": { "code": "return [1,2,3]" }, "as": "items" },
+    
+    // Fixed iterations
+    { "repeat": 5, "steps": [
+      { "tool": "click", "args": { "ref": "e5" } }
+    ]},
+    
+    // Iterate over array
+    { "each": "%{items}", "as": "item", "steps": [
+      { "tool": "js", "args": { "code": "console.log('%{item}')" } }
+    ]},
+    
+    // Repeat until condition
+    { "repeat": 20, "until": { "tool": "js", "args": { "code": "return done" } }, "steps": [...] }
+  ]
+}
+```
+
+### Workflow Options
+
+```bash
+--file, -f <path>     # Load from JSON file
+--dry-run             # Parse and validate without executing
+--on-error stop|continue  # Error handling (default: stop)
+--step-delay <ms>     # Delay between steps (default: 100, 0 to disable)
+--no-auto-wait        # Disable automatic waits
+--json                # Structured JSON output
+```
+
+**Auto-waits:** Commands automatically wait for completion:
+- Navigation (`go`, `back`, `forward`) → waits for page load
+- Clicks, key presses, form fills → waits for DOM stability
+- Tab switches → waits for tab to load
+
+**Why use `do`?** Instead of 6-8 separate CLI calls with LLM orchestration between each, a workflow executes deterministically. Faster, cheaper, and more reliable.
+
+## Error Diagnostics
+
+```bash
+# Auto-capture screenshot + console on failure
+surf wait.element ".missing" --auto-capture --timeout 2000
+# Saves to /tmp/surf-error-*.png
+```
+
+## Common Options
+
+```bash
+--tab-id <id>         # Target specific tab
+--window-id <id>      # Target specific window
+--json                # Raw JSON output  
+--auto-capture        # Screenshot + console on error
+--timeout <ms>        # Override default timeout
+```
+
+## Tips
+
+1. **First CDP operation is slow** (~5-8s) - debugger attachment overhead, subsequent calls fast
+2. **Use refs from page.read** for reliable element targeting over CSS selectors
+3. **JS method for contenteditable** - Modern editors (ChatGPT, Claude, Notion) need `--method js`
+4. **Named tabs for workflows** - `tab.name app` then `tab.switch app`
+5. **Auto-capture for debugging** - `--auto-capture` saves diagnostics on failure
+6. **AI tools use browser session** - Must be logged into the service (ChatGPT, Gemini, Perplexity, Grok, AI Studio), no API keys needed
+7. **Grok validation** - Run `surf grok --validate` if queries fail to check UI changes
+8. **Long timeouts for thinking models** - ChatGPT o1, Grok thinking can take 60+ seconds. AI Studio builds default to 600s.
+9. **AI Studio for unrestricted Gemini** - `surf aistudio` gives less filtered responses than `surf gemini` for the same models
+10. **Use `surf do` for multi-step tasks** - Reduces token overhead and improves reliability
+11. **Dry-run workflows first** - `surf do '...' --dry-run` validates without executing
+12. **Window isolation** - Use `window.new` + `--window-id` to keep agent work separate from your browsing
+13. **Semantic locators** - `locate.role`, `locate.text`, `locate.label` for more robust element finding
+14. **Frame context** - Use `frame.switch` before interacting with iframe content
+
+## Socket API
+
+For programmatic access:
+
+```bash
+echo '{"type":"tool_request","method":"execute_tool","params":{"tool":"tab.list","args":{}},"id":"1"}' | nc -U /tmp/surf.sock
+```
+
+---
+
+Do another full pass.
+
+---
+
+[Request interrupted by user]

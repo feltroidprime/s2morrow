@@ -1,0 +1,27 @@
+{
+  "cli_version": "0.4.2",
+  "checkpoint_id": "228679cc94c0",
+  "strategy": "manual-commit",
+  "branch": "frontend",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/demo/src/components/interactive/SendTransaction.tsx",
+    "apps/demo/src/components/ui/TransactionPhases.tsx"
+  ],
+  "sessions": [
+    {
+      "metadata": "/22/8679cc94c0/0/metadata.json",
+      "transcript": "/22/8679cc94c0/0/full.jsonl",
+      "context": "/22/8679cc94c0/0/context.md",
+      "content_hash": "/22/8679cc94c0/0/content_hash.txt",
+      "prompt": "/22/8679cc94c0/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 9,
+    "cache_creation_tokens": 13574,
+    "cache_read_tokens": 506324,
+    "output_tokens": 8255,
+    "api_call_count": 7
+  }
+}
