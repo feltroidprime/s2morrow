@@ -1,0 +1,35 @@
+{
+  "cli_version": "0.4.2",
+  "checkpoint_id": "7d66aec3aabc",
+  "session_id": "f10c6150-1e63-4a64-baf6-71b4b690f3e5",
+  "strategy": "manual-commit",
+  "created_at": "2026-02-26T14:31:32.151396992Z",
+  "branch": "frontend",
+  "checkpoints_count": 5,
+  "files_touched": [
+    ".gitignore",
+    "Makefile",
+    "README.md",
+    "bin/declare.sh",
+    "bin/e2e-deploy.mjs",
+    "bin/e2e-devnet.sh",
+    "snfoundry.toml"
+  ],
+  "agent": "Claude Code",
+  "token_usage": {
+    "input_tokens": 87,
+    "cache_creation_tokens": 152902,
+    "cache_read_tokens": 4354229,
+    "output_tokens": 23528,
+    "api_call_count": 75
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-02-26T14:31:32.103273747Z",
+    "agent_lines": 415,
+    "human_added": 241,
+    "human_modified": 1,
+    "human_removed": 0,
+    "total_committed": 657,
+    "agent_percentage": 63.16590563165906
+  }
+}

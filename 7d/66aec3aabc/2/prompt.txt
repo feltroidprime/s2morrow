@@ -1,0 +1,126 @@
+Implement the following plan:
+
+# Plan: E2E Scripts + Declare + README
+
+## Context
+
+The Falcon account deploy flow works end-to-end (keygen → NTT pk → pack → deploy → transfer) but there are no committed scripts to run it. The existing `apps/demo/scripts/deploy-falcon.mjs` is gitignored (`scripts/` in root `.gitignore`). Need:
+1. Idempotent devnet E2E test script
+2. Sepolia class declaration support
+3. README setup sections
+
+## Key Constraints
+
+- `scripts/` is gitignored — use `bin/` instead
+- `bin/declare.sh` already exists and handles devnet/sepolia/mainnet
+- `snfoundry.toml` only has devnet profile — need sepolia profile
+- `accounts.json` is gitignored (credentials)
+- Node.js WASM (`--target nodejs`) and browser WASM (`--target web`) overwrite each other in `falcon-rs/pkg/`
+
+## Steps
+
+### 1. Create `bin/e2e-devnet.sh` — Idempotent devnet E2E test
+
+Orchestrator shell script. Safe to run repeatedly.
+
+```
+Flow:
+1. Check if devnet running on :5050 — start if not (background, wait for ready)
+2. Build Node.js WASM to bin/.wasm-nodejs/ (avoids clobbering browser WASM)
+3. Declare FalconAccount class via bin/declare.sh devnet (idempotent)
+4. Extract class hash from declare output
+5. Run bin/e2e-deploy.mjs with CLASS_HASH and WASM path env vars
+6. Print PASS/FAIL summary
+```
+
+### 2. Create `bin/e2e-deploy.mjs` — Node.js deploy + transfer
+
+Cleaned-up `deploy-falcon.mjs` with env-var configuration:
+- `FALCON_WASM_PATH` — path to Node.js WASM package (default: `bin/.wasm-nodejs`)
+- `CLASS_HASH` — declared class hash (required)
+- `RPC_URL` — devnet RPC (default: `http://localhost:5050/rpc`)
+- Uses starknet.js from `apps/demo/node_modules/`
+- Same flow: keygen → NTT pk → pack → compute address → mint → deploy → transfer → verify balance
+- Exits 0 on success, 1 on failure
+
+### 3. Add Sepolia profile to `snfoundry.toml`
+
+```toml
+[sncast.sepolia]
+url = "https://api.zan.top/node/v1/starknet/sepolia/..."
+account = "sepolia-deployer"
+accounts-file = "accounts.json"
+```
+
+`bin/declare.sh sepolia` already works — just needs the profile.
+
+### 4. Add Makefile targets
+
+```makefile
+e2e-devnet:
+	./bin/e2e-devnet.sh
+
+declare-devnet:
+	./bin/declare.sh devnet
+
+declare-sepolia:
+	./bin/declare.sh sepolia
+```
+
+### 5. Update README.md — setup sections
+
+Add after "Quick start":
+
+- **Setup**: asdf install, devnet, WASM build
+- **Devnet E2E**: `make e2e-devnet`
+- **Sepolia**: import account, declare, deploy via webapp
+
+### 6. Gitignore `bin/.wasm-nodejs/`
+
+One line in `.gitignore` so the Node.js WASM build cache doesn't get committed.
+
+## Files
+
+| File | Action |
+|------|--------|
+| `bin/e2e-devnet.sh` | Create |
+| `bin/e2e-deploy.mjs` | Create |
+| `snfoundry.toml` | Edit — add sepolia profile |
+| `Makefile` | Edit — add targets |
+| `README.md` | Edit — add sections |
+| `.gitignore` | Edit — add `bin/.wasm-nodejs/` |
+
+## Verification
+
+```bash
+make e2e-devnet          # full E2E (idempotent)
+make e2e-devnet          # re-run (still passes)
+make declare-sepolia     # requires funded account
+```
+
+
+If you need specific details from before exiting plan mode (like exact code snippets, error messages, or content you generated), read the full transcript at: /home/felt/.REDACTED.jsonl
+
+---
+
+Help me make declare-sepolia work : This should build the latest cairo contract, declare it and update network.ts
+
+---
+
+try it
+
+---
+
+done
+
+---
+
+add a makefile for vercel deploy release
+
+---
+
+I have trouble deploying on sepoila : rR: RPC: starknet_addDeployAccountTransaction with params { "deploy_account_transaction": { "type": "DEPLOY_ACCOUNT", "constructor_calldata": [ "0x246966a109602fa9d1e3cee01b29e0302aca7d8978c9ba6066852a981885dc1", "0x1b7f8be2f8fd01f5f8be43e147fabf203baf6f8b5a07db5560ed30e4ad94142", "0x496cda3ba72c23d7a236a73b081912a0184279c0836545334b28b47caee2997", "0x110f35380354effc14b808ab772e1ed0197a119c093df24b8882ed3b77d2953", "0x241698aa575aaec3382b7865b64c22501d1820b6bd125057742ccc125f55677", "0x43ea3cb5a9e8f900bcf012953c66b041ab870c2ec68f6ae159bb7d94fc55d", "0x3b1102c360ec8b2f53f97da7ea06c26049b23fb1725564616a451c713f571dc", "0x26269c21306196f224ef5cb4b278e6028466650713bb91e6f78bc51dd57c68", "0x40b3a1027865842f7d2ecd27fdd100a001ab1c0af566f8976e71359277f1c44", "0x1c985866f9c78901ec03f8f232633d300456cf843c5e45568ef343614e27062", "0xe850960b1f9a4351aae1865e54d35e000d243109ab549d05a7e5a05647d8f9", "0x4cd8c4fed698f33c2446b8747991d7103bfb2aa80bb20dca1a148aabc53a8d8", "0x3da923a4e1bf5a970d3cffe99486c6e003f56e2eb47b2cea74fadc9c6652367", "0x3441a05bffaae85f1a1dd55df02dfa013404a9471f6eee58c7d60879716a98", "0x33bc3f0f08f0a02aadac5b86983b41f0068fd7d0b92abb9ce73c159a0283565", "0x4c61f3d843fea4b87f58fd42bfca6e702b8a05865f14e5fd61db098e8d0d6f0", "0x235d5bb943db0a3f4bdcb33aa2fa2404ab4f66460aa62142a4a5666bb7d32d", "0x2d82c378131c0cf089530ea0a0479f0017afa09df052c60b58a1400de9df5a1", "0x49dab920d327cbedfd73f5ddc3898d20052d66540fb8145a8c3cb29d9cf4c42", "0xcb2031cd4d2be512dcf612c7d995b00d96c1f282c381da86529dc02e02e22", "0x433c6267a1cae50427c3cfcadf539bd00d9a7b41706ebb2246977323f473da1", "0x1017ee7abf5580b973ce50ccc8c2730036d8db815087e68b3e11f3876453d46", "0x1a6748f26031f708b931930e0a9575101ee56381f75e24cbad9eb02fbf9add4", "0x394244a5b846687dc7cd7fa13f094f003bd0221d4dc1d038ec9069570cf7ef6", "0x1160e8cf362436941c560754d9aace800a71c9c9038d318eb511c67bc267508", "0x37e77fff388b625557afa44f24f145e029ec202583eff4011096e1353a9cda8", "0x74c4dd733e37c83bdabf951fc45801010bc345d8f13ee4dda8a04b9e78a09a", "0x19525f1e47c284778590a87b26ec954023f947ce8f1be0d4ea87e6661b74281", "0x118d80b65cff0fb89be096341ac5" ], "class_hash": "0x37c7626b50ba517835c9556b53bce57cb6633704bb702f8c2f13a44cf151d5", "contract_address_salt": "0xb425fa778dd2e4d670ae3641dcac4a51deb60d447cd1f692a8a8ecfe324db0", "signature": [ "0x4c2f6f099796bb16aac042067656ee904ba267fb235e9d9b21126722310c0a3", "0x4cb6a6674d91243e09f869567132000a6ad65b6a770db5c182e31c09cf2f", "0x2ce2902e5592b4fe4a22d032ae0ab0008b718902b3626b576cd66d80252a9", "0x4bc2775f5e4ef66e79660c5303fbe6a04b255dab3b3993fd9081a52ad1360d6", "0x4ba73a71525f2a65651b044b4ff400204c1773385fa6680292122bf77d7a1a7", "0x26dea1138aad97eb66e5acb57c83510012eeec80945244e7fa910cbfb3c25c", "0x64f66bb28d1ebd237a60ba41a10fd000a9e665b37bc020d924555a6a02f09", "0xd3906d6b65914189dd26878d8cfa80002ce62b4b35a35c472d95363b1d431", "0x10072990bab418c9119758a674fc50015a2fcd6b7226e3dcd28cc6141deaa", "0x4cb486d8f9ea75a65298b1b3f08408700049b53f9102c139f108f34937c0de9", "0x4b4f0a4dc8826263f6c9e24eac8dcf1000cd25ac81fc02fa00df06c86f65fd5", "0x4c8606d116fec74b08ae5bdf0c9e257000feddc4fbb5dbb3660b0074ebe722b", "0x15ef7609c2bc93306abc9adeda7ce904bbda18190700c9b038917989063b15", "0x29b271c261989d095d381d748e1960006d030cea687c0410669838ef33056", "0x12549b13b225c7d05142c7b90801cc04c94848b3bced040f3f5a5291b65107", "0x228f2a4dda6dddd5ef4188dc0c514f04b23cdb92c729b8e56daa2cc2844f86", "0x4c00f9c1fa72fedb07734e8d999af6f000d390180d3ee922b881a7a040030d9", "0x4c914de19f26401911cbb3216eb8f9004cbc81589e4d31736964831320cdd90", "0xcd2ae2126146976ede9f60b82afe9000d1fb1b4eecbd59d134c892a9c8099", "0x4cb95120f1adf658ad5bbe42de49d8204abd3d7105136a2b84a2fa63dfddd21", "0x91d4f1770cf86d41a3d32d419308d04bdf4fde9a9c5e8c13fae4083d3a03e", "0x60285552a947247c3d1f4285a9dcf04cc2f3f27acd4cb6a23268c36fea10f", "0x4c10fdf2a7f8b7f235c2aa38189dea200123bb9dada1301f17a8289c82b2025", "0xb84ec9e23f8acba97d516a0615f9804b7bfae3ddf76b5e7053303eb766fc2", "0x18f106fbb082b1a1ae171c745c60c804c8fa3979c69eac51c741850b9f7050", "0x4c793f4c51c5997fcf87e4d4d563e3d04bc749f7dcbdde8fefef58615a1e07c", "0x4c6455fb8e2e42417f9ac0da0b2d06a0005b5ad8fe073444f407cad052b7222", "0x113b6c25c072ff5c3a28d41c7532aa04c62bb84ff7ec0293b2722de880dc24", "0x195276cf3882f6a6bcb9bf442e80", "0x2", "0x781ac1bb0c3f286acd581cc1a7808199797d42d3d29a7d5f87523d27cb0e7", "0x5432f9b1f6f1dacb35c0f2bbe622dabc33aef9cb6c4f5e3cf294becc3bf29", "0x4a6a0dcc9db989e6f70140746de2025015467fa9aa08584da9aa9ee8b20fa0d", "0x4618ced530749d5668991535b48405c02be86d03852e09af3275ae24cb3bc3c", "0x3e4ec53418572c78ab9f91398e5731200879e9b8419e33aa1abbff6f336cba9", "0xb01e6d7952082d4ad4b7558ae72720026ccd2f16555f17124b0ce01c2be2a5", "0x402c8e2bed425bc2685697319605266038ef15934b268d115e7f68b0f0e6fcf", "0x1f07d8e3aaf6f61492ff757722adc110388a480ec9424eec563dd551d4fbe55", "0xe09c37964e5a199d3f425fed6963603095b48cf8c085ae336e840c0d397d2", "0xc969af535ba3a5cec1139c6c402d3a0282b6292aaae4eb32440f05a63adfde", "0x82c2c0f008477673327fa6014fff37031118a22c3232f1b80d36fbe23bfdf0", "0x51448d6e5e2ad3c2064ba766c73c15048ae502cb645733bfc2a37029c22259", "0xfeafb4120ffe8d50b15f3de7d51c60002b1517832edead20e6dc0a29cdb41e", "0x473387cfab476c77de9ba99d49f5d44043afe1984436acb1765578b44f195dc", "0x3489e0436031367c33eb3543ab3285703b105da15b73a26c5614b479e42a66c", "0x50025f95639b028854a88ba2cf078b048b1a0bc94087be8f65df3c5072eb18", "0x1be8eb644f113826d658e6872585ae80401832bc40400e22e914d8a737404f3", "0x43bf383cb0b36374cd8da7fa15302bb00f58e28870eb335e6518e97b581399a", "0x2d3ceece7ff94c856907bc1731adb803f8245b69f5b722e8c14436d98ae4cf", "0x4cde9854d5b25866b5734285f52616a03266102dc10bee878944647e9683422", "0x308add4fd9678f3e3673e911baa97b3018d4e2ccf667590afc8b9455b0e07e7", "0x743d1a6be6c30d3d329e9bee0d7f4a034eedeb34531359990690b6c7400b42", "0x1873af0f2b788333f8dbedea0fc3afa024729e9146dc6b3908b6d48300994bb", "0x3ee76848627851f22126820e00392200d37fc53686c3522e2b34a98e9bb9ad", "0x25a95e0be798de3bc1ebbf42e1787c402d4a397ff3ceac22de65d2dbf23343e", "0x2cb9e851c1b5225e061d59ed1a678580157d8129b977c2f9894223eab72ed2a", "0x2d9740e234b2ac9b449778e048f39c6040bc86092830cfaaa6e07d8079ac5a5", "0x13ab21997afb6e2fd197dc31ab2a06903240b8fdf448d87aace532d4d1d1d19", "0x2613dcc7ea3ef3a61c7a2cb1b83c1ed00e8bdc1e4569de407b6feeeb06bae4c", "0x3491e1e4707f2c0692253e1894f0e18011a6a98da926fa03d98eb3e35c81110", "0x141f9b6c0ddb27d336b9cb06a6f4" ], "nonce": "0x0", "resource_bounds": { "l2_gas": { "max_amount": "0x2faf080", "max_price_per_unit": "0x174876e800" }, "l1_gas": { "max_amount": "0x0", "max_price_per_unit": "0x174876e800" }, "l1_data_gas": { "max_amount": "0x3000", "max_price_per_unit": "0x174876e800" } }, "tip": "0x5f5e100", "paymaster_data": [], "nonce_data_availability_mode": "L1", "fee_data_availability_mode": "L1", "version": "0x3" } } 55: Account validation failed: "Resource bounds were not satisfied: Max L1Gas price (100000000000) is lower than the actual gas price: 46738347734021. Max L1DataGas price (100000000000) is lower than the actual gas price: 2578118664354." ; can you use fee estimate again, test the whole flow with devnet, deploy again on sepolia. Also, since i' ve funded the pre-computed address, if I export the json and re-import it, will I have  the same address ? i d'ont want to keep funding new wallets each time i redeploy
+
+---
+
+[Request interrupted by user for tool use]

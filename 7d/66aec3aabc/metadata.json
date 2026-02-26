@@ -3,8 +3,11 @@
   "checkpoint_id": "7d66aec3aabc",
   "strategy": "manual-commit",
   "branch": "frontend",
-  "checkpoints_count": 6,
+  "checkpoints_count": 11,
   "files_touched": [
+    ".gitignore",
+    "Makefile",
+    "README.md",
     "apps/demo/scripts/deploy-falcon.mjs",
     "apps/demo/src/components/interactive/AccountDeployFlow.tsx",
     "apps/demo/src/components/interactive/accountDeployPipeline.ts",
@@ -12,9 +15,12 @@
     "apps/demo/src/services/FalconSigner.ts",
     "apps/demo/src/services/StarknetService.ts",
     "apps/demo/src/services/WasmRuntime.ts",
+    "bin/declare.sh",
     "bin/e2e-deploy.mjs",
+    "bin/e2e-devnet.sh",
     "packages/falcon/src/falcon.cairo",
-    "packages/falcon_account/src/account.cairo"
+    "packages/falcon_account/src/account.cairo",
+    "snfoundry.toml"
   ],
   "sessions": [
     {
@@ -30,13 +36,20 @@
       "context": "/7d/66aec3aabc/1/context.md",
       "content_hash": "/7d/66aec3aabc/1/content_hash.txt",
       "prompt": "/7d/66aec3aabc/1/prompt.txt"
+    },
+    {
+      "metadata": "/7d/66aec3aabc/2/metadata.json",
+      "transcript": "/7d/66aec3aabc/2/full.jsonl",
+      "context": "/7d/66aec3aabc/2/context.md",
+      "content_hash": "/7d/66aec3aabc/2/content_hash.txt",
+      "prompt": "/7d/66aec3aabc/2/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 125,
-    "cache_creation_tokens": 105064,
-    "cache_read_tokens": 8123608,
-    "output_tokens": 28966,
-    "api_call_count": 102
+    "input_tokens": 212,
+    "cache_creation_tokens": 257966,
+    "cache_read_tokens": 12477837,
+    "output_tokens": 52494,
+    "api_call_count": 177
   }
 }
