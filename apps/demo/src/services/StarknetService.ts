@@ -190,7 +190,7 @@ function makeService(rpcUrl: string, classHash: string) {
     },
   )
 
-  const sendTransaction = Effect.fn("Starknet.sendTransaction")(
+  const executeTransaction = Effect.fn("Starknet.executeTransaction")(
     function* (
       accountAddress: string,
       signer: SignerInterface,
@@ -213,12 +213,24 @@ function makeService(rpcUrl: string, classHash: string) {
             ],
             { resourceBounds },
           )
-          await provider.waitForTransaction(result.transaction_hash)
           return { txHash: TxHash.make(result.transaction_hash) }
         },
         catch: (error) =>
           new TransactionSubmitError({ message: String(error) }),
       })
+    },
+  )
+
+  const sendTransaction = Effect.fn("Starknet.sendTransaction")(
+    function* (
+      accountAddress: string,
+      signer: SignerInterface,
+      recipient: string,
+      amount: bigint,
+    ) {
+      const { txHash } = yield* executeTransaction(accountAddress, signer, recipient, amount)
+      yield* waitForTx(txHash)
+      return { txHash }
     },
   )
 
@@ -229,6 +241,7 @@ function makeService(rpcUrl: string, classHash: string) {
     deployAccount,
     waitForTx,
     fetchPrefundedAccounts,
+    executeTransaction,
     sendTransaction,
     provider,
   }

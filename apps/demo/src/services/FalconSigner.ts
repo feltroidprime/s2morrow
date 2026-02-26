@@ -29,6 +29,7 @@ export class FalconSigner extends SignerInterface {
     private readonly pkNtt: Int32Array,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private readonly runtime: ManagedRuntime.ManagedRuntime<FalconService, any>,
+    private readonly onSignComplete?: (durationMs: number) => void,
   ) {
     super()
   }
@@ -96,11 +97,14 @@ export class FalconSigner extends SignerInterface {
   }
 
   private async _signHash(txHash: string): Promise<string[]> {
+    const t0 = performance.now()
     const exit = await this.runtime.runPromiseExit(
       FalconService.signForStarknet(this.sk, txHash, this.pkNtt),
     )
+    const durationMs = performance.now() - t0
 
     if (Exit.isSuccess(exit)) {
+      this.onSignComplete?.(durationMs)
       return exit.value
     }
 
