@@ -5,19 +5,17 @@ interface TransactionPhasesProps {
   readonly phase: "signing" | "submitting" | "confirming"
   /** Duration of signing phase in ms (set when signing completes) */
   readonly signMs?: number
-  /** Duration of submit phase in ms (set when confirming starts) */
-  readonly submitMs?: number
 }
 
 const PHASES = [
-  { key: "signing", label: "Falcon-512 Signing", icon: "key" },
-  { key: "submitting", label: "Submitting to Network", icon: "send" },
-  { key: "confirming", label: "Awaiting Confirmation", icon: "check" },
+  { key: "signing", label: "Falcon-512 Signing", activeLabel: "signing..." },
+  { key: "submitting", label: "Submitting to Network", activeLabel: "broadcasting..." },
+  { key: "confirming", label: "Awaiting Confirmation", activeLabel: "waiting..." },
 ] as const
 
 const PHASE_ORDER = { signing: 0, submitting: 1, confirming: 2 }
 
-export function TransactionPhases({ phase, signMs, submitMs }: TransactionPhasesProps) {
+export function TransactionPhases({ phase, signMs }: TransactionPhasesProps) {
   const activeIdx = PHASE_ORDER[phase]
 
   return (
@@ -37,10 +35,8 @@ export function TransactionPhases({ phase, signMs, submitMs }: TransactionPhases
           const isActive = i === activeIdx
           const isPending = i > activeIdx
 
-          const durationLabel =
-            isDone && i === 0 && signMs != null ? formatMs(signMs) :
-            isDone && i === 1 && submitMs != null ? formatMs(submitMs) :
-            null
+          // Only show duration for signing (the interesting one)
+          const durationLabel = isDone && i === 0 && signMs != null ? formatMs(signMs) : null
 
           return (
             <div
@@ -53,7 +49,7 @@ export function TransactionPhases({ phase, signMs, submitMs }: TransactionPhases
               <div className="flex h-7 w-7 shrink-0 items-center justify-center">
                 {isDone ? (
                   <div className="flex h-5 w-5 items-center justify-center rounded-full bg-falcon-success/15 text-falcon-success animate-scale-in">
-                    <PhaseIcon type="done" />
+                    <CheckIcon />
                   </div>
                 ) : isActive ? (
                   <svg
@@ -96,7 +92,7 @@ export function TransactionPhases({ phase, signMs, submitMs }: TransactionPhases
                 {p.label}
               </span>
 
-              {/* Duration badge */}
+              {/* Duration badge (signing only) */}
               {isDone && durationLabel != null && (
                 <span className="ml-auto rounded-md bg-falcon-success/10 px-2 py-0.5 text-[11px] font-medium tabular-nums text-falcon-success/80 animate-fade-in">
                   {durationLabel}
@@ -106,7 +102,7 @@ export function TransactionPhases({ phase, signMs, submitMs }: TransactionPhases
               {/* Active breathing indicator */}
               {isActive && (
                 <span className="ml-auto text-[11px] tabular-nums text-falcon-text/25 animate-text-breathe">
-                  {p.key === "signing" ? "signing..." : p.key === "submitting" ? "broadcasting..." : "waiting..."}
+                  {p.activeLabel}
                 </span>
               )}
             </div>
@@ -117,21 +113,18 @@ export function TransactionPhases({ phase, signMs, submitMs }: TransactionPhases
   )
 }
 
-function PhaseIcon({ type }: { type: "done" }) {
-  if (type === "done") {
-    return (
-      <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-        <path
-          d="M2 5.5L4 7.5L8 3"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-    )
-  }
-  return null
+function CheckIcon() {
+  return (
+    <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+      <path
+        d="M2 5.5L4 7.5L8 3"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
 }
 
 function formatMs(ms: number): string {

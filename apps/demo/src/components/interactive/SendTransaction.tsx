@@ -17,10 +17,10 @@ import type { FalconService } from "@/services/FalconService"
 
 type TxPhase =
   | { phase: "idle" }
-  | { phase: "signing"; startedAt: number }
-  | { phase: "submitting"; signMs: number; startedAt: number }
-  | { phase: "confirming"; signMs: number; submitMs: number; txHash: string; startedAt: number }
-  | { phase: "done"; signMs: number; confirmMs: number; txHash: string }
+  | { phase: "signing" }
+  | { phase: "submitting"; signMs: number }
+  | { phase: "confirming"; signMs: number; networkStartedAt: number; txHash: string }
+  | { phase: "done"; signMs: number; networkMs: number; txHash: string }
   | { phase: "error"; message: string }
 
 interface SendTransactionProps {
@@ -44,23 +44,25 @@ export function SendTransaction({
   const [amount, setAmount] = useState("0.001")
   const [txPhase, setTxPhase] = useState<TxPhase>({ phase: "idle" })
 
-  // Use ref so the signer callback can update phase without stale closures
-  const phaseRef = useRef(txPhase)
-  phaseRef.current = txPhase
+  // Mutable timing ref — written directly by callbacks, never stale
+  const timingRef = useRef({ signMs: 0, networkStartedAt: 0 })
 
   const handleSend = useCallback(async () => {
     const kp = Option.match(keypair, { onNone: () => null, onSome: (k) => k })
     if (!kp) return
 
-    const t0 = performance.now()
-    setTxPhase({ phase: "signing", startedAt: t0 })
+    setTxPhase({ phase: "signing" })
+    timingRef.current = { signMs: 0, networkStartedAt: 0 }
 
     const signer = new FalconSigner(
       kp.secretKey,
       kp.publicKeyNtt,
       falconRuntime,
       (signMs) => {
-        setTxPhase({ phase: "submitting", signMs, startedAt: performance.now() })
+        // Written directly to ref — always available downstream
+        timingRef.current.signMs = signMs
+        timingRef.current.networkStartedAt = performance.now()
+        setTxPhase({ phase: "submitting", signMs })
       },
     )
 
@@ -82,12 +84,9 @@ export function SendTransaction({
     }
 
     const { txHash } = executeExit.value
-    const current = phaseRef.current
-    const signMs = current.phase === "submitting" ? current.signMs : performance.now() - t0
-    const submitMs = current.phase === "submitting" ? performance.now() - current.startedAt : 0
-    const confirmStart = performance.now()
+    const { signMs, networkStartedAt } = timingRef.current
 
-    setTxPhase({ phase: "confirming", signMs, submitMs, txHash, startedAt: confirmStart })
+    setTxPhase({ phase: "confirming", signMs, networkStartedAt, txHash })
 
     // Phase 3: wait for on-chain confirmation
     const waitExit = await deployRuntime.runPromiseExit(
@@ -99,8 +98,8 @@ export function SendTransaction({
       return
     }
 
-    const confirmMs = performance.now() - confirmStart
-    setTxPhase({ phase: "done", signMs, confirmMs, txHash })
+    const networkMs = performance.now() - networkStartedAt
+    setTxPhase({ phase: "done", signMs, networkMs, txHash })
   }, [keypair, deployedAddress, recipient, amount, deployRuntime, falconRuntime])
 
   const isBusy = txPhase.phase === "signing" || txPhase.phase === "submitting" || txPhase.phase === "confirming"
@@ -151,8 +150,7 @@ export function SendTransaction({
       {isBusy && (
         <TransactionPhases
           phase={txPhase.phase as "signing" | "submitting" | "confirming"}
-          signMs={txPhase.phase !== "signing" && "signMs" in txPhase ? txPhase.signMs : undefined}
-          submitMs={txPhase.phase === "confirming" ? txPhase.submitMs : undefined}
+          signMs={"signMs" in txPhase ? txPhase.signMs : undefined}
         />
       )}
 
@@ -164,7 +162,7 @@ export function SendTransaction({
               Signed in {formatMs(txPhase.signMs)}
             </span>
             <span className="inline-flex items-center gap-1.5 rounded-lg bg-falcon-accent/10 px-2.5 py-1 text-xs font-medium tabular-nums text-falcon-accent/80">
-              Confirmed in {formatMs(txPhase.confirmMs)}
+              Network in {formatMs(txPhase.networkMs)}
             </span>
           </div>
           <p className="mt-3 break-all font-mono tabular-nums text-xs text-falcon-text/50">
