@@ -40,12 +40,12 @@ describe("PlaygroundSection — dynamic loading wrapper", () => {
     expect(source).toContain("ssr: false")
   })
 
-  it("has skeleton loading fallback with animate-pulse", () => {
+  it("has skeleton loading fallback with skeleton-shimmer", () => {
     const source = readFileSync(
       path.join(DEMO_ROOT, "src/components/interactive/PlaygroundSection.tsx"),
       "utf-8",
     )
-    expect(source).toContain("animate-pulse")
+    expect(source).toContain("skeleton-shimmer")
     expect(source).toContain("loading:")
   })
 

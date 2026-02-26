@@ -27,33 +27,33 @@ function readComponent(): string {
 describe("WhyPostQuantum Section (RSC)", () => {
   test("renders 4 cards total", () => {
     const src = readComponent()
-    // Count <Card occurrences to ensure exactly 4
-    const cardMatches = src.match(/<Card/g)
+    // CARDS constant defines exactly 4 entries
+    const cardMatches = src.match(/title:\s*"/g)
     expect(cardMatches).not.toBeNull()
     expect(cardMatches!.length).toBe(4)
   })
 
   test("renders 'Quantum Threat' card", () => {
     const src = readComponent()
-    expect(src).toContain('title="Quantum Threat"')
+    expect(src).toContain('"Quantum Threat"')
     expect(src).toContain("Shor")
   })
 
   test("renders 'Account Abstraction' card", () => {
     const src = readComponent()
-    expect(src).toContain('title="Account Abstraction"')
+    expect(src).toContain('"Account Abstraction"')
     expect(src).toContain("account abstraction")
   })
 
   test("renders 'Falcon-512' card", () => {
     const src = readComponent()
-    expect(src).toContain('title="Falcon-512"')
+    expect(src).toContain('"Falcon-512"')
     expect(src).toContain("NIST")
   })
 
   test("renders 'Hint-Based Verification' card", () => {
     const src = readComponent()
-    expect(src).toContain('title="Hint-Based Verification"')
+    expect(src).toContain('"Hint-Based Verification"')
     expect(src).toContain("hint")
   })
 
@@ -73,11 +73,11 @@ describe("WhyPostQuantum Section (RSC)", () => {
     expect(src).toContain("sm:grid-cols-2")
   })
 
-  test("card uses rounded-xl border bg-falcon-surface p-6 styling", () => {
+  test("card uses glass-card rounded-2xl p-8 styling", () => {
     const src = readComponent()
-    expect(src).toContain("rounded-xl")
-    expect(src).toContain("bg-falcon-surface")
-    expect(src).toContain("p-6")
+    expect(src).toContain("glass-card")
+    expect(src).toContain("rounded-2xl")
+    expect(src).toContain("p-8")
   })
 
   test("section has id='why-post-quantum' for smooth-scroll anchor", () => {

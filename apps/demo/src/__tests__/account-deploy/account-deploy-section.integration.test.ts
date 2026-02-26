@@ -28,7 +28,7 @@ describe("AccountDeploySection dynamic wrapper", () => {
   it("provides a skeleton loading fallback", () => {
     const source = readFileSync(SECTION_PATH, "utf-8")
     expect(source).toContain("loading:")
-    expect(source).toContain("animate-pulse")
+    expect(source).toContain("skeleton-shimmer")
   })
 })
 

@@ -7,10 +7,10 @@ const AccountDeployFlowDynamic = dynamic(
   {
     ssr: false,
     loading: () => (
-      <section id="deploy" className="px-6 py-20 lg:px-8">
-        <div className="mx-auto max-w-4xl">
-          <h2 className="text-3xl font-bold tracking-tight text-falcon-text">Account Deploy Flow</h2>
-          <div className="mt-8 h-64 animate-pulse rounded-xl bg-falcon-surface" />
+      <section id="deploy" className="px-8 py-32 lg:px-8">
+        <div className="mx-auto max-w-6xl">
+          <h2 className="text-4xl font-semibold tracking-[-0.02em] text-falcon-text">Account Deploy Flow</h2>
+          <div className="mt-10 h-64 skeleton-shimmer rounded-2xl" />
         </div>
       </section>
     ),

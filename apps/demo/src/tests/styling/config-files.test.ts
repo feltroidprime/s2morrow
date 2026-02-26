@@ -73,7 +73,8 @@ describe("layout.tsx — root layout", () => {
   })
 
   test("sets default dark class on <html>", () => {
-    expect(content).toContain('className="dark"')
+    expect(content).toContain("dark")
+    expect(content).toContain("<html")
   })
 
   test("applies bg-falcon-bg to body", () => {

@@ -2,7 +2,7 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useAtomSet, useAtomValue } from "@effect-atom/atom-react"
-import { Cause, Exit, Layer, ManagedRuntime, Option } from "effect"
+import { Exit, Layer, ManagedRuntime, Option } from "effect"
 import { keypairAtom } from "@/atoms/falcon"
 import {
   deployStepAtom,
@@ -18,6 +18,10 @@ import { StarknetService } from "@/services/StarknetService"
 import { WasmRuntimeLive } from "@/services/WasmRuntime"
 import type { DevnetAccount } from "@/services/types"
 import { SendTransaction } from "./SendTransaction"
+import { extractUserMessage } from "@/services/error-messages"
+import { AddressDisplay } from "@/components/ui/AddressDisplay"
+import { ExplorerLink } from "@/components/ui/ExplorerLink"
+import { TokenAmount } from "@/components/ui/TokenAmount"
 import type { PreparedAccountDeploy } from "./accountDeployPipeline"
 import {
   deployAccountEffect,
@@ -37,19 +41,6 @@ function createDeployRuntime(config: NetworkConfig) {
   )
 }
 
-const extractFailureMessage = <A, E extends { readonly message: string }>(
-  exit: Exit.Exit<A, E>,
-  fallback: string,
-): string => {
-  if (Exit.isSuccess(exit)) {
-    return fallback
-  }
-  const failure = Cause.failureOption(exit.cause)
-  return Option.match(failure, {
-    onNone: () => fallback,
-    onSome: (error) => error.message,
-  })
-}
 
 export function AccountDeployFlow(): React.JSX.Element {
   const keypair = useAtomValue(keypairAtom)
@@ -61,7 +52,6 @@ export function AccountDeployFlow(): React.JSX.Element {
   const networkId = useAtomValue(networkAtom)
   const networkConfig = NETWORKS[networkId]
 
-  // Runtime ref — rebuild synchronously when network changes
   const deployRuntimeRef = useRef(createDeployRuntime(networkConfig))
   const prevNetworkRef = useRef(networkId)
   if (prevNetworkRef.current !== networkId) {
@@ -75,7 +65,6 @@ export function AccountDeployFlow(): React.JSX.Element {
     useState<Option.Option<PreparedAccountDeploy>>(Option.none())
   const [balance, setBalance] = useState<bigint | null>(null)
 
-  // Reset deploy state when network changes
   useEffect(() => {
     setDeployStep({ step: "idle" })
     setPreparedDeploy(Option.none())
@@ -83,7 +72,6 @@ export function AccountDeployFlow(): React.JSX.Element {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [networkId])
 
-  // Fetch prefunded accounts on devnet
   useEffect(() => {
     if (!networkConfig.isDevnet) {
       setDevnetAccounts([])
@@ -148,7 +136,7 @@ export function AccountDeployFlow(): React.JSX.Element {
     if (Exit.isFailure(prepareExit)) {
       setDeployStep({
         step: "error",
-        message: extractFailureMessage(prepareExit, "Failed to prepare deployment"),
+        message: extractUserMessage(prepareExit, "Failed to prepare deployment"),
       })
       return
     }
@@ -199,7 +187,7 @@ export function AccountDeployFlow(): React.JSX.Element {
     if (Exit.isFailure(deployExit)) {
       setDeployStep({
         step: "error",
-        message: extractFailureMessage(deployExit, "Account deployment failed"),
+        message: extractUserMessage(deployExit, "Account deployment failed"),
       })
       return
     }
@@ -280,19 +268,27 @@ export function AccountDeployFlow(): React.JSX.Element {
     }
   }, [deployStep])
 
+  const DEPLOY_STEPS = [
+    { number: 1, title: "Generate Keypair", description: "Create or reuse a Falcon-512 keypair.", active: stepFlags.step1Active, complete: stepFlags.step1Complete },
+    { number: 2, title: "Pack Public Key", description: "Compress public key into 29 felt252 slots.", active: stepFlags.step2Active, complete: stepFlags.step2Complete },
+    { number: 3, title: "Compute Address", description: "Compute the counterfactual address.", active: stepFlags.step3Active, complete: stepFlags.step3Complete },
+    { number: 4, title: "Fund Account", description: "Send STRK to the pre-computed address.", active: stepFlags.step4Active, complete: stepFlags.step4Complete },
+    { number: 5, title: "Deploy", description: "Broadcast and confirm deploy transaction.", active: stepFlags.step5Active, complete: stepFlags.step5Complete },
+  ]
+
   return (
-    <section id="deploy" className="px-6 py-20 lg:px-8">
-      <div className="mx-auto max-w-4xl">
-        <h2 className="text-3xl font-bold tracking-tight text-falcon-text">Account Deploy Flow</h2>
-        <p className="mt-4 text-falcon-muted">
+    <section id="deploy" className="px-8 py-32 lg:px-8">
+      <div className="mx-auto max-w-6xl">
+        <h2 className="text-4xl font-semibold tracking-[-0.02em] text-falcon-text">Account Deploy Flow</h2>
+        <p className="mt-4 text-sm leading-relaxed text-falcon-text/40">
           Deploy a Falcon-powered account to Starknet {networkConfig.name} with the same keypair used in
           the verification playground.
         </p>
         {networkConfig.classHash === "0x0" && (
-          <div className="mt-4 rounded-xl border border-yellow-500/30 bg-yellow-500/10 p-4">
-            <p className="text-sm text-yellow-400">
+          <div className="glass-card-static glass-card-warning mt-6 rounded-2xl p-5">
+            <p className="text-sm text-yellow-400/80">
               FalconAccount not declared on {networkConfig.name}.
-              Run: <code className="rounded bg-falcon-bg px-1 font-mono text-xs">./bin/declare.sh {networkConfig.id}</code>
+              Run: <code className="glass-display rounded-md px-1.5 py-0.5 font-mono text-xs">./bin/declare.sh {networkConfig.id}</code>
             </p>
           </div>
         )}
@@ -300,96 +296,87 @@ export function AccountDeployFlow(): React.JSX.Element {
           {liveStatus}
         </p>
 
-        <div className="mt-8 space-y-4">
-          <DeployStepIndicator
-            number={1}
-            title="Generate Keypair"
-            description="Create or reuse a Falcon-512 keypair."
-            active={stepFlags.step1Active}
-            complete={stepFlags.step1Complete}
+        {/* Vertical progress line with step cards */}
+        <div className="relative mt-10 space-y-0">
+          {/* Vertical line */}
+          <div
+            className="absolute left-[19px] top-4 bottom-4 w-px bg-falcon-muted/15"
           />
-          <DeployStepIndicator
-            number={2}
-            title="Pack Public Key"
-            description="Compress public key coefficients into 29 felt252 slots."
-            active={stepFlags.step2Active}
-            complete={stepFlags.step2Complete}
-          />
-          <DeployStepIndicator
-            number={3}
-            title="Compute Address"
-            description="Compute the account counterfactual address."
-            active={stepFlags.step3Active}
-            complete={stepFlags.step3Complete}
-          />
-          <DeployStepIndicator
-            number={4}
-            title="Fund Account"
-            description="Send STRK to the pre-computed address."
-            active={stepFlags.step4Active}
-            complete={stepFlags.step4Complete}
-          >
-            {deployStep.step === "awaiting-funds" && (
-              <div className="mt-3 space-y-3">
-                <div className="rounded-lg bg-falcon-bg p-3">
-                  <p className="text-xs uppercase tracking-wide text-falcon-muted">Send STRK to</p>
-                  <div className="mt-1 flex items-center gap-2">
-                    <code className="flex-1 break-all font-mono text-sm text-falcon-accent">
-                      {deployStep.address}
-                    </code>
-                    <button
-                      onClick={() => navigator.clipboard.writeText(deployStep.address)}
-                      className="shrink-0 rounded border border-falcon-muted/30 px-2 py-1 text-xs text-falcon-muted hover:bg-falcon-surface"
-                      title="Copy address"
-                    >
-                      Copy
-                    </button>
-                  </div>
+
+          {DEPLOY_STEPS.map((s, i) => (
+            <div key={s.number} className="relative flex items-start gap-5 py-3">
+              {/* Step dot/check on the line */}
+              <div className="relative z-10 flex h-10 w-10 shrink-0 items-center justify-center">
+                <div
+                  className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold transition-all duration-300 ${
+                    s.complete
+                      ? "bg-falcon-success/15 text-falcon-success"
+                      : s.active
+                        ? "bg-falcon-primary/15 text-falcon-primary shadow-[0_0_12px_rgba(99,102,241,0.3)]"
+                        : "text-falcon-text/40 bg-falcon-muted/10 border border-falcon-muted/20"
+                  }`}
+                >
+                  {s.complete ? "\u2713" : s.number}
                 </div>
-                {networkConfig.isTestnet && !networkConfig.isDevnet && (
-                  <a
-                    href="https://starknet-faucet.vercel.app/"
-                    target="_blank"
-                    rel="noreferrer noopener"
-                    className="inline-block text-sm text-falcon-accent hover:underline"
-                  >
-                    Get testnet STRK from the Starknet Faucet &rarr;
-                  </a>
-                )}
-                {balance !== null && (
-                  <p className="text-sm text-falcon-muted">
-                    Current balance:{" "}
-                    <span className={balance > 0n ? "text-falcon-success" : "text-falcon-muted"}>
-                      {(Number(balance) / 1e18).toFixed(4)} STRK
-                    </span>
-                    {balance > 0n && (
-                      <span className="ml-2 text-falcon-success">— Ready to deploy!</span>
+              </div>
+
+              {/* Step content */}
+              <div className="flex-1 pb-2">
+                <h3 className={`text-sm font-semibold transition-colors duration-200 ${
+                  s.active ? "text-falcon-text" : s.complete ? "text-falcon-text/60" : "text-falcon-text/40"
+                }`}>
+                  {s.title}
+                </h3>
+                <p className="mt-0.5 text-xs text-falcon-text/25">{s.description}</p>
+
+                {/* Fund Account expanded content */}
+                {s.number === 4 && deployStep.step === "awaiting-funds" && (
+                  <div className="mt-4 space-y-3">
+                    <div className="glass-card-static rounded-xl p-4">
+                      <p className="text-[10px] font-medium tracking-widest text-falcon-text/20 uppercase">Send STRK to</p>
+                      <AddressDisplay
+                        address={deployStep.address}
+                        explorerBaseUrl={networkConfig.explorerBaseUrl}
+                        className="mt-2"
+                      />
+                    </div>
+                    {networkConfig.isTestnet && !networkConfig.isDevnet && (
+                      <a
+                        href="https://starknet-faucet.vercel.app/"
+                        target="_blank"
+                        rel="noreferrer noopener"
+                        className="inline-block text-xs text-falcon-accent/60 transition-colors duration-200 hover:text-falcon-accent"
+                      >
+                        Get testnet STRK from the Starknet Faucet &rarr;
+                      </a>
                     )}
-                  </p>
+                    {balance !== null && (
+                      <div className="flex items-center gap-2 text-xs text-falcon-text/30">
+                        <span>Balance:</span>
+                        <TokenAmount amount={balance} className={balance > 0n ? "text-falcon-success/80" : "text-falcon-text/30"} />
+                        {balance > 0n && (
+                          <span className="text-falcon-success/60">Ready to deploy</span>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 )}
               </div>
-            )}
-          </DeployStepIndicator>
-          <DeployStepIndicator
-            number={5}
-            title="Deploy"
-            description="Broadcast and confirm deploy transaction."
-            active={stepFlags.step5Active}
-            complete={stepFlags.step5Complete}
-          />
+            </div>
+          ))}
         </div>
 
         <div className="mt-8 space-y-3">
           {networkConfig.isDevnet && devnetAccounts.length > 0 ? (
             <div>
-              <label htmlFor="devnet-account" className="block text-sm font-medium text-falcon-text">
+              <label htmlFor="devnet-account" className="block text-xs font-medium text-falcon-text/30">
                 Deployer Account
               </label>
               <select
                 id="devnet-account"
                 value={privateKey}
                 onChange={(e) => setPrivateKey(e.target.value)}
-                className="mt-1 w-full rounded-lg border border-falcon-muted/30 bg-falcon-surface px-4 py-2 font-mono text-sm text-falcon-text focus:outline-none focus:ring-2 focus:ring-falcon-primary"
+                className="glass-select mt-2 w-full px-4 py-3 font-mono text-sm text-falcon-text/80"
               >
                 {devnetAccounts.map((acc, i) => (
                   <option key={acc.address} value={acc.private_key}>
@@ -406,10 +393,10 @@ export function AccountDeployFlow(): React.JSX.Element {
               <button
                 onClick={handlePrepare}
                 disabled={!classHashValid}
-                className={`rounded-lg px-6 py-2.5 text-sm font-semibold ${
+                className={`rounded-xl px-7 py-3 text-sm font-semibold transition-all duration-200 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-falcon-primary/40 ${
                   classHashValid
-                    ? "bg-falcon-primary text-falcon-text hover:opacity-90"
-                    : "cursor-not-allowed bg-falcon-muted/20 text-falcon-muted"
+                    ? "bg-gradient-to-b from-falcon-primary to-falcon-primary/80 text-white shadow-md shadow-falcon-primary/15 hover:scale-[1.02] hover:shadow-lg hover:shadow-falcon-primary/20"
+                    : "glass-btn cursor-not-allowed opacity-40 text-falcon-text/40"
                 }`}
               >
                 Prepare Deploy
@@ -420,35 +407,43 @@ export function AccountDeployFlow(): React.JSX.Element {
           {deployStep.step === "awaiting-funds" && (
             <button
               onClick={handleDeploy}
-              className="rounded-lg bg-falcon-accent px-6 py-2.5 text-sm font-semibold text-falcon-text hover:opacity-90"
+              className="rounded-xl bg-gradient-to-b from-falcon-accent to-falcon-accent/80 px-7 py-3 text-sm font-semibold text-white shadow-md shadow-falcon-accent/15 transition-all duration-200 hover:scale-[1.02] hover:shadow-lg hover:shadow-falcon-accent/20 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-falcon-accent/40"
             >
               Deploy Account
             </button>
           )}
         </div>
 
+        {deployStep.step === "deploying" && (
+          <div className="glass-card-static glass-card-active mt-8 rounded-2xl p-6 animate-fade-in">
+            <div className="flex items-center gap-3">
+              <span className="inline-block h-2.5 w-2.5 animate-pulse-glow rounded-full bg-falcon-accent" />
+              <p className="text-sm font-medium text-falcon-text/80">Deploying account...</p>
+            </div>
+            <p className="mt-2 text-xs text-falcon-text/30">
+              Signing the deploy transaction with your Falcon key and submitting to {networkConfig.name}.
+            </p>
+          </div>
+        )}
+
         {deployStep.step === "deployed" && (
           <>
             <div
               role="status"
               aria-live="polite"
-              className="mt-6 rounded-xl border border-falcon-success/30 bg-falcon-success/10 p-5"
+              className="glass-card-static glass-card-success mt-8 rounded-2xl p-6 animate-fade-in"
             >
-              <h3 className="font-semibold text-falcon-success">Account Deployed</h3>
-              <p className="mt-2 break-all font-mono text-xs text-falcon-text">
-                Address: {deployStep.address}
+              <h3 className="text-sm font-semibold text-falcon-success/80">Account Deployed</h3>
+              <AddressDisplay
+                label="Address"
+                address={deployStep.address}
+                explorerBaseUrl={networkConfig.explorerBaseUrl}
+                className="mt-3"
+              />
+              <p className="mt-2 break-all font-mono tabular-nums text-xs text-falcon-text/50">
+                Tx: {deployStep.txHash}
               </p>
-              <p className="mt-1 break-all font-mono text-xs text-falcon-text">Tx: {deployStep.txHash}</p>
-              {networkConfig.explorerBaseUrl && (
-                <a
-                  href={`${networkConfig.explorerBaseUrl}/tx/${deployStep.txHash}`}
-                  target="_blank"
-                  rel="noreferrer noopener"
-                  className="mt-3 inline-block text-sm text-falcon-accent hover:underline"
-                >
-                  View on Voyager
-                </a>
-              )}
+              <ExplorerLink baseUrl={networkConfig.explorerBaseUrl} txHash={deployStep.txHash} className="mt-3" />
             </div>
             <SendTransaction
               deployedAddress={deployStep.address}
@@ -462,12 +457,12 @@ export function AccountDeployFlow(): React.JSX.Element {
           <div
             role="alert"
             aria-live="polite"
-            className="mt-6 rounded-xl border border-falcon-error/30 bg-falcon-error/10 p-5"
+            className="glass-card-static glass-card-error mt-8 rounded-2xl p-6 animate-fade-in"
           >
-            <p className="text-sm text-falcon-error">{deployStep.message}</p>
+            <p className="text-sm text-falcon-error/80">{deployStep.message}</p>
             <button
               onClick={handleReset}
-              className="mt-3 rounded-lg border border-falcon-muted/30 px-3 py-1 text-xs text-falcon-muted hover:bg-falcon-surface"
+              className="glass-btn mt-4 rounded-lg px-4 py-1.5 text-xs text-falcon-text/40 hover:text-falcon-text/70"
             >
               Try Again
             </button>
@@ -475,50 +470,5 @@ export function AccountDeployFlow(): React.JSX.Element {
         )}
       </div>
     </section>
-  )
-}
-
-interface DeployStepIndicatorProps {
-  readonly number: number
-  readonly title: string
-  readonly description: string
-  readonly active: boolean
-  readonly complete: boolean
-  readonly children?: React.ReactNode
-}
-
-function DeployStepIndicator({
-  number,
-  title,
-  description,
-  active,
-  complete,
-  children,
-}: DeployStepIndicatorProps): React.JSX.Element {
-  const containerClass = active
-    ? "border-falcon-primary ring-2 ring-falcon-primary/20"
-    : complete
-      ? "border-falcon-success/40"
-      : "border-falcon-muted/20"
-
-  const badgeClass = complete
-    ? "bg-falcon-success/20 text-falcon-success"
-    : active
-      ? "bg-falcon-primary/20 text-falcon-primary"
-      : "bg-falcon-muted/10 text-falcon-muted"
-
-  return (
-    <div className={`rounded-xl border bg-falcon-surface p-4 transition-all ${containerClass}`}>
-      <div className="flex items-center gap-3">
-        <span className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold ${badgeClass}`}>
-          {complete ? "✓" : number}
-        </span>
-        <div>
-          <h3 className="font-semibold text-falcon-text">{title}</h3>
-          <p className="text-sm text-falcon-muted">{description}</p>
-        </div>
-      </div>
-      {children}
-    </div>
   )
 }

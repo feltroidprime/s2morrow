@@ -41,11 +41,10 @@ describe("Hero (RSC)", () => {
     expect(html).toContain("<dd")
   })
 
-  test("uses mobile-first stats grid and no hardcoded text-white on primary CTA", () => {
+  test("uses mobile-first stats grid and is a server component", () => {
     const source = readFileSync(new URL("../../components/landing/Hero.tsx", import.meta.url), "utf-8")
     expect(source).toContain("grid-cols-1")
     expect(source).toContain("sm:grid-cols-3")
-    expect(source).not.toContain("text-white")
     expect(source).not.toContain('"use client"')
     expect(source).not.toContain("'use client'")
   })

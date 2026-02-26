@@ -6,39 +6,44 @@ const HERO_STATS = [
 
 export function Hero(): React.JSX.Element {
   return (
-    <section id="hero" aria-labelledby="hero-heading" className="px-6 py-24 sm:py-32 lg:px-8">
-      <div className="mx-auto max-w-5xl text-center">
-        <p className="text-sm font-semibold tracking-[0.2em] text-falcon-accent uppercase">
+    <section id="hero" aria-labelledby="hero-heading" className="px-8 py-32 sm:py-40 lg:px-8">
+      <div className="mx-auto max-w-6xl text-center">
+        <p className="text-xs font-medium tracking-[0.25em] text-falcon-accent/70 uppercase">
           Falcon-512 Demo
         </p>
-        <h1 id="hero-heading" className="mt-4 text-4xl font-bold tracking-tight text-falcon-text sm:text-6xl">
+        <h1
+          id="hero-heading"
+          className="mt-6 text-4xl font-semibold tracking-[-0.02em] text-falcon-text sm:text-6xl"
+        >
           Post-Quantum Signatures on Starknet
         </h1>
-        <p className="mx-auto mt-6 max-w-2xl text-base leading-7 text-falcon-muted sm:text-lg">
+        <p className="mx-auto mt-6 max-w-2xl text-base leading-relaxed text-falcon-text/50 sm:text-lg">
           Verify Falcon signatures with production Cairo metrics and account abstraction deployment
           flows on Starknet Sepolia testnet.
         </p>
 
-        <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
+        <div className="mt-12 flex flex-col items-center justify-center gap-4 sm:flex-row">
           <a
             href="#verify"
-            className="inline-flex rounded-lg bg-falcon-primary px-6 py-3 text-sm font-semibold text-falcon-text transition-colors hover:bg-falcon-primary/85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-falcon-accent focus-visible:ring-offset-2 focus-visible:ring-offset-falcon-bg"
+            className="inline-flex rounded-xl bg-gradient-to-b from-falcon-primary to-falcon-primary/80 px-7 py-3.5 text-sm font-semibold text-white shadow-lg shadow-falcon-primary/20 transition-all duration-200 hover:scale-[1.02] hover:shadow-xl hover:shadow-falcon-primary/25 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-falcon-primary/50 focus-visible:ring-offset-2 focus-visible:ring-offset-falcon-bg"
           >
             Try Verification
           </a>
           <a
             href="#deploy"
-            className="inline-flex rounded-lg border border-falcon-muted/40 bg-falcon-surface px-6 py-3 text-sm font-semibold text-falcon-text transition-colors hover:border-falcon-accent/70 hover:text-falcon-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-falcon-accent focus-visible:ring-offset-2 focus-visible:ring-offset-falcon-bg"
+            className="glass-card-static inline-flex rounded-xl px-7 py-3.5 text-sm font-semibold text-falcon-text/80 transition-all duration-200 hover:scale-[1.02] hover:text-falcon-text active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-falcon-accent/40 focus-visible:ring-offset-2 focus-visible:ring-offset-falcon-bg"
           >
             Deploy Account
           </a>
         </div>
 
-        <dl className="mx-auto mt-14 grid max-w-2xl grid-cols-1 gap-6 sm:grid-cols-3">
+        <dl className="mx-auto mt-16 grid max-w-2xl grid-cols-1 gap-6 sm:grid-cols-3">
           {HERO_STATS.map((stat) => (
-            <div key={stat.label} className="rounded-xl border border-falcon-muted/20 bg-falcon-surface px-5 py-4">
-              <dt className="text-sm text-falcon-muted">{stat.label}</dt>
-              <dd className="mt-2 text-3xl font-bold text-falcon-accent">{stat.value}</dd>
+            <div key={stat.label} className="glass-card rounded-2xl px-6 py-6">
+              <dt className="text-sm text-falcon-text/40">{stat.label}</dt>
+              <dd className="mt-2 tabular-nums text-3xl font-semibold tracking-tight text-falcon-accent/80">
+                {stat.value}
+              </dd>
             </div>
           ))}
         </dl>

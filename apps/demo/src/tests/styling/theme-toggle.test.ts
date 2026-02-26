@@ -72,8 +72,8 @@ describe("THEME_TOKENS.light — light theme variables", () => {
     expect(Object.keys(light)).toHaveLength(4)
   })
 
-  test("falcon-bg is #ffffff (white)", () => {
-    expect(light["falcon-bg"]).toBe("#ffffff")
+  test("falcon-bg is #fafbfd (off-white)", () => {
+    expect(light["falcon-bg"]).toBe("#fafbfd")
   })
 
   test("falcon-surface is #f1f5f9 (slate-100)", () => {

@@ -132,35 +132,35 @@ export function KeyManagementPanel(): React.JSX.Element {
   })
 
   return (
-    <div className="space-y-4">
-      <h3 className="text-lg font-semibold text-falcon-text">Key Management</h3>
+    <div className="space-y-5">
+      <h3 className="text-base font-semibold tracking-tight text-falcon-text/90">Key Management</h3>
 
       <div className="flex flex-wrap gap-2">
         <button
           onClick={handleGenerate}
           disabled={isBusy}
-          className="rounded-lg bg-falcon-primary px-4 py-2 text-sm font-semibold text-falcon-text transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+          className="rounded-xl bg-gradient-to-b from-falcon-primary to-falcon-primary/80 px-5 py-2.5 text-sm font-semibold text-white shadow-md shadow-falcon-primary/15 transition-all duration-200 hover:scale-[1.02] hover:shadow-lg hover:shadow-falcon-primary/20 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:scale-100"
         >
           {isBusy ? "Generating..." : "Generate"}
         </button>
         <button
           onClick={handleImport}
           disabled={isBusy}
-          className="rounded-lg border border-falcon-muted/30 px-4 py-2 text-sm font-semibold text-falcon-text transition-opacity hover:bg-falcon-surface disabled:cursor-not-allowed disabled:opacity-50"
+          className="glass-btn rounded-xl px-5 py-2.5 text-sm font-medium text-falcon-text/60 transition-all duration-200 hover:scale-[1.02] hover:text-falcon-text/80 disabled:cursor-not-allowed disabled:opacity-40"
         >
           Import
         </button>
         <button
           onClick={handleExport}
           disabled={!hasKeypair || !hasPacked}
-          className="rounded-lg border border-falcon-muted/30 px-4 py-2 text-sm font-semibold text-falcon-text transition-opacity hover:bg-falcon-surface disabled:cursor-not-allowed disabled:opacity-50"
+          className="glass-btn rounded-xl px-5 py-2.5 text-sm font-medium text-falcon-text/60 transition-all duration-200 hover:scale-[1.02] hover:text-falcon-text/80 disabled:cursor-not-allowed disabled:opacity-40"
         >
           Export
         </button>
       </div>
 
       {keypairHex !== null && (
-        <div className="space-y-3">
+        <div className="space-y-4">
           <HexDisplay
             label="Verifying Key (896-byte h polynomial)"
             value={keypairHex}
@@ -171,13 +171,13 @@ export function KeyManagementPanel(): React.JSX.Element {
             <div>
               <button
                 onClick={() => setShowNtt(!showNtt)}
-                className="flex items-center gap-1 text-sm font-medium text-falcon-muted hover:text-falcon-text"
+                className="flex items-center gap-1.5 text-xs font-medium text-falcon-text/30 transition-colors duration-200 hover:text-falcon-text/60"
               >
-                <span className="text-xs">{showNtt ? "\u25BC" : "\u25B6"}</span>
+                <span className="text-[10px]">{showNtt ? "\u25BC" : "\u25B6"}</span>
                 NTT Coefficients ({nttCoeffs.length})
               </button>
               {showNtt && (
-                <div className="mt-1 max-h-32 overflow-y-auto rounded bg-falcon-bg p-2 font-mono text-xs text-falcon-accent">
+                <div className="glass-display mt-2 max-h-32 overflow-y-auto rounded-lg px-3 py-2 font-mono text-xs text-falcon-accent/50">
                   [{nttCoeffs.slice(0, 20).join(", ")}
                   {nttCoeffs.length > 20 && `, ... ${nttCoeffs.length - 20} more`}]
                 </div>
@@ -189,9 +189,9 @@ export function KeyManagementPanel(): React.JSX.Element {
             <div>
               <button
                 onClick={() => setShowPacked(!showPacked)}
-                className="flex items-center gap-1 text-sm font-medium text-falcon-muted hover:text-falcon-text"
+                className="flex items-center gap-1.5 text-xs font-medium text-falcon-text/30 transition-colors duration-200 hover:text-falcon-text/60"
               >
-                <span className="text-xs">{showPacked ? "\u25BC" : "\u25B6"}</span>
+                <span className="text-[10px]">{showPacked ? "\u25BC" : "\u25B6"}</span>
                 Packed Public Key ({packedSlots.length} felt252 slots)
               </button>
               {showPacked && (

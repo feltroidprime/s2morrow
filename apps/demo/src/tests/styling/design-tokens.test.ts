@@ -112,8 +112,8 @@ describe("Light theme CSS variables — design spec compliance", () => {
   const lightBlock = lightMatch ? lightMatch[1] : ""
   const lightVars = extractCssVariables(lightBlock)
 
-  test(".light block defines --color-falcon-bg (#ffffff)", () => {
-    expect(lightVars["--color-falcon-bg"]).toBe("#ffffff")
+  test(".light block defines --color-falcon-bg (#fafbfd)", () => {
+    expect(lightVars["--color-falcon-bg"]).toBe("#fafbfd")
   })
 
   test(".light block defines --color-falcon-surface (#f1f5f9)", () => {

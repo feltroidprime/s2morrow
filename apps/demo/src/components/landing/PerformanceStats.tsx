@@ -9,41 +9,49 @@ const PERFORMANCE_ROWS: readonly PerformanceRow[] = [
 
 export function PerformanceStats(): React.JSX.Element {
   return (
-    <section id="performance-stats" className="px-6 py-20 lg:px-8">
-      <div className="mx-auto max-w-4xl">
-        <h2 className="text-3xl font-bold tracking-tight text-falcon-text">Performance Stats</h2>
-        <div className="mt-8 overflow-x-auto rounded-xl border border-falcon-muted/20 bg-falcon-surface">
+    <section id="performance-stats" className="px-8 py-32 lg:px-8">
+      <div className="mx-auto max-w-6xl">
+        <h2 className="text-4xl font-semibold tracking-[-0.02em] text-falcon-text">
+          Performance Stats
+        </h2>
+        <div className="glass-card-static mt-10 overflow-hidden rounded-2xl">
           <table className="w-full text-left text-sm">
             <thead>
-              <tr className="border-b border-falcon-muted/20">
-                <th scope="col" className="px-6 py-3 font-semibold text-falcon-text">
+              <tr className="border-b border-[var(--glass-border)]">
+                <th scope="col" className="px-8 py-4 text-xs font-medium tracking-wide text-falcon-text/40 uppercase">
                   Operation
                 </th>
-                <th scope="col" className="px-6 py-3 text-right font-semibold text-falcon-text">
+                <th scope="col" className="px-8 py-4 text-right text-xs font-medium tracking-wide text-falcon-text/40 uppercase">
                   Steps
                 </th>
-                <th scope="col" className="px-6 py-3 text-right font-semibold text-falcon-text">
+                <th scope="col" className="px-8 py-4 text-right text-xs font-medium tracking-wide text-falcon-text/40 uppercase">
                   L2 Gas
                 </th>
               </tr>
             </thead>
             <tbody>
-              {PERFORMANCE_ROWS.map((row) => (
-                <tr key={row.operation} className="border-b border-falcon-muted/10 last:border-0">
-                  <td className="px-6 py-4 font-mono text-falcon-accent">{row.operation}</td>
-                  <td className="px-6 py-4 text-right tabular-nums text-falcon-text">{row.steps}</td>
-                  <td className="px-6 py-4 text-right tabular-nums text-falcon-muted">{row.gas}</td>
+              {PERFORMANCE_ROWS.map((row, i) => (
+                <tr
+                  key={row.operation}
+                  className={i < PERFORMANCE_ROWS.length - 1 ? "border-b border-[var(--glass-border)]" : undefined}
+                >
+                  <td className="px-8 py-5 font-mono text-xs text-falcon-accent/70">{row.operation}</td>
+                  <td className="px-8 py-5 text-right tabular-nums text-falcon-text/80">{row.steps}</td>
+                  <td className="px-8 py-5 text-right tabular-nums text-falcon-text/40">{row.gas}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
-        <div className="mt-6 rounded-xl border border-falcon-muted/20 bg-falcon-surface p-6">
-          <h3 className="text-lg font-semibold text-falcon-text">Calldata Efficiency</h3>
-          <p className="mt-2 text-sm text-falcon-muted">
-            Packing reduces calldata by <span className="font-semibold text-falcon-accent">17x</span>,
-            from about <span className="font-mono text-falcon-text">1,030 felts</span> to{" "}
-            <span className="font-mono text-falcon-text">62 felts</span>.
+        <div className="glass-card mt-6 rounded-2xl p-8">
+          <h3 className="text-base font-semibold tracking-tight text-falcon-text/90">
+            Calldata Efficiency
+          </h3>
+          <p className="mt-2 text-sm leading-relaxed text-falcon-text/40">
+            Packing reduces calldata by{" "}
+            <span className="font-semibold text-falcon-accent/70">17x</span>, from about{" "}
+            <span className="font-mono text-xs text-falcon-text/60">1,030 felts</span> to{" "}
+            <span className="font-mono text-xs text-falcon-text/60">62 felts</span>.
           </p>
         </div>
       </div>

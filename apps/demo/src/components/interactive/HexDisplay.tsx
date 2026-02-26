@@ -1,30 +1,14 @@
 /**
- * HexDisplay — a client component for rendering hex strings and felt252 arrays.
- *
- * Used in the Verification Playground to show the packed public key slots,
- * salt, and signature preview values. Supports:
- * - Single string values
- * - Arrays of strings with optional `maxRows` clamping
- * - Optional `truncate` prop to shorten long hex values
+ * HexDisplay — renders hex strings and felt252 arrays as subtle glass pills.
  */
 
 import React from "react"
 import { truncateHex } from "./verification-utils"
 
 export interface HexDisplayProps {
-  /** Section label shown above the value(s). */
   readonly label: string
-  /** A single hex/felt string, or an array of them. */
   readonly value: string | ReadonlyArray<string>
-  /**
-   * Maximum number of rows to display when `value` is an array.
-   * Excess rows are replaced with a "... N more" indicator.
-   */
   readonly maxRows?: number
-  /**
-   * If provided, each displayed value is truncated to
-   * `head` characters + "..." + `tail` characters.
-   */
   readonly truncate?: { readonly head: number; readonly tail: number }
 }
 
@@ -37,10 +21,12 @@ export function HexDisplay(props: HexDisplayProps): React.JSX.Element {
   if (typeof value === "string") {
     return (
       <div>
-        <span className="block text-sm font-medium text-falcon-muted">
-          {label}
-        </span>
-        <code className="mt-1 block break-all font-mono text-sm text-falcon-accent">
+        {label && (
+          <span className="block text-xs font-medium text-falcon-text/30">
+            {label}
+          </span>
+        )}
+        <code className="glass-display mt-1.5 block break-all rounded-lg px-3 py-2 font-mono text-xs text-falcon-accent/60">
           {display(value)}
         </code>
       </div>
@@ -55,10 +41,12 @@ export function HexDisplay(props: HexDisplayProps): React.JSX.Element {
 
   return (
     <div>
-      <span className="block text-sm font-medium text-falcon-muted">
-        {label}
-      </span>
-      <div className="mt-1 space-y-0.5">
+      {label && (
+        <span className="block text-xs font-medium text-falcon-text/30">
+          {label}
+        </span>
+      )}
+      <div className="glass-display mt-1.5 space-y-0.5 rounded-lg px-3 py-2">
         {shown.map((v) => {
           const nextCount = (keyCounts.get(v) ?? 0) + 1
           keyCounts.set(v, nextCount)
@@ -66,14 +54,14 @@ export function HexDisplay(props: HexDisplayProps): React.JSX.Element {
           return (
             <code
               key={stableKey}
-              className="block break-all font-mono text-sm text-falcon-accent"
+              className="block break-all font-mono text-xs text-falcon-accent/60"
             >
               {display(v)}
             </code>
           )
         })}
         {overflow > 0 && (
-          <span className="text-xs text-falcon-muted">
+          <span className="text-xs text-falcon-text/20">
             ... {overflow} more
           </span>
         )}

@@ -1,16 +1,5 @@
 "use client"
 
-/**
- * PipelineVisualizer — step-through of the 6-stage Falcon-512 verification.
- *
- * Shows the on-chain verification pipeline with play/pause/step/reset
- * controls. Each step card shows name, description, step count, and
- * expands to show input/output when active.
- *
- * All state lives in atoms (pipelineStepsAtom, pipelineActiveStepAtom,
- * pipelinePlayingAtom) — no local useState.
- */
-
 import React, { useCallback, useEffect, useRef } from "react"
 import { useAtomValue, useAtomSet } from "@effect-atom/atom-react"
 import {
@@ -37,7 +26,6 @@ export function PipelineVisualizer(): React.JSX.Element {
 
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
-  // ── Auto-advance logic ──────────────────────────────────────────────
   useEffect(() => {
     if (!playing) {
       if (intervalRef.current) clearInterval(intervalRef.current)
@@ -72,7 +60,6 @@ export function PipelineVisualizer(): React.JSX.Element {
     }
   }, [playing, steps.length, setActiveStep, setSteps, setPlaying])
 
-  // ── Handlers ────────────────────────────────────────────────────────
   const handlePlay = useCallback(() => {
     if (activeStep === -1) {
       setSteps((s) =>
@@ -133,31 +120,32 @@ export function PipelineVisualizer(): React.JSX.Element {
   const allComplete = steps.every((s) => s.status === "complete")
 
   return (
-    <section id="pipeline" className="px-6 py-20 lg:px-8">
-      <div className="mx-auto max-w-4xl">
-        {/* Header */}
+    <section id="pipeline" className="px-8 py-32 lg:px-8">
+      <div className="mx-auto max-w-6xl">
         <div className="flex flex-wrap items-baseline justify-between gap-4">
           <div>
-            <h2 className="text-3xl font-bold tracking-tight text-falcon-text">
+            <h2 className="text-4xl font-semibold tracking-[-0.02em] text-falcon-text">
               Verification Pipeline
             </h2>
-            <p className="mt-2 text-falcon-muted">
+            <p className="mt-3 text-sm text-falcon-text/40">
               Step through the 6-stage Falcon-512 on-chain verification
             </p>
           </div>
-          <span className="font-mono text-sm text-falcon-accent">
+          <span className="font-mono text-xs text-falcon-accent/50">
             ~{TOTAL_STEPS.toLocaleString()} total steps
           </span>
         </div>
 
-        {/* Controls */}
-        <div className="mt-6 flex flex-wrap gap-3">
+        {/* Glass toolbar */}
+        <div
+          className="glass-btn mt-8 inline-flex items-center gap-1 rounded-full p-1"
+        >
           {!playing ? (
             <button
               onClick={handlePlay}
               disabled={allComplete}
               aria-label="Play pipeline animation"
-              className="rounded-lg bg-falcon-primary px-4 py-2 text-sm font-semibold text-falcon-text transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+              className="rounded-full bg-gradient-to-b from-falcon-primary to-falcon-primary/80 px-5 py-2 text-xs font-semibold text-white shadow-sm transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-falcon-primary/40 disabled:cursor-not-allowed disabled:opacity-40"
             >
               Play
             </button>
@@ -165,7 +153,7 @@ export function PipelineVisualizer(): React.JSX.Element {
             <button
               onClick={handlePause}
               aria-label="Pause pipeline animation"
-              className="rounded-lg bg-falcon-primary px-4 py-2 text-sm font-semibold text-falcon-text transition-opacity hover:opacity-90"
+              className="rounded-full bg-gradient-to-b from-falcon-primary to-falcon-primary/80 px-5 py-2 text-xs font-semibold text-white shadow-sm transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-falcon-primary/40"
             >
               Pause
             </button>
@@ -174,21 +162,21 @@ export function PipelineVisualizer(): React.JSX.Element {
             onClick={handleStep}
             disabled={playing || allComplete}
             aria-label="Advance one pipeline step"
-            className="rounded-lg border border-falcon-muted/30 bg-falcon-surface px-4 py-2 text-sm font-medium text-falcon-text transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+            className="rounded-full px-4 py-2 text-xs font-medium text-falcon-text/50 transition-all duration-200 hover:text-falcon-text/80 disabled:cursor-not-allowed disabled:opacity-40"
           >
             Step
           </button>
           <button
             onClick={handleReset}
             aria-label="Reset pipeline to beginning"
-            className="rounded-lg border border-falcon-muted/30 bg-falcon-surface px-4 py-2 text-sm font-medium text-falcon-text transition-opacity hover:opacity-90"
+            className="rounded-full px-4 py-2 text-xs font-medium text-falcon-text/50 transition-all duration-200 hover:text-falcon-text/80"
           >
             Reset
           </button>
         </div>
 
         {/* Pipeline step cards */}
-        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {steps.map((step) => (
             <PipelineStepCard key={step.id} step={step} />
           ))}
@@ -198,51 +186,43 @@ export function PipelineVisualizer(): React.JSX.Element {
   )
 }
 
-// ─── Step Card ────────────────────────────────────────────────────────────────
-
 function PipelineStepCard({ step }: { step: PipelineStep }): React.JSX.Element {
   const isActive = step.status === "active"
   const isComplete = step.status === "complete"
 
   return (
     <div
-      className={`rounded-xl border p-5 transition-all ${
-        isActive
-          ? "border-falcon-primary/50 bg-falcon-primary/10 ring-2 ring-falcon-primary/30"
-          : isComplete
-            ? "border-falcon-success/30 bg-falcon-surface"
-            : "border-falcon-muted/20 bg-falcon-surface"
-      }`}
+      className={`glass-card-static rounded-3xl p-6 transition-all duration-300 ${isActive ? "glass-card-active" : isComplete ? "glass-card-success" : ""}`}
     >
-      <div className="flex items-center gap-2">
-        <span className="text-base">
+      <div className="flex items-center gap-3">
+        <span>
           {isComplete ? (
-            <span className="text-falcon-success">&#10003;</span>
+            <span className="text-sm text-falcon-success">&#10003;</span>
           ) : isActive ? (
-            <span className="inline-block h-2.5 w-2.5 animate-pulse rounded-full bg-falcon-primary" />
+            <span className="inline-block h-2.5 w-2.5 animate-pulse rounded-full bg-falcon-primary shadow-[0_0_8px_rgba(99,102,241,0.4)]" />
           ) : (
-            <span className="inline-block h-2.5 w-2.5 rounded-full bg-falcon-muted/40" />
+            <span className="inline-block h-2.5 w-2.5 rounded-full bg-falcon-text/10" />
           )}
         </span>
-        <h3 className="font-mono text-sm font-semibold text-falcon-text">
+        <h3 className="font-mono text-xs font-semibold text-falcon-text/80">
           {step.name}
         </h3>
-        <span className="ml-auto font-mono text-xs text-falcon-muted">
+        <span className="ml-auto tabular-nums font-mono text-[10px] text-falcon-text/25">
           ~{step.stepCount.toLocaleString()}
         </span>
       </div>
 
-      <p className="mt-2 text-xs text-falcon-muted">{step.description}</p>
+      <p className="mt-3 text-xs leading-relaxed text-falcon-text/30">{step.description}</p>
 
       {isActive && (
-        <div className="mt-3 space-y-1 border-t border-falcon-muted/20 pt-3">
+        <div className="mt-4 space-y-1.5 border-t border-[var(--glass-border)] pt-4">
           <div className="text-xs">
-            <span className="font-medium text-falcon-muted">In: </span>
-            <span className="font-mono text-falcon-text">{step.input}</span>
+            <span className="text-falcon-text/25">In: </span>
+            <span className="font-mono text-falcon-text/50">{step.input}</span>
           </div>
           <div className="text-xs">
-            <span className="font-medium text-falcon-muted">Out: </span>
-            <span className="font-mono text-falcon-text">{step.output}</span>
+            <span className="text-falcon-text/25">Out: </span>
+            <span className="font-mono text-falcon-text/50">{step.output}</span>
           </div>
         </div>
       )}

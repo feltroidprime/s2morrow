@@ -64,7 +64,7 @@ describe("AccountDeployFlow view", () => {
     })
 
     expect(html).toContain(`href="https://sepolia.voyager.online/tx/${TX_HASH}"`)
-    expect(html).toContain("View on Voyager")
+    expect(html).toContain("View transaction")
     expect(html).toContain('role="status"')
     expect(html).toContain('aria-live="polite"')
   })
