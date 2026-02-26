@@ -1,0 +1,46 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "f23bba886b6d",
+  "session_id": "1ed5c5ba-a155-4eff-8663-17bc8e3c210c",
+  "strategy": "manual-commit",
+  "created_at": "2026-02-26T17:52:03.359480223Z",
+  "branch": "frontend",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/demo/src/app/globals.css",
+    "apps/demo/src/app/page.tsx",
+    "apps/demo/src/components/interactive/AccountDeployFlow.tsx",
+    "apps/demo/src/components/interactive/AccountDeploySection.tsx",
+    "apps/demo/src/components/interactive/PipelineSection.tsx",
+    "apps/demo/src/components/interactive/PipelineVisualizer.tsx",
+    "apps/demo/src/components/interactive/PlaygroundSection.tsx",
+    "apps/demo/src/components/interactive/VerificationPlayground.tsx",
+    "apps/demo/src/components/landing/ComparisonChart.tsx",
+    "apps/demo/src/components/landing/CredibilityBar.tsx",
+    "apps/demo/src/components/landing/Footer.tsx",
+    "apps/demo/src/components/landing/Hero.tsx",
+    "apps/demo/src/components/landing/NavHeader.tsx",
+    "apps/demo/src/components/landing/PerformanceStats.tsx",
+    "apps/demo/src/components/landing/TheProblem.tsx",
+    "apps/demo/src/components/landing/WhyStarknet.tsx"
+  ],
+  "agent": "Claude Code",
+  "transcript_identifier_at_start": "c4e81e57-d499-489b-8067-9df9dcab5dc0",
+  "token_usage": {
+    "input_tokens": 26,
+    "cache_creation_tokens": 75833,
+    "cache_read_tokens": 1568182,
+    "output_tokens": 14556,
+    "api_call_count": 23
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-02-26T17:52:03.176848721Z",
+    "agent_lines": 0,
+    "human_added": 485,
+    "human_modified": 74,
+    "human_removed": 0,
+    "total_committed": 485,
+    "agent_percentage": 0
+  },
+  "transcript_path": ".claude/projects/-home-felt-PycharmProjects-s2morrow/1ed5c5ba-a155-4eff-8663-17bc8e3c210c.jsonl"
+}
