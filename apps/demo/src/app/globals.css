@@ -216,7 +216,7 @@ body > main {
 }
 
 /* Staggered children */
-.fade-in-section.visible > .stagger-child {
+.fade-in-section.visible .stagger-child {
   opacity: 1;
   transform: translateY(0);
 }
