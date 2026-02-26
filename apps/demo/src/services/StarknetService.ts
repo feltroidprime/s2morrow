@@ -1,5 +1,5 @@
 import { Config, Effect, Layer } from "effect"
-import { RpcProvider, Account, hash, stark } from "starknet"
+import { RpcProvider, Account, hash } from "starknet"
 import type { SignerInterface } from "starknet"
 import {
   StarknetRpcError,
@@ -30,12 +30,33 @@ export function parsePrefundedAccounts(raw: unknown[]): DevnetAccount[] {
 function makeService(rpcUrl: string, classHash: string) {
   const provider = new RpcProvider({ nodeUrl: rpcUrl })
 
+  // Falcon-512 verification needs ~50M L2 gas steps — too heavy for
+  // auto-estimation. Hardcode amounts, fetch live prices from the network.
+  const falconResourceBounds = Effect.tryPromise({
+    try: async () => {
+      const block = await provider.getBlock("latest")
+      const mul = 2n
+      const l1 = BigInt(block.l1_gas_price.price_in_fri) * mul
+      const l2 = BigInt(block.l2_gas_price.price_in_fri) * mul
+      const l1d = BigInt(block.l1_data_gas_price.price_in_fri) * mul
+      return {
+        l2_gas: { max_amount: 0x2FAF080n, max_price_per_unit: l2 },
+        l1_gas: { max_amount: 0x0n, max_price_per_unit: l1 },
+        l1_data_gas: { max_amount: 0x3000n, max_price_per_unit: l1d },
+      }
+    },
+    catch: (error) =>
+      new StarknetRpcError({ message: `Gas price fetch failed: ${error}`, code: -1 }),
+  })
+
   const computeDeployAddress = Effect.fn("Starknet.computeDeployAddress")(
     function* (packedPk: PackedPublicKey) {
       // PackedPolynomial512 is a flat struct (s0..s28), not an Array.
       // CallData.compile would add a length prefix; pass raw slots instead.
       const constructorCalldata = [...packedPk.slots]
-      const salt = stark.randomAddress()
+      // Deterministic salt — same keypair always produces the same address,
+      // so a pre-funded address stays valid across page reloads.
+      const salt = "0x1"
       const address = hash.calculateContractAddressFromHash(
         salt,
         classHash,
@@ -46,6 +67,18 @@ function makeService(rpcUrl: string, classHash: string) {
         address: ContractAddress.make(address),
         salt,
       }
+    },
+  )
+
+  const isDeployed = Effect.fn("Starknet.isDeployed")(
+    function* (address: string) {
+      return yield* Effect.tryPromise({
+        try: async () => {
+          const ch = await provider.getClassHashAt(address)
+          return !!ch
+        },
+        catch: () => new StarknetRpcError({ message: "getClassHashAt failed", code: -1 }),
+      }).pipe(Effect.orElseSucceed(() => false))
     },
   )
 
@@ -84,6 +117,8 @@ function makeService(rpcUrl: string, classHash: string) {
 
       const account = new Account({ provider, address, signer })
 
+      const resourceBounds = yield* falconResourceBounds
+
       const result = yield* Effect.tryPromise({
         try: () =>
           account.deployAccount(
@@ -93,16 +128,7 @@ function makeService(rpcUrl: string, classHash: string) {
               addressSalt: salt,
               contractAddress: address,
             },
-            {
-              // Falcon-512 verification is ~63K steps (~13.2M L2 gas).
-              // Auto-estimation often fails for compute-heavy contracts,
-              // so we set explicit resource bounds.
-              resourceBounds: {
-                l2_gas: { max_amount: 0x2FAF080n, max_price_per_unit: 0x174876E800n },
-                l1_gas: { max_amount: 0x0n, max_price_per_unit: 0x174876E800n },
-                l1_data_gas: { max_amount: 0x3000n, max_price_per_unit: 0x174876E800n },
-              },
-            },
+            { resourceBounds },
           ),
         catch: (error) =>
           new AccountDeployError({ message: String(error) }),
@@ -172,15 +198,21 @@ function makeService(rpcUrl: string, classHash: string) {
       amount: bigint,
     ) {
       const account = new Account({ provider, address: accountAddress, signer })
+
+      const resourceBounds = yield* falconResourceBounds
+
       return yield* Effect.tryPromise({
         try: async () => {
-          const result = await account.execute([
-            {
-              contractAddress: STRK_TOKEN_ADDRESS,
-              entrypoint: "transfer",
-              calldata: [recipient, amount.toString(), "0"],
-            },
-          ])
+          const result = await account.execute(
+            [
+              {
+                contractAddress: STRK_TOKEN_ADDRESS,
+                entrypoint: "transfer",
+                calldata: [recipient, amount.toString(), "0"],
+              },
+            ],
+            { resourceBounds },
+          )
           await provider.waitForTransaction(result.transaction_hash)
           return { txHash: TxHash.make(result.transaction_hash) }
         },
@@ -192,6 +224,7 @@ function makeService(rpcUrl: string, classHash: string) {
 
   return {
     computeDeployAddress,
+    isDeployed,
     getBalance,
     deployAccount,
     waitForTx,

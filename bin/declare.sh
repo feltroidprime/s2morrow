@@ -29,9 +29,17 @@ fi
 
 echo "Declaring FalconAccount on $NETWORK..."
 
+# For non-devnet networks, use --network flag so sncast uses its built-in
+# RPC endpoint (compatible with the spec version sncast expects).
+NETWORK_FLAG=()
+if [[ "$NETWORK" != "devnet" ]]; then
+  NETWORK_FLAG=(--network "$NETWORK")
+fi
+
 OUTPUT=$(sncast --profile "$NETWORK" declare \
   --contract-name FalconAccount \
   --package falcon_account \
+  "${NETWORK_FLAG[@]}" \
   "$@" 2>&1) || true
 
 echo "$OUTPUT"
@@ -54,7 +62,7 @@ if [[ -n "$CLASS_HASH" ]]; then
     # Find the network block and replace its classHash
     # Uses perl for multi-line matching
     perl -i -0pe '
-      s/(id: "'"$NETWORK"'".*?classHash: ")0x0(")/${1}'"${CLASS_HASH}"'${2}/s
+      s/(id: "'"$NETWORK"'".*?classHash: ")0x[0-9a-fA-F]+(")/${1}'"${CLASS_HASH}"'${2}/s
     ' "$NETWORKS_FILE"
     echo "Updated $NETWORKS_FILE with classHash for $NETWORK"
   fi

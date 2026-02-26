@@ -3,6 +3,7 @@ import type { SignerInterface } from "starknet"
 import { FalconService } from "@/services/FalconService"
 import { StarknetService } from "@/services/StarknetService"
 import { InsufficientFundsError } from "@/services/errors"
+import { TxHash } from "@/services/types"
 import type {
   ContractAddress,
   FalconKeypair,
@@ -139,6 +140,12 @@ export const deployAccountEffect = Effect.fn(
   salt,
   requiredBalance,
 }: DeployAccountInput) {
+  // Skip deploy if account is already live (idempotent re-runs).
+  const alreadyDeployed = yield* StarknetService.isDeployed(address)
+  if (alreadyDeployed) {
+    return { txHash: TxHash.make("already-deployed"), address }
+  }
+
   const balance = yield* StarknetService.getBalance(address)
 
   if (balance < requiredBalance) {

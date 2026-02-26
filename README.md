@@ -60,6 +60,28 @@ python -m cairo_gen.circuits.regenerate ntt --n 512
 cd ../falcon-rs && cargo test generate_ -- --nocapture
 ```
 
+## Devnet E2E
+
+Run the full account lifecycle on a local devnet (idempotent):
+
+```bash
+make e2e-devnet
+```
+
+This starts devnet (if needed), builds Node.js WASM, declares the contract, deploys a Falcon account, and sends a test STRK transfer. Safe to re-run.
+
+## Sepolia
+
+1. Import a funded account into `accounts.json`:
+   ```bash
+   sncast account import --name sepolia-deployer --address 0x... --private-key 0x... --type oz
+   ```
+2. Declare:
+   ```bash
+   make declare-sepolia
+   ```
+3. Deploy via the webapp (`apps/demo/`) pointed at Sepolia.
+
 ## Demo
 
 A Next.js app in `apps/demo/` demonstrates Falcon-512 signing via WASM in the browser.

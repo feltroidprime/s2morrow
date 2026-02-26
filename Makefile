@@ -65,3 +65,20 @@ demo-serve:
 
 demo-stop:
 	@lsof -ti :$(DEMO_PORT) | xargs -r kill && echo "Demo stopped" || echo "Nothing on port $(DEMO_PORT)"
+
+# --- E2E & Deployment ---
+
+build-account:
+	scarb build --package falcon_account
+
+e2e-devnet:
+	./bin/e2e-devnet.sh
+
+declare-devnet: build-account
+	./bin/declare.sh devnet
+
+declare-sepolia: build-account
+	./bin/declare.sh sepolia
+
+deploy: wasm-build
+	cd apps/demo && vercel --prod

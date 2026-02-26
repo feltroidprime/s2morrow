@@ -65,3 +65,4 @@ apps/demo/.env.local
 .vercel
 .accounts.json
 accounts.json
+bin/.wasm-nodejs/
