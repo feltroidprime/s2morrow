@@ -3,8 +3,10 @@
   "checkpoint_id": "967e9acdba38",
   "strategy": "manual-commit",
   "branch": "frontend",
-  "checkpoints_count": 0,
+  "checkpoints_count": 2,
   "files_touched": [
+    "README.md",
+    "apps/demo/next.config.mjs",
     "json"
   ],
   "sessions": [
@@ -14,13 +16,20 @@
       "context": "/96/7e9acdba38/0/context.md",
       "content_hash": "/96/7e9acdba38/0/content_hash.txt",
       "prompt": "/96/7e9acdba38/0/prompt.txt"
+    },
+    {
+      "metadata": "/96/7e9acdba38/1/metadata.json",
+      "transcript": "/96/7e9acdba38/1/full.jsonl",
+      "context": "/96/7e9acdba38/1/context.md",
+      "content_hash": "/96/7e9acdba38/1/content_hash.txt",
+      "prompt": "/96/7e9acdba38/1/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 13,
-    "cache_creation_tokens": 52867,
-    "cache_read_tokens": 510392,
-    "output_tokens": 6051,
-    "api_call_count": 10
+    "input_tokens": 37,
+    "cache_creation_tokens": 108882,
+    "cache_read_tokens": 1142869,
+    "output_tokens": 8779,
+    "api_call_count": 30
   }
 }

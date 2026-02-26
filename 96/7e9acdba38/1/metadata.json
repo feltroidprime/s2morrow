@@ -1,0 +1,31 @@
+{
+  "cli_version": "0.4.2",
+  "checkpoint_id": "967e9acdba38",
+  "session_id": "848408df-eca6-4016-a35c-e458324860e7",
+  "strategy": "manual-commit",
+  "created_at": "2026-02-26T13:10:10.184005111Z",
+  "branch": "frontend",
+  "checkpoints_count": 2,
+  "files_touched": [
+    "README.md",
+    "apps/demo/next.config.mjs"
+  ],
+  "agent": "Claude Code",
+  "transcript_identifier_at_start": "830926a1-1a9c-4ccc-9379-b42ad6ecdf54",
+  "token_usage": {
+    "input_tokens": 24,
+    "cache_creation_tokens": 56015,
+    "cache_read_tokens": 632477,
+    "output_tokens": 2728,
+    "api_call_count": 20
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-02-26T13:10:10.176881582Z",
+    "agent_lines": 18,
+    "human_added": 126,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 144,
+    "agent_percentage": 12.5
+  }
+}
