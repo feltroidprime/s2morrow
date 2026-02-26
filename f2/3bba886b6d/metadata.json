@@ -3,9 +3,10 @@
   "checkpoint_id": "f23bba886b6d",
   "strategy": "manual-commit",
   "branch": "frontend",
-  "checkpoints_count": 9,
+  "checkpoints_count": 10,
   "files_touched": [
     "Makefile",
+    "Scarb.toml",
     "apps/demo/src/__tests__/account-deploy/account-deploy-flow.test.ts",
     "apps/demo/src/__tests__/account-deploy/account-deploy-pipeline.test.ts",
     "apps/demo/src/__tests__/account-deploy/account-deploy-view.test.tsx",
@@ -47,6 +48,7 @@
     "apps/demo/src/services/keyfile.ts",
     "apps/demo/src/services/types.ts",
     "apps/demo/src/tests/atoms.test.ts",
+    "apps/demo/tests/atoms/pipeline.test.ts",
     "bin/declare.sh",
     "docs/plans/2026-02-25-demo-production-design.md",
     "docs/plans/2026-02-25-demo-production-impl.md",
@@ -54,6 +56,11 @@
     "docs/plans/2026-02-25-network-switcher.md",
     "docs/plans/2026-02-26-demo-redesign-design.md",
     "docs/plans/2026-02-26-demo-redesign.md",
+    "packages/bench_ecdsa/.tool-versions",
+    "packages/bench_ecdsa/Scarb.lock",
+    "packages/bench_ecdsa/Scarb.toml",
+    "packages/bench_ecdsa/src/lib.cairo",
+    "packages/bench_ecdsa/tests/bench.cairo",
     "sncast.toml"
   ],
   "sessions": [
@@ -122,10 +129,10 @@
     }
   ],
   "token_usage": {
-    "input_tokens": 3390,
-    "cache_creation_tokens": 1676511,
-    "cache_read_tokens": 83527148,
-    "output_tokens": 173185,
-    "api_call_count": 846
+    "input_tokens": 3549,
+    "cache_creation_tokens": 1877326,
+    "cache_read_tokens": 96155819,
+    "output_tokens": 225455,
+    "api_call_count": 987
   }
 }
