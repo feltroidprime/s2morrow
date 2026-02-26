@@ -147,3 +147,35 @@ i dont get it, in the browser, how to deploy ? The private key exported by the e
 
 . How did you do it ?
 
+### Prompt 21
+
+Ok, now i want e2e scripts for :
+
+### Prompt 22
+
+[Request interrupted by user]
+
+### Prompt 23
+
+Ok, now i want e2e scripts for : 1.
+
+### Prompt 24
+
+[Request interrupted by user]
+
+### Prompt 25
+
+Ok, now i want e2e scripts for : 1.
+
+### Prompt 26
+
+[Request interrupted by user]
+
+### Prompt 27
+
+Ok, now i want e2e scripts for : 1. Devnet e2e test. 2. class hash deploying on sepolia / testnet. 3. Readme small sections on setup; and idempotent
+
+### Prompt 28
+
+[Request interrupted by user for tool use]
+

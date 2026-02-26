@@ -1755,3 +1755,35 @@ i dont get it, in the browser, how to deploy ? The private key exported by the e
 i dont get it, in the browser, how to deploy ? The private key exported by the export button gives an error when i paste in deployeer private key . Error: Private key must be between 1 and 32 bytes hex
 
 . How did you do it ?
+
+---
+
+Ok, now i want e2e scripts for :
+
+---
+
+[Request interrupted by user]
+
+---
+
+Ok, now i want e2e scripts for : 1.
+
+---
+
+[Request interrupted by user]
+
+---
+
+Ok, now i want e2e scripts for : 1.
+
+---
+
+[Request interrupted by user]
+
+---
+
+Ok, now i want e2e scripts for : 1. Devnet e2e test. 2. class hash deploying on sepolia / testnet. 3. Readme small sections on setup; and idempotent
+
+---
+
+[Request interrupted by user for tool use]
