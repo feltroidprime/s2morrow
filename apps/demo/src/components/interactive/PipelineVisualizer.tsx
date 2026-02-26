@@ -10,10 +10,35 @@ import {
 } from "@/atoms/pipeline"
 import type { PipelineStep } from "@/services/types"
 
-const TOTAL_STEPS = INITIAL_PIPELINE_STEPS.reduce(
-  (sum, s) => sum + s.stepCount,
-  0,
-)
+const PHASE_LABELS: Record<string, string> = {
+  client: "Client",
+  validation: "Validation Phase",
+  execution: "Execution Phase",
+  settlement: "Settlement",
+}
+
+const PHASE_COLORS: Record<string, { dot: string; text: string; badge: string }> = {
+  client: {
+    dot: "bg-falcon-accent/15 text-falcon-accent",
+    text: "text-falcon-accent/60",
+    badge: "bg-falcon-accent/10 text-falcon-accent/70",
+  },
+  validation: {
+    dot: "bg-falcon-primary/15 text-falcon-primary",
+    text: "text-falcon-primary/60",
+    badge: "bg-falcon-primary/10 text-falcon-primary/70",
+  },
+  execution: {
+    dot: "bg-falcon-success/15 text-falcon-success",
+    text: "text-falcon-success/60",
+    badge: "bg-falcon-success/10 text-falcon-success/70",
+  },
+  settlement: {
+    dot: "bg-amber-500/15 text-amber-500",
+    text: "text-amber-500/60",
+    badge: "bg-amber-500/10 text-amber-500/70",
+  },
+}
 
 export function PipelineVisualizer(): React.JSX.Element {
   const steps = useAtomValue(pipelineStepsAtom)
@@ -53,7 +78,7 @@ export function PipelineVisualizer(): React.JSX.Element {
         )
         return next
       })
-    }, 2000)
+    }, 2500)
 
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current)
@@ -128,12 +153,9 @@ export function PipelineVisualizer(): React.JSX.Element {
               What happens on-chain
             </h2>
             <p className="mt-3 text-sm text-falcon-text/50">
-              Step through the 6 stages of Falcon-512 verification on Starknet
+              How a Falcon-512 transaction flows through Starknet&apos;s account abstraction model
             </p>
           </div>
-          <span className="font-mono text-xs text-falcon-accent/50">
-            ~{TOTAL_STEPS.toLocaleString()} total steps
-          </span>
         </div>
 
         {/* Glass toolbar */}
@@ -175,57 +197,108 @@ export function PipelineVisualizer(): React.JSX.Element {
           </button>
         </div>
 
-        {/* Pipeline step cards */}
-        <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {steps.map((step) => (
-            <PipelineStepCard key={step.id} step={step} />
-          ))}
+        {/* Vertical pipeline flow */}
+        <div className="relative mt-8 space-y-0">
+          {/* Vertical line */}
+          <div className="absolute left-[19px] top-4 bottom-4 w-px bg-falcon-muted/15" />
+
+          {steps.map((step, i) => {
+            const prevPhase = i > 0 ? steps[i - 1].phase : null
+            const showPhaseLabel = step.phase && step.phase !== prevPhase
+            return (
+              <div key={step.id}>
+                {showPhaseLabel && (
+                  <div className="relative flex items-center gap-3 pb-2 pt-4 first:pt-0">
+                    <div className="relative z-10 flex h-10 w-10 shrink-0 items-center justify-center" />
+                    <span
+                      className={`rounded-full px-3 py-1 text-[10px] font-semibold tracking-widest uppercase ${PHASE_COLORS[step.phase!]?.badge ?? "bg-falcon-text/5 text-falcon-text/40"}`}
+                    >
+                      {PHASE_LABELS[step.phase!] ?? step.phase}
+                    </span>
+                  </div>
+                )}
+                <PipelineStepCard step={step} index={i} />
+              </div>
+            )
+          })}
         </div>
       </div>
     </section>
   )
 }
 
-function PipelineStepCard({ step }: { step: PipelineStep }): React.JSX.Element {
+function PipelineStepCard({ step, index }: { step: PipelineStep; index: number }): React.JSX.Element {
   const isActive = step.status === "active"
   const isComplete = step.status === "complete"
+  const phase = step.phase ?? "validation"
+  const colors = PHASE_COLORS[phase] ?? PHASE_COLORS.validation
 
   return (
-    <div
-      className={`glass-card-static rounded-3xl p-6 transition-all duration-300 ${isActive ? "glass-card-active" : isComplete ? "glass-card-success" : ""}`}
-    >
-      <div className="flex items-center gap-3">
-        <span>
-          {isComplete ? (
-            <span className="text-sm text-falcon-success">&#10003;</span>
-          ) : isActive ? (
-            <span className="inline-block h-2.5 w-2.5 animate-pulse rounded-full bg-falcon-primary shadow-[0_0_8px_rgba(99,102,241,0.4)]" />
-          ) : (
-            <span className="inline-block h-2.5 w-2.5 rounded-full bg-falcon-text/10" />
-          )}
-        </span>
-        <h3 className="font-mono text-xs font-semibold text-falcon-text/80">
-          {step.name}
-        </h3>
-        <span className="ml-auto tabular-nums font-mono text-[10px] text-falcon-text/25">
-          ~{step.stepCount.toLocaleString()}
-        </span>
+    <div className="relative flex items-start gap-5 py-3">
+      {/* Step dot on the line */}
+      <div className="relative z-10 flex h-10 w-10 shrink-0 items-center justify-center">
+        <div
+          className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold transition-all duration-300 ${
+            isComplete
+              ? "bg-falcon-success/15 text-falcon-success"
+              : isActive
+                ? `${colors.dot} shadow-[0_0_12px_rgba(99,102,241,0.3)]`
+                : "text-falcon-text/40 bg-falcon-muted/10 border border-falcon-muted/20"
+          }`}
+        >
+          {isComplete ? "\u2713" : index + 1}
+        </div>
       </div>
 
-      <p className="mt-3 text-xs leading-relaxed text-falcon-text/30">{step.description}</p>
-
-      {isActive && (
-        <div className="mt-4 space-y-1.5 border-t border-[var(--glass-border)] pt-4">
-          <div className="text-xs">
-            <span className="text-falcon-text/25">In: </span>
-            <span className="font-mono text-falcon-text/50">{step.input}</span>
-          </div>
-          <div className="text-xs">
-            <span className="text-falcon-text/25">Out: </span>
-            <span className="font-mono text-falcon-text/50">{step.output}</span>
-          </div>
+      {/* Step content */}
+      <div className="flex-1 pb-2">
+        <div className="flex items-center gap-3">
+          <h3
+            className={`font-mono text-sm font-semibold transition-colors duration-200 ${
+              isActive
+                ? "text-falcon-text"
+                : isComplete
+                  ? "text-falcon-text/60"
+                  : "text-falcon-text/40"
+            }`}
+          >
+            {step.name}
+          </h3>
+          {step.stepCount > 0 && (
+            <span className="tabular-nums font-mono text-[10px] text-falcon-text/25">
+              ~{step.stepCount.toLocaleString()} steps
+            </span>
+          )}
         </div>
-      )}
+        <p className="mt-1 text-xs leading-relaxed text-falcon-text/30">{step.description}</p>
+
+        {/* Insight — shown when active or complete */}
+        {(isActive || isComplete) && step.insight && (
+          <div
+            className={`mt-3 rounded-xl border px-4 py-3 text-xs leading-relaxed animate-fade-in ${
+              isActive
+                ? "border-[var(--glass-border-hover)] bg-[var(--glass-bg-heavy)] text-falcon-text/60"
+                : "border-[var(--glass-border)] bg-[var(--glass-bg)] text-falcon-text/40"
+            }`}
+          >
+            {step.insight}
+          </div>
+        )}
+
+        {/* I/O detail — shown when active */}
+        {isActive && (
+          <div className="mt-3 space-y-1.5 border-t border-[var(--glass-border)] pt-3">
+            <div className="text-xs">
+              <span className="text-falcon-text/25">In: </span>
+              <span className="font-mono text-falcon-text/50">{step.input}</span>
+            </div>
+            <div className="text-xs">
+              <span className="text-falcon-text/25">Out: </span>
+              <span className="font-mono text-falcon-text/50">{step.output}</span>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   )
 }

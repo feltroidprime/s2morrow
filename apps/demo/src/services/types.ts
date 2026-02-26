@@ -41,6 +41,8 @@ export interface PipelineStep {
   readonly output: string
   readonly stepCount: number
   readonly status: "pending" | "active" | "complete"
+  readonly phase?: "client" | "validation" | "execution" | "settlement"
+  readonly insight?: string
 }
 
 export interface FalconKeyFile {

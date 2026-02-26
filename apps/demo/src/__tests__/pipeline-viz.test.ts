@@ -1,14 +1,11 @@
 /**
  * Integration tests for Pipeline Visualizer (pipeline-viz)
  *
- * Tests the atoms and state machine logic for the 6-step animated walkthrough.
+ * Tests the atoms and state machine logic for the 6-step AA pipeline walkthrough.
  * These tests cover:
- *   - INITIAL_PIPELINE_STEPS data correctness (6 steps, correct counts)
+ *   - INITIAL_PIPELINE_STEPS data correctness (6 steps, correct IDs)
  *   - Atom initial values (pipelineStepsAtom, pipelineActiveStepAtom, pipelinePlayingAtom)
  *   - State transitions via Registry (play → step through → reset)
- *
- * The PipelineVisualizer.tsx component is NOT YET IMPLEMENTED.
- * These tests verify the data and atom layer that the component will depend on.
  *
  * Test runner: bun test
  * Dependency: @effect-atom/atom Registry API for read/write without React
@@ -72,38 +69,29 @@ describe("INITIAL_PIPELINE_STEPS data", () => {
     expect(uniqueIds.size).toBe(6)
   })
 
-  it("step counts match PRD specification", () => {
-    // From docs/specs/falcon-demo-website.md
-    const expected = [5988, 15000, 1500, 15000, 500, 26000]
-    const actual = INITIAL_PIPELINE_STEPS.map((s) => s.stepCount)
-    expect(actual).toEqual(expected)
-  })
-
-  it("total step count is ~63988 (matches README ~63K)", () => {
-    const total = INITIAL_PIPELINE_STEPS.reduce((sum, s) => sum + s.stepCount, 0)
-    // PRD says ~63K steps total for verify
-    expect(total).toBeGreaterThanOrEqual(60000)
-    expect(total).toBeLessThanOrEqual(70000)
-  })
-
-  it("step names match specification", () => {
-    const names = INITIAL_PIPELINE_STEPS.map((s) => s.name)
-    expect(names[0]).toBe("hash_to_point")
-    expect(names[1]).toBe("NTT(s1)")
-    expect(names[2]).toBe("s1_ntt * pk_ntt")
-    expect(names[3]).toBe("NTT(mul_hint)")
-    expect(names[4]).toBe("s0 = msg_point - mul_hint")
-    expect(names[5]).toContain("‖")  // norm check uses ‖ symbol
-  })
-
   it("step IDs match expected values", () => {
     const ids = INITIAL_PIPELINE_STEPS.map((s) => s.id)
-    expect(ids[0]).toBe("hash-to-point")
-    expect(ids[1]).toBe("ntt-s1")
-    expect(ids[2]).toBe("pointwise-mul")
-    expect(ids[3]).toBe("ntt-hint")
-    expect(ids[4]).toBe("recover-s0")
-    expect(ids[5]).toBe("norm-check")
+    expect(ids[0]).toBe("sign-tx")
+    expect(ids[1]).toBe("validate")
+    expect(ids[2]).toBe("falcon-verify")
+    expect(ids[3]).toBe("execute")
+    expect(ids[4]).toBe("stark-proof")
+    expect(ids[5]).toBe("settled")
+  })
+
+  it("step names match AA lifecycle", () => {
+    const names = INITIAL_PIPELINE_STEPS.map((s) => s.name)
+    expect(names[0]).toBe("Sign with Falcon-512")
+    expect(names[1]).toBe("__validate__")
+    expect(names[2]).toBe("Falcon-512 verify")
+    expect(names[3]).toBe("__execute__")
+    expect(names[4]).toBe("STARK proof")
+    expect(names[5]).toBe("Settled on L1")
+  })
+
+  it("falcon-verify step has 132K stepCount", () => {
+    const verifyStep = INITIAL_PIPELINE_STEPS.find((s) => s.id === "falcon-verify")!
+    expect(verifyStep.stepCount).toBe(132000)
   })
 
   it("all steps have non-empty input/output/description fields", () => {
@@ -112,6 +100,28 @@ describe("INITIAL_PIPELINE_STEPS data", () => {
       expect(step.output).toBeTruthy()
       expect(step.description).toBeTruthy()
     }
+  })
+
+  it("all steps have a phase assigned", () => {
+    for (const step of INITIAL_PIPELINE_STEPS) {
+      expect(step.phase).toBeTruthy()
+    }
+  })
+
+  it("all steps have an insight assigned", () => {
+    for (const step of INITIAL_PIPELINE_STEPS) {
+      expect(step.insight).toBeTruthy()
+    }
+  })
+
+  it("phases follow the expected order: client → validation → execution → settlement", () => {
+    const phases = INITIAL_PIPELINE_STEPS.map((s) => s.phase)
+    expect(phases[0]).toBe("client")
+    expect(phases[1]).toBe("validation")
+    expect(phases[2]).toBe("validation")
+    expect(phases[3]).toBe("execution")
+    expect(phases[4]).toBe("settlement")
+    expect(phases[5]).toBe("settlement")
   })
 })
 
@@ -162,7 +172,6 @@ describe("pipeline atoms — play/step state transitions", () => {
     const activeStep = registry.get(pipelineActiveStepAtom)
     expect(activeStep).toBe(0)
 
-    // Update step statuses (simulating PipelineVisualizer.updateStepStatuses(0))
     const steps = registry.get(pipelineStepsAtom)
     const updated = computeStepStatuses(steps, 0)
     registry.set(pipelineStepsAtom, updated)
@@ -202,13 +211,11 @@ describe("pipeline atoms — play/step state transitions", () => {
   })
 
   it("reset: all steps return to pending, activeStep to -1, playing to false", () => {
-    // First advance to step 3
     registry.set(pipelineActiveStepAtom, 3)
     registry.set(pipelinePlayingAtom, true)
     const steps = registry.get(pipelineStepsAtom)
     registry.set(pipelineStepsAtom, computeStepStatuses(steps, 3))
 
-    // Now reset
     registry.set(pipelinePlayingAtom, false)
     registry.set(pipelineActiveStepAtom, -1)
     const resetSteps = registry.get(pipelineStepsAtom)
@@ -217,7 +224,6 @@ describe("pipeline atoms — play/step state transitions", () => {
       resetSteps.map((s) => ({ ...s, status: "pending" as const })),
     )
 
-    // Verify reset state
     expect(registry.get(pipelinePlayingAtom)).toBe(false)
     expect(registry.get(pipelineActiveStepAtom)).toBe(-1)
     const finalSteps = registry.get(pipelineStepsAtom)
@@ -227,7 +233,6 @@ describe("pipeline atoms — play/step state transitions", () => {
   })
 
   it("step atom can be advanced one step at a time", () => {
-    // Simulate: no active step → step 0 → step 1 → step 2
     for (let i = 0; i <= 2; i++) {
       registry.set(pipelineActiveStepAtom, i)
       const steps = registry.get(pipelineStepsAtom)
@@ -247,7 +252,6 @@ describe("pipeline atoms — play/step state transitions", () => {
     const updated = computeStepStatuses(steps, 2)
     registry.set(pipelineStepsAtom, updated)
 
-    // Original constant should be unchanged
     for (const step of INITIAL_PIPELINE_STEPS) {
       expect(step.status).toBe("pending")
     }
@@ -259,8 +263,6 @@ describe("computeStepStatuses helper — state machine logic", () => {
 
   it("at index -1: all steps remain pending", () => {
     const result = computeStepStatuses(steps, -1)
-    // When activeIdx is -1, no step satisfies i === -1, so all stay "pending"
-    // (i < -1 is never true for non-negative i)
     for (const s of result) {
       expect(s.status).toBe("pending")
     }

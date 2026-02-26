@@ -457,33 +457,20 @@ describe("pipelineStepsAtom", () => {
     const steps = registry.get(pipelineStepsAtom)
     const ids = steps.map((s) => s.id)
     expect(ids).toEqual([
-      "hash-to-point",
-      "ntt-s1",
-      "pointwise-mul",
-      "ntt-hint",
-      "recover-s0",
-      "norm-check",
+      "sign-tx",
+      "validate",
+      "falcon-verify",
+      "execute",
+      "stark-proof",
+      "settled",
     ])
   })
 
-  it("step 0 (hash-to-point) has correct stepCount", () => {
+  it("falcon-verify step has 132K stepCount", () => {
     const registry = makeRegistry()
     const steps = registry.get(pipelineStepsAtom)
-    expect(steps[0].stepCount).toBe(5988)
-  })
-
-  it("step 5 (norm-check) has correct stepCount", () => {
-    const registry = makeRegistry()
-    const steps = registry.get(pipelineStepsAtom)
-    expect(steps[5].stepCount).toBe(26000)
-  })
-
-  it("total step count matches expected sum", () => {
-    const registry = makeRegistry()
-    const steps = registry.get(pipelineStepsAtom)
-    const total = steps.reduce((sum, s) => sum + s.stepCount, 0)
-    // 5988 + 15000 + 1500 + 15000 + 500 + 26000 = 63988
-    expect(total).toBe(63988)
+    const verifyStep = steps.find((s) => s.id === "falcon-verify")!
+    expect(verifyStep.stepCount).toBe(132000)
   })
 
   it("transitions step 0 to active status", () => {
