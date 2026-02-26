@@ -1,0 +1,28 @@
+{
+  "cli_version": "0.4.2",
+  "checkpoint_id": "01509787873e",
+  "strategy": "manual-commit",
+  "branch": "frontend",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/demo/src/components/interactive/SendTransaction.tsx",
+    "apps/demo/src/components/ui/TransactionPhases.tsx",
+    "apps/demo/src/services/FalconSigner.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/01/509787873e/0/metadata.json",
+      "transcript": "/01/509787873e/0/full.jsonl",
+      "context": "/01/509787873e/0/context.md",
+      "content_hash": "/01/509787873e/0/content_hash.txt",
+      "prompt": "/01/509787873e/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 14,
+    "cache_creation_tokens": 13616,
+    "cache_read_tokens": 1086341,
+    "output_tokens": 7290,
+    "api_call_count": 12
+  }
+}
