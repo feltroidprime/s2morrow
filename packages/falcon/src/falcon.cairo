@@ -39,7 +39,8 @@ const SIG_BOUND_512: u64 = 34034726;
 pub fn verify<H, +HashToPoint<H>, +Drop<H>>(
     pk: @FalconPublicKey, sig_with_hint: FalconSignatureWithHint, message: Span<felt252>,
 ) -> bool {
-    let msg_point = HashToPoint::<H>::hash_to_point(message, sig_with_hint.signature.salt.span());
+    let salt_span = sig_with_hint.signature.salt.span();
+    let msg_point = HashToPoint::<H>::hash_to_point(message, salt_span);
     verify_with_msg_point(pk, sig_with_hint, msg_point.span())
 }
 

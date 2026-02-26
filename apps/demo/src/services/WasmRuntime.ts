@@ -24,6 +24,7 @@ export interface WasmModule {
     s1: Int32Array,
     pkNtt: Int32Array,
   ) => Uint16Array
+  readonly ntt_public_key: (pkTime: Int32Array) => Int32Array
   readonly pack_public_key_wasm: (pkNtt: Uint16Array) => string[]
   readonly public_key_length: () => number
   readonly salt_length: () => number
@@ -63,6 +64,7 @@ export function isValidWasmModule(mod: unknown): mod is WasmModule {
     "sign",
     "verify",
     "create_verification_hint",
+    "ntt_public_key",
     "pack_public_key_wasm",
     "public_key_length",
     "salt_length",
@@ -112,7 +114,7 @@ const loadWasmModule = Effect.fn("WasmRuntime.load")(function* () {
       new WasmLoadError({
         message:
           "WASM module is missing required methods. Expected: keygen, sign, verify, " +
-          "create_verification_hint, pack_public_key_wasm, public_key_length, salt_length, sign_for_starknet.",
+          "create_verification_hint, ntt_public_key, pack_public_key_wasm, public_key_length, salt_length, sign_for_starknet.",
       }),
     )
   }

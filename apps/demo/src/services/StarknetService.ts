@@ -86,12 +86,24 @@ function makeService(rpcUrl: string, classHash: string) {
 
       const result = yield* Effect.tryPromise({
         try: () =>
-          account.deployAccount({
-            classHash,
-            constructorCalldata,
-            addressSalt: salt,
-            contractAddress: address,
-          }),
+          account.deployAccount(
+            {
+              classHash,
+              constructorCalldata,
+              addressSalt: salt,
+              contractAddress: address,
+            },
+            {
+              // Falcon-512 verification is ~63K steps (~13.2M L2 gas).
+              // Auto-estimation often fails for compute-heavy contracts,
+              // so we set explicit resource bounds.
+              resourceBounds: {
+                l2_gas: { max_amount: 0x2FAF080n, max_price_per_unit: 0x174876E800n },
+                l1_gas: { max_amount: 0x0n, max_price_per_unit: 0x174876E800n },
+                l1_data_gas: { max_amount: 0x3000n, max_price_per_unit: 0x174876E800n },
+              },
+            },
+          ),
         catch: (error) =>
           new AccountDeployError({ message: String(error) }),
       })

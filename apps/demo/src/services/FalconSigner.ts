@@ -101,6 +101,14 @@ export class FalconSigner extends SignerInterface {
     )
 
     if (Exit.isSuccess(exit)) {
+      console.log("[FalconSigner] txHash:", txHash)
+      console.log("[FalconSigner] sig length:", exit.value.length)
+      console.log("[FalconSigner] sig[28] (last s1):", exit.value[28])
+      console.log("[FalconSigner] sig[29] (salt_len):", exit.value[29])
+      console.log("[FalconSigner] sig[30] (salt[0]):", exit.value[30])
+      console.log("[FalconSigner] sig[31] (salt[1]):", exit.value[31])
+      console.log("[FalconSigner] sig[32] (first hint):", exit.value[32])
+      console.log("[FalconSigner] sig[60] (last hint):", exit.value[60])
       return exit.value
     }
 

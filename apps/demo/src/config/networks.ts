@@ -26,7 +26,7 @@ export const NETWORKS: Record<NetworkId, NetworkConfig> = {
     id: "sepolia",
     name: "Sepolia",
     rpcUrl: "https://api.zan.top/node/v1/starknet/sepolia/30623d06317c4234ac2934876f2fd542",
-    classHash: "0x0",
+    classHash: "0x37c7626b50ba517835c9556b53bce57cb6633704bb702f8c2f13a44cf151d5",
     explorerBaseUrl: "https://sepolia.voyager.online",
     isTestnet: true,
     isDevnet: false,

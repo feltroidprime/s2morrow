@@ -18,8 +18,11 @@ import type {
 // ---------------------------------------------------------------------------
 
 /**
- * Deserialize a Falcon-512 verifying key (896 bytes) into 512 NTT-domain
+ * Deserialize a Falcon-512 verifying key (896 bytes) into 512 time-domain
  * coefficients stored as an Int32Array.
+ *
+ * NOTE: The VerifyingKey stores h in the TIME domain. Callers must NTT-transform
+ * the result (via wasm.ntt_public_key) before using it for verification or signing.
  *
  * Format (falcon-rs, PUBLIC_KEY_LEN = 896, no header):
  *   - 512 coefficients x 14 bits each, packed LSB-first
@@ -29,7 +32,7 @@ import type {
  *
  * Throws on invalid input (too few bytes, or any coefficient >= Q=12289).
  */
-function parsePublicKeyNttBytes(vkBytes: Uint8Array): Int32Array {
+function parsePublicKeyTimeBytes(vkBytes: Uint8Array): Int32Array {
   const Q = 12289
   const N = 512
   const BITS_PER_COEFF = 14
@@ -91,10 +94,16 @@ export class FalconService extends Effect.Service<FalconService>()(
             catch: (error) =>
               new KeygenError({ message: String(error) }),
           })
-          const publicKeyNtt = yield* Effect.try({
-            try: () => parsePublicKeyNttBytes(result.vk),
+          const publicKeyTime = yield* Effect.try({
+            try: () => parsePublicKeyTimeBytes(result.vk),
             catch: (error) =>
               new KeygenError({ message: String(error) }),
+          })
+          // Transform to NTT domain — required for Cairo verification and hint generation
+          const publicKeyNtt = yield* Effect.try({
+            try: () => new Int32Array(wasm.ntt_public_key(publicKeyTime)),
+            catch: (error) =>
+              new KeygenError({ message: `NTT transform failed: ${String(error)}` }),
           })
           return {
             secretKey: result.sk,
@@ -165,10 +174,15 @@ export class FalconService extends Effect.Service<FalconService>()(
       const deserializePublicKeyNtt = Effect.fn(
         "Falcon.deserializePublicKeyNtt",
       )(function* (vkBytes: Uint8Array) {
-        return yield* Effect.try({
-          try: () => parsePublicKeyNttBytes(vkBytes),
+        const pkTime = yield* Effect.try({
+          try: () => parsePublicKeyTimeBytes(vkBytes),
           catch: (error) =>
             new KeygenError({ message: String(error) }),
+        })
+        return yield* Effect.try({
+          try: () => new Int32Array(wasm.ntt_public_key(pkTime)),
+          catch: (error) =>
+            new KeygenError({ message: `NTT transform failed: ${String(error)}` }),
         })
       })
 

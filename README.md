@@ -60,6 +60,16 @@ python -m cairo_gen.circuits.regenerate ntt --n 512
 cd ../falcon-rs && cargo test generate_ -- --nocapture
 ```
 
+## Demo
+
+A Next.js app in `apps/demo/` demonstrates Falcon-512 signing via WASM in the browser.
+
+```bash
+cd apps/demo && bun install
+make demo-serve              # http://localhost:3737
+make demo-stop               # kill the dev server
+```
+
 ## Performance
 
 Profiled at commit `a1f5ed9` with `cairo-profiler` (cumulative steps):
