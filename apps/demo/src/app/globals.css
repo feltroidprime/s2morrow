@@ -368,3 +368,69 @@ body > main {
 .light ::-webkit-scrollbar-thumb:hover {
   background: rgba(0, 0, 0, 0.15);
 }
+
+/* ─── Lattice grid animation (hero background) ────────────────────── */
+@keyframes lattice-drift {
+  0% { transform: translate(0, 0); }
+  50% { transform: translate(-8px, 6px); }
+  100% { transform: translate(0, 0); }
+}
+
+.lattice-grid {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  opacity: 0.15;
+}
+
+.lattice-grid::before {
+  content: "";
+  position: absolute;
+  inset: -20px;
+  background-image:
+    radial-gradient(circle, var(--color-falcon-accent) 1px, transparent 1px),
+    radial-gradient(circle, var(--color-falcon-primary) 0.5px, transparent 0.5px);
+  background-size: 60px 60px, 60px 60px;
+  background-position: 0 0, 30px 30px;
+  animation: lattice-drift 20s ease-in-out infinite;
+}
+
+.lattice-grid::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, transparent 30%, var(--color-falcon-bg) 70%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lattice-grid::before {
+    animation: none;
+  }
+}
+
+/* ─── Comparison bar chart ─────────────────────────────────────────── */
+.comparison-bar {
+  height: 2.5rem;
+  border-radius: 0.75rem;
+  transition: width 1.2s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.comparison-bar[data-visible="false"] {
+  width: 0 !important;
+}
+
+/* ─── Starknet pitch section ──────────────────────────────────────── */
+.starknet-section {
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(99, 102, 241, 0.08) 0%, transparent 60%),
+    var(--glass-bg);
+  border-top: 1px solid rgba(99, 102, 241, 0.1);
+  border-bottom: 1px solid rgba(99, 102, 241, 0.1);
+}
+
+.light .starknet-section {
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(99, 102, 241, 0.06) 0%, transparent 60%),
+    var(--glass-bg);
+}
