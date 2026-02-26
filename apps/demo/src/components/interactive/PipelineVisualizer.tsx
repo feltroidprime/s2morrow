@@ -125,10 +125,10 @@ export function PipelineVisualizer(): React.JSX.Element {
         <div className="flex flex-wrap items-baseline justify-between gap-4">
           <div>
             <h2 className="text-4xl font-semibold tracking-[-0.02em] text-falcon-text">
-              Verification Pipeline
+              What happens on-chain
             </h2>
-            <p className="mt-3 text-sm text-falcon-text/40">
-              Step through the 6-stage Falcon-512 on-chain verification
+            <p className="mt-3 text-sm text-falcon-text/50">
+              Step through the 6 stages of Falcon-512 verification on Starknet
             </p>
           </div>
           <span className="font-mono text-xs text-falcon-accent/50">

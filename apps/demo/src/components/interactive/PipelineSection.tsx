@@ -11,7 +11,7 @@ const PipelineVisualizerDynamic = dynamic(
       <section id="pipeline" className="px-8 py-32 lg:px-8">
         <div className="mx-auto max-w-6xl">
           <h2 className="text-4xl font-semibold tracking-[-0.02em] text-falcon-text">
-            Verification Pipeline
+            What happens on-chain
           </h2>
           <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {Array.from({ length: 6 }, (_, i) => (

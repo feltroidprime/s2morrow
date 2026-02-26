@@ -9,11 +9,11 @@ export function VerificationPlayground(): React.JSX.Element {
     <section id="verify" className="px-8 py-32 lg:px-8">
       <div className="mx-auto max-w-6xl">
         <h2 className="text-4xl font-semibold tracking-[-0.02em] text-falcon-text">
-          Verification Playground
+          Try it yourself
         </h2>
-        <p className="mt-4 text-sm leading-relaxed text-falcon-text/40">
-          Generate a Falcon-512 keypair in-browser via WASM, sign a message,
-          and verify the signature. All crypto runs locally.
+        <p className="mt-4 text-sm leading-relaxed text-falcon-text/50">
+          Generate a Falcon-512 keypair, sign any message, and verify &mdash;
+          all running locally in your browser via WebAssembly.
         </p>
 
         <div className="mt-10 grid grid-cols-1 gap-8 lg:grid-cols-2">

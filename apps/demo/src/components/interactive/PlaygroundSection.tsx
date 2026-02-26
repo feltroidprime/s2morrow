@@ -11,7 +11,7 @@ const VerificationPlaygroundDynamic = dynamic(
       <section id="verify" className="px-8 py-32 lg:px-8">
         <div className="mx-auto max-w-6xl">
           <h2 className="text-4xl font-semibold tracking-[-0.02em] text-falcon-text">
-            Verification Playground
+            Try it yourself
           </h2>
           <div className="mt-10 h-48 skeleton-shimmer" />
         </div>
