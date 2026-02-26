@@ -2,6 +2,14 @@
 version = 1
 
 [[package]]
+name = "bench_ecdsa"
+version = "0.1.0"
+dependencies = [
+ "garaga",
+ "snforge_std",
+]
+
+[[package]]
 name = "corelib_imports"
 version = "0.1.2"
 source = "registry+https://scarbs.xyz/"
@@ -38,6 +46,14 @@ dependencies = [
 [[package]]
 name = "falcon_zknox"
 version = "0.1.0"
+dependencies = [
+ "corelib_imports",
+]
+
+[[package]]
+name = "garaga"
+version = "1.0.1"
+source = "git+https://github.com/keep-starknet-strange/garaga?branch=cairo_2.15#60135604fc7105c65be3a361e31662422a161b6b"
 dependencies = [
  "corelib_imports",
 ]

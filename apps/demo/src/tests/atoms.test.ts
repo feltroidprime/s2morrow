@@ -466,11 +466,11 @@ describe("pipelineStepsAtom", () => {
     ])
   })
 
-  it("falcon-verify step has 132K stepCount", () => {
+  it("falcon-verify step has 9.5M stepCount", () => {
     const registry = makeRegistry()
     const steps = registry.get(pipelineStepsAtom)
     const verifyStep = steps.find((s) => s.id === "falcon-verify")!
-    expect(verifyStep.stepCount).toBe(132000)
+    expect(verifyStep.stepCount).toBe(9500000)
   })
 
   it("transitions step 0 to active status", () => {

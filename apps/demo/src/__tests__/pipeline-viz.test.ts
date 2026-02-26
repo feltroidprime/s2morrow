@@ -89,9 +89,9 @@ describe("INITIAL_PIPELINE_STEPS data", () => {
     expect(names[5]).toBe("Settled on L1")
   })
 
-  it("falcon-verify step has 132K stepCount", () => {
+  it("falcon-verify step has 9.5M stepCount", () => {
     const verifyStep = INITIAL_PIPELINE_STEPS.find((s) => s.id === "falcon-verify")!
-    expect(verifyStep.stepCount).toBe(132000)
+    expect(verifyStep.stepCount).toBe(9500000)
   })
 
   it("all steps have non-empty input/output/description fields", () => {

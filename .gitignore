@@ -1,5 +1,6 @@
 target/
 *.txt
+.entire/
 
 # Python
 __pycache__/
