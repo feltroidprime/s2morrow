@@ -10,6 +10,7 @@
     "apps/demo/src/__tests__/account-deploy/account-deploy-pipeline.test.ts",
     "apps/demo/src/__tests__/account-deploy/account-deploy-view.test.tsx",
     "apps/demo/src/__tests__/config/networks.test.ts",
+    "apps/demo/src/__tests__/pipeline-viz.test.ts",
     "apps/demo/src/__tests__/starknet/falcon-signer.test.ts",
     "apps/demo/src/__tests__/verify-playground/falcon-service.test.ts",
     "apps/demo/src/__tests__/verify-playground/keyfile.test.ts",
@@ -17,6 +18,7 @@
     "apps/demo/src/app/globals.css",
     "apps/demo/src/app/page.tsx",
     "apps/demo/src/atoms/falcon.ts",
+    "apps/demo/src/atoms/pipeline.ts",
     "apps/demo/src/atoms/starknet.ts",
     "apps/demo/src/components/interactive/AccountDeployFlow.tsx",
     "apps/demo/src/components/interactive/AccountDeploySection.tsx",
@@ -44,6 +46,7 @@
     "apps/demo/src/services/errors.ts",
     "apps/demo/src/services/keyfile.ts",
     "apps/demo/src/services/types.ts",
+    "apps/demo/src/tests/atoms.test.ts",
     "bin/declare.sh",
     "docs/plans/2026-02-25-demo-production-design.md",
     "docs/plans/2026-02-25-demo-production-impl.md",
@@ -112,10 +115,10 @@
     }
   ],
   "token_usage": {
-    "input_tokens": 3205,
-    "cache_creation_tokens": 1447547,
-    "cache_read_tokens": 65595805,
-    "output_tokens": 96437,
-    "api_call_count": 688
+    "input_tokens": 3198,
+    "cache_creation_tokens": 1412944,
+    "cache_read_tokens": 65948915,
+    "output_tokens": 94477,
+    "api_call_count": 682
   }
 }

@@ -83,3 +83,7 @@ After all tasks complete and verified:
 - **superpowers:using-git-worktrees** - REQUIRED: Set up isolated workspace before starting
 - **superpowers:writing-plans** - Creates the plan this skill executes
 - **superpowers:finishing-a-development-branch** - Complete development after all tasks
+
+---
+
+Cool. The section what happens on -chain needs to be reworked by explaining Starknet account abstraction model . Gather context with subagent from https://docs.starknet.io/learn/protocol/accounts and @packages/falcon_account/  to explain this visually

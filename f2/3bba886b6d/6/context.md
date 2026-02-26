@@ -26,3 +26,7 @@ Load plan, review critically, execute tasks in batches, report for review betwee
 1. Read plan file
 2. Review critica...
 
+### Prompt 3
+
+Cool. The section what happens on -chain needs to be reworked by explaining Starknet account abstraction model . Gather context with subagent from https://docs.starknet.io/learn/protocol/accounts and @packages/falcon_account/  to explain this visually
+
