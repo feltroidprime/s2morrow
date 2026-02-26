@@ -398,22 +398,7 @@ export function AccountDeployFlow(): React.JSX.Element {
                 ))}
               </select>
             </div>
-          ) : (
-            <div>
-              <label htmlFor="deploy-private-key" className="block text-sm font-medium text-falcon-text">
-                Deployer Private Key
-              </label>
-              <input
-                id="deploy-private-key"
-                type="password"
-                autoComplete="off"
-                value={privateKey}
-                onChange={(event) => setPrivateKey(event.target.value)}
-                placeholder="0x..."
-                className="w-full rounded-lg border border-falcon-muted/30 bg-falcon-surface px-4 py-2 font-mono text-sm text-falcon-text placeholder-falcon-muted focus:outline-none focus:ring-2 focus:ring-falcon-primary"
-              />
-            </div>
-          )}
+          ) : null}
 
           {deployStep.step === "idle" && (() => {
             const classHashValid = networkConfig.classHash !== "0x0"

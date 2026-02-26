@@ -106,7 +106,11 @@ interface PrepareAccountDeployInput {
 export const prepareAccountDeployEffect = Effect.fn(
   "AccountDeployPipeline.prepareAccountDeployEffect",
 )(function* ({ privateKey, existingKeypair }: PrepareAccountDeployInput) {
-  const normalizedPrivateKey = yield* validateHexPrivateKey(privateKey)
+  // Validate deployer private key only if provided (devnet auto-fills it;
+  // on public networks the Falcon account self-deploys so it's not needed).
+  const normalizedPrivateKey = privateKey.trim().length > 0
+    ? yield* validateHexPrivateKey(privateKey)
+    : ""
 
   const keypair = yield* Option.match(existingKeypair, {
     onNone: () => FalconService.generateKeypair(),
