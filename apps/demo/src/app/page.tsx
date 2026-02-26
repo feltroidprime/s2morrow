@@ -1,8 +1,10 @@
 import { Footer } from "@/components/landing/Footer"
 import { Hero } from "@/components/landing/Hero"
 import { NavHeader } from "@/components/landing/NavHeader"
+import { TheProblem } from "@/components/landing/TheProblem"
+import { WhyStarknet } from "@/components/landing/WhyStarknet"
 import { PerformanceStats } from "@/components/landing/PerformanceStats"
-import { WhyPostQuantum } from "@/components/landing/WhyPostQuantum"
+import { CredibilityBar } from "@/components/landing/CredibilityBar"
 import { PlaygroundSection } from "@/components/interactive/PlaygroundSection"
 import { PipelineSection } from "@/components/interactive/PipelineSection"
 import { AccountDeploySection } from "@/components/interactive/AccountDeploySection"
@@ -14,11 +16,15 @@ export default function Home(): React.JSX.Element {
       <NavHeader />
       <Hero />
       <ScrollReveal>
-        <WhyPostQuantum />
+        <TheProblem />
+      </ScrollReveal>
+      <ScrollReveal>
+        <WhyStarknet />
       </ScrollReveal>
       <ScrollReveal>
         <PerformanceStats />
       </ScrollReveal>
+      <CredibilityBar />
       <ScrollReveal>
         <PlaygroundSection />
       </ScrollReveal>

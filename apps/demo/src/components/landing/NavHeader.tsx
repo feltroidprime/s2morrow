@@ -9,8 +9,8 @@ import { ThemeToggle } from "@/components/ThemeToggle"
 
 const NAV_LINKS = [
   { href: "#hero", label: "Home" },
-  { href: "#verify", label: "Verify" },
-  { href: "#pipeline", label: "Pipeline" },
+  { href: "#why-starknet", label: "Why Starknet" },
+  { href: "#verify", label: "Try It" },
   { href: "#deploy", label: "Deploy" },
 ] as const
 
