@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useCallback, useRef, useState } from "react"
+import React, { useCallback, useEffect, useRef, useState } from "react"
 import { flushSync } from "react-dom"
 import { Exit, Option } from "effect"
 import { useAtomValue } from "@effect-atom/atom-react"
@@ -8,6 +8,7 @@ import { keypairAtom } from "@/atoms/falcon"
 import { networkAtom } from "@/atoms/starknet"
 import { NETWORKS } from "@/config/networks"
 import { StarknetService } from "@/services/StarknetService"
+import type { FalconResourceBounds } from "@/services/StarknetService"
 import { FalconSigner } from "@/services/FalconSigner"
 import { extractUserMessage } from "@/services/error-messages"
 import { ExplorerLink } from "@/components/ui/ExplorerLink"
@@ -18,12 +19,16 @@ import type { FalconService } from "@/services/FalconService"
 
 type TxPhase =
   | { phase: "idle" }
-  | { phase: "preparing" }
   | { phase: "signing" }
   | { phase: "submitting"; signMs: number }
   | { phase: "confirming"; signMs: number; txHash: string }
   | { phase: "done"; signMs: number; networkMs: number; txHash: string }
   | { phase: "error"; message: string }
+
+interface Prefetched {
+  nonce: string
+  resourceBounds: FalconResourceBounds
+}
 
 interface SendTransactionProps {
   readonly deployedAddress: ContractAddress
@@ -49,12 +54,36 @@ export function SendTransaction({
   // Mutable timing ref — written directly by callbacks, never stale
   const timingRef = useRef({ signMs: 0, networkStartedAt: 0 })
 
+  // Prefetch nonce + resource bounds so clicking "Send" goes straight to signing
+  const prefetchRef = useRef<Prefetched | null>(null)
+
+  const doPrefetch = useCallback(async () => {
+    prefetchRef.current = null
+    const [nonceExit, rbExit] = await Promise.all([
+      deployRuntime.runPromiseExit(
+        StarknetService.getNonce(deployedAddress as string),
+      ),
+      deployRuntime.runPromiseExit(StarknetService.getResourceBounds()),
+    ])
+    if (Exit.isSuccess(nonceExit) && Exit.isSuccess(rbExit)) {
+      prefetchRef.current = {
+        nonce: nonceExit.value,
+        resourceBounds: rbExit.value,
+      }
+    }
+  }, [deployRuntime, deployedAddress])
+
+  // Prefetch on mount
+  useEffect(() => {
+    doPrefetch()
+  }, [doPrefetch])
+
   const handleSend = useCallback(async () => {
     const kp = Option.match(keypair, { onNone: () => null, onSome: (k) => k })
     if (!kp) return
 
-    // Start with "preparing" — starknet.js fetches nonce before signing
-    setTxPhase({ phase: "preparing" })
+    // Go straight to signing — nonce/gas already prefetched
+    setTxPhase({ phase: "signing" })
     timingRef.current = { signMs: 0, networkStartedAt: 0 }
 
     const signer = new FalconSigner(
@@ -62,12 +91,6 @@ export function SendTransaction({
       kp.publicKeyNtt,
       falconRuntime,
       {
-        onSignStart: () => {
-          // Fires when _signHash is entered — nonce fetch is done, actual signing begins
-          flushSync(() => {
-            setTxPhase({ phase: "signing" })
-          })
-        },
         onSignComplete: (signMs) => {
           timingRef.current.signMs = signMs
           timingRef.current.networkStartedAt = performance.now()
@@ -79,6 +102,7 @@ export function SendTransaction({
     )
 
     const amountWei = BigInt(Math.floor(parseFloat(amount) * 1e18))
+    const prefetched = prefetchRef.current ?? undefined
 
     const executeExit = await deployRuntime.runPromiseExit(
       StarknetService.executeTransaction(
@@ -86,11 +110,14 @@ export function SendTransaction({
         signer,
         recipient,
         amountWei,
+        prefetched,
       ),
     )
 
     if (Exit.isFailure(executeExit)) {
       setTxPhase({ phase: "error", message: extractUserMessage(executeExit, "Transaction failed") })
+      // Refetch in case nonce was consumed or stale
+      doPrefetch()
       return
     }
 
@@ -104,6 +131,9 @@ export function SendTransaction({
       StarknetService.waitForTx(txHash),
     )
 
+    // Refetch nonce for next transaction (nonce incremented)
+    doPrefetch()
+
     if (Exit.isFailure(waitExit)) {
       setTxPhase({ phase: "error", message: extractUserMessage(waitExit, "Transaction confirmation failed") })
       return
@@ -111,10 +141,9 @@ export function SendTransaction({
 
     const networkMs = performance.now() - networkStartedAt
     setTxPhase({ phase: "done", signMs, networkMs, txHash })
-  }, [keypair, deployedAddress, recipient, amount, deployRuntime, falconRuntime])
+  }, [keypair, deployedAddress, recipient, amount, deployRuntime, falconRuntime, doPrefetch])
 
   const isBusy =
-    txPhase.phase === "preparing" ||
     txPhase.phase === "signing" ||
     txPhase.phase === "submitting" ||
     txPhase.phase === "confirming"
@@ -164,7 +193,7 @@ export function SendTransaction({
 
       {isBusy && (
         <TransactionPhases
-          phase={txPhase.phase as "preparing" | "signing" | "submitting" | "confirming"}
+          phase={txPhase.phase as "signing" | "submitting" | "confirming"}
           signMs={"signMs" in txPhase ? txPhase.signMs : undefined}
         />
       )}

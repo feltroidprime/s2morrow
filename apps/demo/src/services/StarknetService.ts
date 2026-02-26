@@ -10,6 +10,12 @@ import {
 import { TxHash, ContractAddress } from "./types"
 import type { PackedPublicKey, DevnetAccount } from "./types"
 
+export interface FalconResourceBounds {
+  l2_gas: { max_amount: bigint; max_price_per_unit: bigint }
+  l1_gas: { max_amount: bigint; max_price_per_unit: bigint }
+  l1_data_gas: { max_amount: bigint; max_price_per_unit: bigint }
+}
+
 /** STRK token contract address (same on mainnet and Sepolia) */
 export const STRK_TOKEN_ADDRESS =
   "0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d"
@@ -190,16 +196,34 @@ function makeService(rpcUrl: string, classHash: string) {
     },
   )
 
+  const getNonce = Effect.fn("Starknet.getNonce")(
+    function* (address: string) {
+      return yield* Effect.tryPromise({
+        try: () => provider.getNonceForAddress(address),
+        catch: (error) =>
+          new StarknetRpcError({ message: `Nonce fetch failed: ${error}`, code: -1 }),
+      })
+    },
+  )
+
+  const getResourceBounds = Effect.fn("Starknet.getResourceBounds")(
+    function* () {
+      return yield* falconResourceBounds
+    },
+  )
+
   const executeTransaction = Effect.fn("Starknet.executeTransaction")(
     function* (
       accountAddress: string,
       signer: SignerInterface,
       recipient: string,
       amount: bigint,
+      prefetched?: { nonce: string; resourceBounds: FalconResourceBounds },
     ) {
       const account = new Account({ provider, address: accountAddress, signer })
 
-      const resourceBounds = yield* falconResourceBounds
+      const resourceBounds = prefetched?.resourceBounds ?? (yield* falconResourceBounds)
+      const nonce = prefetched?.nonce ?? (yield* getNonce(accountAddress))
 
       return yield* Effect.tryPromise({
         try: async () => {
@@ -211,7 +235,7 @@ function makeService(rpcUrl: string, classHash: string) {
                 calldata: [recipient, amount.toString(), "0"],
               },
             ],
-            { resourceBounds },
+            { resourceBounds, nonce },
           )
           return { txHash: TxHash.make(result.transaction_hash) }
         },
@@ -238,6 +262,8 @@ function makeService(rpcUrl: string, classHash: string) {
     computeDeployAddress,
     isDeployed,
     getBalance,
+    getNonce,
+    getResourceBounds,
     deployAccount,
     waitForTx,
     fetchPrefundedAccounts,

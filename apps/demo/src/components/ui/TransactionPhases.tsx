@@ -2,20 +2,19 @@ import React from "react"
 
 interface TransactionPhasesProps {
   /** Current active phase */
-  readonly phase: "preparing" | "signing" | "submitting" | "confirming"
+  readonly phase: "signing" | "submitting" | "confirming"
   /** Duration of signing phase in ms (set when signing completes) */
   readonly signMs?: number
 }
 
 const PHASES = [
-  { key: "preparing", label: "Preparing Transaction", activeLabel: "fetching nonce..." },
   { key: "signing", label: "Falcon-512 Signing", activeLabel: "signing..." },
   { key: "submitting", label: "Submitting to Network", activeLabel: "broadcasting..." },
   { key: "confirming", label: "Awaiting Confirmation", activeLabel: "waiting..." },
 ] as const
 
 const PHASE_ORDER: Record<string, number> = {
-  preparing: 0, signing: 1, submitting: 2, confirming: 3,
+  signing: 0, submitting: 1, confirming: 2,
 }
 
 export function TransactionPhases({ phase, signMs }: TransactionPhasesProps) {
