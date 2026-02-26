@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useCallback, useRef, useState } from "react"
+import { flushSync } from "react-dom"
 import { Exit, Option } from "effect"
 import { useAtomValue } from "@effect-atom/atom-react"
 import { keypairAtom } from "@/atoms/falcon"
@@ -62,7 +63,12 @@ export function SendTransaction({
         // Written directly to ref — always available downstream
         timingRef.current.signMs = signMs
         timingRef.current.networkStartedAt = performance.now()
-        setTxPhase({ phase: "submitting", signMs })
+        // flushSync forces React to render NOW, before starknet.js
+        // continues with the HTTP submission. Without it, React batches
+        // the update and the user never sees the signing→submitting transition.
+        flushSync(() => {
+          setTxPhase({ phase: "submitting", signMs })
+        })
       },
     )
 
