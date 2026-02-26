@@ -1,6 +1,6 @@
 import { Config, Effect, Layer } from "effect"
-import { RpcProvider, Account, hash } from "starknet"
-import type { SignerInterface } from "starknet"
+import { RpcProvider, Account, hash, transaction, EDAMode } from "starknet"
+import type { SignerInterface, Signature } from "starknet"
 import {
   StarknetRpcError,
   AccountDeployError,
@@ -206,9 +206,45 @@ function makeService(rpcUrl: string, classHash: string) {
     },
   )
 
+  const getChainId = Effect.fn("Starknet.getChainId")(
+    function* () {
+      return yield* Effect.tryPromise({
+        try: () => provider.getChainId(),
+        catch: (error) =>
+          new StarknetRpcError({ message: `Chain ID fetch failed: ${error}`, code: -1 }),
+      })
+    },
+  )
+
   const getResourceBounds = Effect.fn("Starknet.getResourceBounds")(
     function* () {
       return yield* falconResourceBounds
+    },
+  )
+
+  const submitSignedInvoke = Effect.fn("Starknet.submitSignedInvoke")(
+    function* (
+      senderAddress: string,
+      compiledCalldata: string[],
+      signature: Signature,
+      nonce: string,
+      resourceBounds: FalconResourceBounds,
+    ) {
+      return yield* Effect.tryPromise({
+        try: async () => {
+          const result = await provider.invokeFunction(
+            { contractAddress: senderAddress, calldata: compiledCalldata, signature },
+            {
+              nonce,
+              version: "0x100000000000000000000000000000003",
+              resourceBounds,
+            },
+          )
+          return { txHash: TxHash.make(result.transaction_hash) }
+        },
+        catch: (error) =>
+          new TransactionSubmitError({ message: String(error) }),
+      })
     },
   )
 
@@ -263,7 +299,9 @@ function makeService(rpcUrl: string, classHash: string) {
     isDeployed,
     getBalance,
     getNonce,
+    getChainId,
     getResourceBounds,
+    submitSignedInvoke,
     deployAccount,
     waitForTx,
     fetchPrefundedAccounts,

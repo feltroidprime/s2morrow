@@ -1,13 +1,14 @@
 "use client"
 
 import React, { useCallback, useEffect, useRef, useState } from "react"
-import { flushSync } from "react-dom"
 import { Exit, Option } from "effect"
 import { useAtomValue } from "@effect-atom/atom-react"
+import { transaction } from "starknet"
+import type { InvocationsSignerDetails, constants } from "starknet"
 import { keypairAtom } from "@/atoms/falcon"
 import { networkAtom } from "@/atoms/starknet"
 import { NETWORKS } from "@/config/networks"
-import { StarknetService } from "@/services/StarknetService"
+import { StarknetService, STRK_TOKEN_ADDRESS } from "@/services/StarknetService"
 import type { FalconResourceBounds } from "@/services/StarknetService"
 import { FalconSigner } from "@/services/FalconSigner"
 import { extractUserMessage } from "@/services/error-messages"
@@ -27,6 +28,7 @@ type TxPhase =
 
 interface Prefetched {
   nonce: string
+  chainId: string
   resourceBounds: FalconResourceBounds
 }
 
@@ -37,6 +39,9 @@ interface SendTransactionProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   readonly falconRuntime: ManagedRuntime.ManagedRuntime<FalconService, any>
 }
+
+/** Yield to the browser so it can paint before we continue. */
+const yieldToBrowser = () => new Promise<void>((r) => setTimeout(r, 0))
 
 export function SendTransaction({
   deployedAddress,
@@ -51,29 +56,27 @@ export function SendTransaction({
   const [amount, setAmount] = useState("0.001")
   const [txPhase, setTxPhase] = useState<TxPhase>({ phase: "idle" })
 
-  // Mutable timing ref — written directly by callbacks, never stale
   const timingRef = useRef({ signMs: 0, networkStartedAt: 0 })
 
-  // Prefetch nonce + resource bounds so clicking "Send" goes straight to signing
+  // Prefetch nonce + chainId + resource bounds so send goes straight to signing
   const prefetchRef = useRef<Prefetched | null>(null)
 
   const doPrefetch = useCallback(async () => {
     prefetchRef.current = null
-    const [nonceExit, rbExit] = await Promise.all([
-      deployRuntime.runPromiseExit(
-        StarknetService.getNonce(deployedAddress as string),
-      ),
+    const [nonceExit, chainExit, rbExit] = await Promise.all([
+      deployRuntime.runPromiseExit(StarknetService.getNonce(deployedAddress as string)),
+      deployRuntime.runPromiseExit(StarknetService.getChainId()),
       deployRuntime.runPromiseExit(StarknetService.getResourceBounds()),
     ])
-    if (Exit.isSuccess(nonceExit) && Exit.isSuccess(rbExit)) {
+    if (Exit.isSuccess(nonceExit) && Exit.isSuccess(chainExit) && Exit.isSuccess(rbExit)) {
       prefetchRef.current = {
         nonce: nonceExit.value,
+        chainId: chainExit.value,
         resourceBounds: rbExit.value,
       }
     }
   }, [deployRuntime, deployedAddress])
 
-  // Prefetch on mount
   useEffect(() => {
     doPrefetch()
   }, [doPrefetch])
@@ -82,56 +85,81 @@ export function SendTransaction({
     const kp = Option.match(keypair, { onNone: () => null, onSome: (k) => k })
     if (!kp) return
 
-    // Go straight to signing — nonce/gas already prefetched
-    setTxPhase({ phase: "signing" })
-    timingRef.current = { signMs: 0, networkStartedAt: 0 }
-
-    const signer = new FalconSigner(
-      kp.secretKey,
-      kp.publicKeyNtt,
-      falconRuntime,
-      {
-        onSignComplete: (signMs) => {
-          timingRef.current.signMs = signMs
-          timingRef.current.networkStartedAt = performance.now()
-          flushSync(() => {
-            setTxPhase({ phase: "submitting", signMs })
-          })
-        },
-      },
-    )
-
-    const amountWei = BigInt(Math.floor(parseFloat(amount) * 1e18))
-    const prefetched = prefetchRef.current ?? undefined
-
-    const executeExit = await deployRuntime.runPromiseExit(
-      StarknetService.executeTransaction(
-        deployedAddress as string,
-        signer,
-        recipient,
-        amountWei,
-        prefetched,
-      ),
-    )
-
-    if (Exit.isFailure(executeExit)) {
-      setTxPhase({ phase: "error", message: extractUserMessage(executeExit, "Transaction failed") })
-      // Refetch in case nonce was consumed or stale
+    const prefetched = prefetchRef.current
+    if (!prefetched) {
+      setTxPhase({ phase: "error", message: "Network data not ready. Please try again." })
       doPrefetch()
       return
     }
 
-    const { txHash } = executeExit.value
-    const { signMs, networkStartedAt } = timingRef.current
+    // ── Phase 1: Sign ───────────────────────────────────────────────
+    setTxPhase({ phase: "signing" })
 
+    const signer = new FalconSigner(kp.secretKey, kp.publicKeyNtt, falconRuntime)
+
+    const calls = [{
+      contractAddress: STRK_TOKEN_ADDRESS,
+      entrypoint: "transfer",
+      calldata: [recipient, BigInt(Math.floor(parseFloat(amount) * 1e18)).toString(), "0"],
+    }]
+
+    const signerDetails: InvocationsSignerDetails = {
+      walletAddress: deployedAddress as string,
+      chainId: prefetched.chainId as constants.StarknetChainId,
+      cairoVersion: "1",
+      version: "0x3",
+      nonce: prefetched.nonce,
+      resourceBounds: prefetched.resourceBounds,
+      tip: "0x0",
+      paymasterData: [],
+      accountDeploymentData: [],
+      nonceDataAvailabilityMode: "L1",
+      feeDataAvailabilityMode: "L1",
+    }
+
+    const signStart = performance.now()
+    let signature: string[]
+    try {
+      signature = await signer.signTransaction(calls, signerDetails) as string[]
+    } catch (err) {
+      setTxPhase({ phase: "error", message: String(err) })
+      return
+    }
+    const signMs = performance.now() - signStart
+
+    // Update UI and yield so the browser paints the signing badge
+    timingRef.current = { signMs, networkStartedAt: performance.now() }
+    setTxPhase({ phase: "submitting", signMs })
+    await yieldToBrowser()
+
+    // ── Phase 2: Submit ─────────────────────────────────────────────
+    const compiledCalldata = transaction.getExecuteCalldata(calls, signerDetails.cairoVersion)
+
+    const submitExit = await deployRuntime.runPromiseExit(
+      StarknetService.submitSignedInvoke(
+        deployedAddress as string,
+        compiledCalldata as string[],
+        signature,
+        prefetched.nonce,
+        prefetched.resourceBounds,
+      ),
+    )
+
+    if (Exit.isFailure(submitExit)) {
+      setTxPhase({ phase: "error", message: extractUserMessage(submitExit, "Transaction failed") })
+      doPrefetch()
+      return
+    }
+
+    const { txHash } = submitExit.value
     setTxPhase({ phase: "confirming", signMs, txHash })
 
-    // Wait for on-chain confirmation
+    // ── Phase 3: Confirm ────────────────────────────────────────────
     const waitExit = await deployRuntime.runPromiseExit(
       StarknetService.waitForTx(txHash),
     )
 
-    // Refetch nonce for next transaction (nonce incremented)
+    // Refetch nonce for next transaction
     doPrefetch()
 
     if (Exit.isFailure(waitExit)) {
@@ -139,7 +167,7 @@ export function SendTransaction({
       return
     }
 
-    const networkMs = performance.now() - networkStartedAt
+    const networkMs = performance.now() - timingRef.current.networkStartedAt
     setTxPhase({ phase: "done", signMs, networkMs, txHash })
   }, [keypair, deployedAddress, recipient, amount, deployRuntime, falconRuntime, doPrefetch])
 
