@@ -66,7 +66,11 @@ export function AccountDeployFlow(): React.JSX.Element {
   const [preparedDeploy, setPreparedDeploy] =
     useState<Option.Option<PreparedAccountDeploy>>(Option.none())
   const [balance, setBalance] = useState<bigint | null>(null)
+  const [postDeployBalance, setPostDeployBalance] = useState<bigint | null>(null)
   const [autoRestoring, setAutoRestoring] = useState(false)
+  const [deployStartTime, setDeployStartTime] = useState<number | null>(null)
+  const [lastChecked, setLastChecked] = useState<number | null>(null)
+  const [isRefreshing, setIsRefreshing] = useState(false)
 
   // ── Auto-restore: if keypair+packedKey exist in localStorage, restore flow state ──
   const autoRestoreRan = useRef(false)
@@ -154,21 +158,28 @@ export function AccountDeployFlow(): React.JSX.Element {
 
   const hasKeypair = Option.isSome(keypair)
 
+  const pollBalance = useCallback(async (address: string) => {
+    const exit = await deployRuntimeRef.current.runPromiseExit(
+      StarknetService.getBalance(address),
+    )
+    if (Exit.isSuccess(exit)) {
+      setBalance(exit.value)
+      setLastChecked(Date.now())
+    }
+  }, [])
+
   useEffect(() => {
     if (deployStep.step !== "awaiting-funds") {
       setBalance(null)
+      setLastChecked(null)
       return
     }
 
     let cancelled = false
 
     const poll = async () => {
-      const exit = await deployRuntimeRef.current.runPromiseExit(
-        StarknetService.getBalance(deployStep.address),
-      )
-      if (!cancelled && Exit.isSuccess(exit)) {
-        setBalance(exit.value)
-      }
+      if (cancelled) return
+      await pollBalance(deployStep.address)
     }
 
     poll()
@@ -177,7 +188,14 @@ export function AccountDeployFlow(): React.JSX.Element {
       cancelled = true
       clearInterval(interval)
     }
-  }, [deployStep])
+  }, [deployStep, pollBalance])
+
+  const handleRefreshBalance = useCallback(async () => {
+    if (deployStep.step !== "awaiting-funds") return
+    setIsRefreshing(true)
+    await pollBalance(deployStep.address)
+    setIsRefreshing(false)
+  }, [deployStep, pollBalance])
 
   const handlePrepare = useCallback(async () => {
     setDeployStep({ step: hasKeypair ? "packing" : "generating-keypair" })
@@ -228,6 +246,7 @@ export function AccountDeployFlow(): React.JSX.Element {
     }
 
     setDeployStep({ step: "deploying", address: prepared.address })
+    setDeployStartTime(Date.now())
     const signer = new FalconSigner(
       prepared.keypair.secretKey,
       prepared.keypair.publicKeyNtt,
@@ -258,6 +277,20 @@ export function AccountDeployFlow(): React.JSX.Element {
       txHash: deployExit.value.txHash,
       address: deployExit.value.address,
     })
+    setDeployStartTime(null)
+
+    // Fetch remaining balance after deploy
+    const balExit = await deployRuntimeRef.current.runPromiseExit(
+      StarknetService.getBalance(deployExit.value.address),
+    )
+    if (Exit.isSuccess(balExit)) {
+      setPostDeployBalance(balExit.value)
+    }
+
+    // Smooth scroll to send section
+    setTimeout(() => {
+      document.getElementById("send-section")?.scrollIntoView({ behavior: "smooth", block: "start" })
+    }, 300)
   }, [preparedDeploy, setDeployStep, setDeployTxHash, setDeployedAddress])
 
   const handleReset = useCallback(() => {
@@ -428,6 +461,21 @@ export function AccountDeployFlow(): React.JSX.Element {
                           {balance > 0n && (
                             <span className="text-falcon-success/60">Ready to deploy</span>
                           )}
+                          <button
+                            onClick={handleRefreshBalance}
+                            disabled={isRefreshing}
+                            className="ml-1 inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] text-falcon-text/25 transition-colors hover:text-falcon-text/50 disabled:opacity-40"
+                            title="Refresh balance"
+                          >
+                            {isRefreshing ? (
+                              <span className="inline-block h-3 w-3 animate-spin rounded-full border border-falcon-text/20 border-t-falcon-text/50" />
+                            ) : (
+                              "Refresh"
+                            )}
+                          </button>
+                          {lastChecked != null && (
+                            <LastCheckedAgo timestamp={lastChecked} />
+                          )}
                         </div>
                       )}
                     </div>
@@ -492,6 +540,8 @@ export function AccountDeployFlow(): React.JSX.Element {
           <TransactionPending
             title="Deploying account..."
             subtitle={`Signing with Falcon-512 and submitting to ${networkConfig.name}`}
+            startTime={deployStartTime ?? undefined}
+            hint="Falcon verification takes ~30-60 seconds on testnet"
           />
         )}
 
@@ -500,7 +550,7 @@ export function AccountDeployFlow(): React.JSX.Element {
             <div
               role="status"
               aria-live="polite"
-              className="glass-card-static glass-card-success mt-8 rounded-2xl p-6 animate-fade-in"
+              className="glass-card-static glass-card-success mt-8 rounded-2xl p-6 animate-fade-in animate-success-shimmer"
             >
               <h3 className="text-sm font-semibold text-falcon-success/80">
                 {isAlreadyDeployed ? "Account Already Deployed" : "Account Deployed"}
@@ -519,12 +569,20 @@ export function AccountDeployFlow(): React.JSX.Element {
                   <ExplorerLink baseUrl={networkConfig.explorerBaseUrl} txHash={deployStep.txHash} className="mt-3" />
                 </>
               )}
+              {postDeployBalance != null && (
+                <div className="mt-3 flex items-center gap-2 text-xs text-falcon-text/30">
+                  <span>Remaining balance:</span>
+                  <TokenAmount amount={postDeployBalance} className="text-falcon-text/50" />
+                </div>
+              )}
             </div>
-            <SendTransaction
-              deployedAddress={deployStep.address}
-              deployRuntime={deployRuntimeRef.current}
-              falconRuntime={falconRuntime}
-            />
+            <div id="send-section">
+              <SendTransaction
+                deployedAddress={deployStep.address}
+                deployRuntime={deployRuntimeRef.current}
+                falconRuntime={falconRuntime}
+              />
+            </div>
           </>
         )}
 
@@ -545,5 +603,22 @@ export function AccountDeployFlow(): React.JSX.Element {
         )}
       </div>
     </section>
+  )
+}
+
+function LastCheckedAgo({ timestamp }: { timestamp: number }) {
+  const [ago, setAgo] = useState(0)
+
+  useEffect(() => {
+    const tick = () => setAgo(Math.floor((Date.now() - timestamp) / 1000))
+    tick()
+    const interval = setInterval(tick, 1000)
+    return () => clearInterval(interval)
+  }, [timestamp])
+
+  return (
+    <span className="text-[10px] text-falcon-text/20 tabular-nums">
+      {ago}s ago
+    </span>
   )
 }

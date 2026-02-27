@@ -263,6 +263,33 @@ body > main {
   border-radius: 0.75rem;
 }
 
+/* ─── Success shimmer sweep ────────────────────────────────────────── */
+@keyframes success-shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.animate-success-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.animate-success-shimmer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(16, 185, 129, 0.08) 45%,
+    rgba(16, 185, 129, 0.15) 50%,
+    rgba(16, 185, 129, 0.08) 55%,
+    transparent 100%
+  );
+  animation: success-shimmer 0.8s cubic-bezier(0.32, 0.72, 0, 1) 0.2s both;
+  pointer-events: none;
+}
+
 /* ─── Micro-interaction animations ─────────────────────────────────── */
 @keyframes fade-in {
   from { opacity: 0; transform: translateY(8px); }
@@ -342,6 +369,10 @@ body > main {
   .animate-spin-ring,
   .animate-progress-indeterminate,
   .animate-text-breathe {
+    animation: none;
+  }
+
+  .animate-success-shimmer::after {
     animation: none;
   }
 }

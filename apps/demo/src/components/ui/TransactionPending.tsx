@@ -1,11 +1,25 @@
-import React from "react"
+"use client"
+
+import React, { useEffect, useState } from "react"
 
 interface TransactionPendingProps {
   readonly title: string
   readonly subtitle: string
+  readonly startTime?: number
+  readonly hint?: string
 }
 
-export function TransactionPending({ title, subtitle }: TransactionPendingProps) {
+export function TransactionPending({ title, subtitle, startTime, hint }: TransactionPendingProps) {
+  const [elapsed, setElapsed] = useState(0)
+
+  useEffect(() => {
+    if (startTime == null) return
+    const tick = () => setElapsed(Math.floor((Date.now() - startTime) / 1000))
+    tick()
+    const interval = setInterval(tick, 1000)
+    return () => clearInterval(interval)
+  }, [startTime])
+
   return (
     <div
       role="status"
@@ -51,8 +65,18 @@ export function TransactionPending({ title, subtitle }: TransactionPendingProps)
         </div>
 
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-medium text-falcon-text/80">{title}</p>
+          <p className="text-sm font-medium text-falcon-text/80">
+            {title}
+            {startTime != null && (
+              <span className="ml-2 font-mono tabular-nums text-xs text-falcon-text/30">
+                ({elapsed}s)
+              </span>
+            )}
+          </p>
           <p className="mt-0.5 text-xs text-falcon-text/30 animate-text-breathe">{subtitle}</p>
+          {hint && (
+            <p className="mt-1 text-[11px] text-falcon-text/20">{hint}</p>
+          )}
         </div>
       </div>
     </div>

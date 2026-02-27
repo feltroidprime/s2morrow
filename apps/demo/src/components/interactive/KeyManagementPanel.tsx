@@ -56,6 +56,8 @@ export function KeyManagementPanel(): React.JSX.Element {
     newAddr: string
     proceed: () => void
   } | null>(null)
+  const [confirmGenerate, setConfirmGenerate] = useState(false)
+  const [exportSuccess, setExportSuccess] = useState(false)
 
   // Sync exported flag from localStorage when keypair changes
   useEffect(() => {
@@ -88,18 +90,8 @@ export function KeyManagementPanel(): React.JSX.Element {
     [setPackedKey],
   )
 
-  const handleGenerate = useCallback(async () => {
-    // Guard: if keypair already exists, confirm before replacing
-    if (Option.isSome(keypair) && Option.isSome(packedKey)) {
-      const existingAddr = currentAddress
-      if (existingAddr) {
-        const userConfirmed = window.confirm(
-          `You already have a wallet at ${truncateAddress(existingAddr)}.\n\nGenerating a new key will replace it. Make sure you've exported your current key first.\n\nContinue?`
-        )
-        if (!userConfirmed) return
-      }
-    }
-
+  const doGenerate = useCallback(async () => {
+    setConfirmGenerate(false)
     setStep({ step: "generating-keypair" })
     setPackedKey(Option.none())
     persistPackedKey(Option.none())
@@ -126,7 +118,16 @@ export function KeyManagementPanel(): React.JSX.Element {
       })
       setStep({ step: "error", message: msg })
     }
-  }, [setKeypair, setPackedKey, setStep, setWasmStatus, packPublicKey, keypair, packedKey, currentAddress])
+  }, [setKeypair, setPackedKey, setStep, setWasmStatus, packPublicKey])
+
+  const handleGenerate = useCallback(() => {
+    // Guard: if keypair already exists, show inline confirmation
+    if (Option.isSome(keypair) && Option.isSome(packedKey) && currentAddress) {
+      setConfirmGenerate(true)
+      return
+    }
+    doGenerate()
+  }, [keypair, packedKey, currentAddress, doGenerate])
 
   const applyImport = useCallback(
     async (text: string) => {
@@ -212,6 +213,8 @@ export function KeyManagementPanel(): React.JSX.Element {
     URL.revokeObjectURL(url)
     setExportedFlag(true)
     setHasExported(true)
+    setExportSuccess(true)
+    setTimeout(() => setExportSuccess(false), 2000)
   }, [keypair, packedKey])
 
   const hasKeypair = Option.isSome(keypair)
@@ -254,6 +257,33 @@ export function KeyManagementPanel(): React.JSX.Element {
           >
             Export Now
           </button>
+        </div>
+      )}
+
+      {/* Generate replacement confirmation */}
+      {confirmGenerate && currentAddress && (
+        <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-4 space-y-3 animate-fade-in">
+          <p className="text-xs font-medium text-amber-300/90">
+            Replace existing wallet?
+          </p>
+          <p className="text-xs text-amber-300/60">
+            You already have a wallet at <span className="font-mono text-amber-300/80">{truncateAddress(currentAddress)}</span>.
+            Generating a new key will replace it. Make sure you&apos;ve exported your current key first.
+          </p>
+          <div className="flex gap-2">
+            <button
+              onClick={doGenerate}
+              className="rounded-lg bg-amber-500/15 px-4 py-1.5 text-xs font-medium text-amber-300/90 transition-colors hover:bg-amber-500/25"
+            >
+              Replace Wallet
+            </button>
+            <button
+              onClick={() => setConfirmGenerate(false)}
+              className="glass-btn rounded-lg px-4 py-1.5 text-xs font-medium text-falcon-text/40 transition-colors hover:text-falcon-text/70"
+            >
+              Cancel
+            </button>
+          </div>
         </div>
       )}
 
@@ -305,9 +335,13 @@ export function KeyManagementPanel(): React.JSX.Element {
         <button
           onClick={handleExport}
           disabled={!hasKeypair || !hasPacked}
-          className="glass-btn rounded-xl px-5 py-2.5 text-sm font-medium text-falcon-text/60 transition-all duration-200 hover:scale-[1.02] hover:text-falcon-text/80 disabled:cursor-not-allowed disabled:opacity-40"
+          className={`glass-btn rounded-xl px-5 py-2.5 text-sm font-medium transition-all duration-200 hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-40 ${
+            exportSuccess
+              ? "text-falcon-success/80"
+              : "text-falcon-text/60 hover:text-falcon-text/80"
+          }`}
         >
-          Export
+          {exportSuccess ? "\u2713 Exported" : "Export"}
         </button>
       </div>
 

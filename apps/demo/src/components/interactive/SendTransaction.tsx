@@ -56,8 +56,35 @@ export function SendTransaction({
   const [recipient, setRecipient] = useState(deployedAddress as string)
   const [amount, setAmount] = useState("0.001")
   const [txPhase, setTxPhase] = useState<TxPhase>({ phase: "prefetching" })
+  const [recipientTouched, setRecipientTouched] = useState(false)
+  const [accountBalance, setAccountBalance] = useState<bigint | null>(null)
 
   const timingRef = useRef({ signMs: 0, networkStartedAt: 0 })
+
+  // Fetch balance on mount
+  useEffect(() => {
+    let cancelled = false
+    const fetchBal = async () => {
+      const exit = await deployRuntime.runPromiseExit(
+        StarknetService.getBalance(deployedAddress as string),
+      )
+      if (!cancelled && Exit.isSuccess(exit)) {
+        setAccountBalance(exit.value)
+      }
+    }
+    fetchBal()
+    return () => { cancelled = true }
+  }, [deployRuntime, deployedAddress])
+
+  // Address validation
+  const recipientValid = /^0x[0-9a-fA-F]{1,64}$/.test(recipient)
+  const isSelf = (deployedAddress as string) === recipient
+
+  // Amount validation
+  const parsedAmount = parseFloat(amount)
+  const amountWei = isNaN(parsedAmount) ? 0n : BigInt(Math.floor(parsedAmount * 1e18))
+  const exceedsBalance = accountBalance != null && amountWei > accountBalance
+  const overHalf = accountBalance != null && accountBalance > 0n && amountWei > accountBalance / 2n && !exceedsBalance
 
   // Prefetch nonce + chainId + resource bounds so send goes straight to signing
   const prefetchRef = useRef<Prefetched | null>(null)
@@ -220,37 +247,67 @@ export function SendTransaction({
         <div>
           <label htmlFor="tx-recipient" className="block text-xs font-medium text-falcon-text/30">
             Recipient
-            {(deployedAddress as string) === recipient && (
+            {isSelf && (
               <span className="ml-2 inline-flex items-center rounded-md bg-falcon-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-falcon-primary/70">
                 You
               </span>
             )}
           </label>
-          <input
-            id="tx-recipient"
-            type="text"
-            value={recipient}
-            onChange={(e) => setRecipient(e.target.value)}
-            className="glass-input mt-2 w-full px-4 py-3 font-mono text-sm text-falcon-text/80"
-          />
+          <div className="relative mt-2">
+            <input
+              id="tx-recipient"
+              type="text"
+              value={recipient}
+              onChange={(e) => setRecipient(e.target.value)}
+              onBlur={() => setRecipientTouched(true)}
+              className={`glass-input w-full px-4 py-3 pr-10 font-mono text-sm text-falcon-text/80 ${
+                recipientTouched && !recipientValid ? "!border-falcon-error/30" : ""
+              }`}
+            />
+            {recipientTouched && recipient.length > 0 && (
+              <span className={`absolute right-3 top-1/2 -translate-y-1/2 text-sm font-semibold ${
+                recipientValid ? "text-falcon-success/70" : "text-falcon-error/70"
+              }`}>
+                {recipientValid ? "\u2713" : "\u2717"}
+              </span>
+            )}
+          </div>
+          {recipientTouched && !recipientValid && recipient.length > 0 && (
+            <p className="mt-1 text-[11px] text-falcon-error/60">
+              Must be a hex address starting with 0x (up to 66 characters)
+            </p>
+          )}
         </div>
 
         <div>
-          <label htmlFor="tx-amount" className="block text-xs font-medium text-falcon-text/30">
-            Amount (STRK)
+          <label htmlFor="tx-amount" className="flex items-baseline gap-2 text-xs font-medium text-falcon-text/30">
+            <span>Amount (STRK)</span>
+            {accountBalance != null && (
+              <span className="ml-auto text-[10px] text-falcon-text/20 tabular-nums">
+                Available: {formatStrk(accountBalance)}
+              </span>
+            )}
           </label>
           <input
             id="tx-amount"
             type="text"
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
-            className="glass-input mt-2 w-full px-4 py-3 font-mono text-sm text-falcon-text/80"
+            className={`glass-input mt-2 w-full px-4 py-3 font-mono text-sm text-falcon-text/80 ${
+              exceedsBalance ? "!border-falcon-error/30" : ""
+            }`}
           />
+          {exceedsBalance && (
+            <p className="mt-1 text-[11px] text-falcon-error/60">Insufficient balance</p>
+          )}
+          {overHalf && (
+            <p className="mt-1 text-[11px] text-amber-400/60">This is more than half your balance</p>
+          )}
         </div>
 
         <button
           onClick={handleSend}
-          disabled={isBusy || !Option.isSome(keypair)}
+          disabled={isBusy || !Option.isSome(keypair) || !recipientValid || exceedsBalance}
           className="rounded-xl bg-gradient-to-b from-falcon-accent to-falcon-accent/80 px-7 py-3 text-sm font-semibold text-white shadow-md shadow-falcon-accent/15 transition-all duration-200 hover:scale-[1.02] hover:shadow-lg hover:shadow-falcon-accent/20 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-falcon-accent/40 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:scale-100"
         >
           {txPhase.phase === "prefetching" ? "Preparing..." : isBusy ? "Sending..." : "Send STRK"}
@@ -265,7 +322,7 @@ export function SendTransaction({
       )}
 
       {txPhase.phase === "done" && (
-        <div className="glass-card-static glass-card-success mt-5 rounded-2xl p-5 animate-fade-in">
+        <div className="glass-card-static glass-card-success mt-5 rounded-2xl p-5 animate-fade-in animate-success-shimmer">
           <p className="text-sm font-medium text-falcon-success/80">Transaction Confirmed</p>
           <div className="mt-3 flex flex-wrap gap-3">
             <span className="inline-flex items-center gap-1.5 rounded-lg bg-falcon-success/10 px-2.5 py-1 text-xs font-medium tabular-nums text-falcon-success/80">
@@ -294,4 +351,11 @@ export function SendTransaction({
 function formatMs(ms: number): string {
   if (ms < 1000) return `${Math.round(ms)}ms`
   return `${(ms / 1000).toFixed(1)}s`
+}
+
+function formatStrk(wei: bigint): string {
+  const whole = wei / 10n ** 18n
+  const frac = wei % 10n ** 18n
+  const fracStr = frac.toString().padStart(18, "0").slice(0, 4)
+  return `${whole}.${fracStr} STRK`
 }

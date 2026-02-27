@@ -140,11 +140,19 @@ export function SignVerifyPanel(): React.JSX.Element {
         onClick={handleSignAndVerify}
         aria-label="Sign and verify message"
         disabled={!canSign}
-        className="rounded-xl bg-gradient-to-b from-falcon-accent to-falcon-accent/80 px-7 py-3 text-sm font-semibold text-white shadow-md shadow-falcon-accent/15 transition-all duration-200 hover:scale-[1.02] hover:shadow-lg hover:shadow-falcon-accent/20 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-falcon-accent/40 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:scale-100"
+        className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-b from-falcon-accent to-falcon-accent/80 px-7 py-3 text-sm font-semibold text-white shadow-md shadow-falcon-accent/15 transition-all duration-200 hover:scale-[1.02] hover:shadow-lg hover:shadow-falcon-accent/20 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-falcon-accent/40 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:scale-100"
       >
-        {step.step === "signing" || step.step === "packing" || step.step === "verifying"
-          ? "Running..."
-          : "Sign & Verify"}
+        {(step.step === "signing" || step.step === "packing" || step.step === "verifying") ? (
+          <>
+            <svg className="animate-spin-ring" width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <circle cx="10" cy="10" r="7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="opacity-20" />
+              <circle cx="10" cy="10" r="7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeDasharray="33" strokeDashoffset="23" />
+            </svg>
+            {step.step === "signing" ? "Signing..." : step.step === "packing" ? "Packing..." : "Verifying..."}
+          </>
+        ) : (
+          "Sign & Verify"
+        )}
       </button>
 
       {signatureHex !== null && step.step === "complete" && (
