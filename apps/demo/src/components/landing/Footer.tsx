@@ -31,7 +31,7 @@ export function Footer(): React.JSX.Element {
             Starknet Docs
           </a>
           <a
-            href="https://csrc.nist.gov/pubs/fips/206/final"
+            href="https://falcon-sign.info/"
             target="_blank"
             rel="noopener noreferrer"
             className="text-falcon-text/50 transition-colors duration-200 hover:text-falcon-accent"

@@ -4,7 +4,6 @@ import { NavHeader } from "@/components/landing/NavHeader"
 import { TheProblem } from "@/components/landing/TheProblem"
 import { WhyStarknet } from "@/components/landing/WhyStarknet"
 import { PerformanceStats } from "@/components/landing/PerformanceStats"
-import { CredibilityBar } from "@/components/landing/CredibilityBar"
 import { PlaygroundSection } from "@/components/interactive/PlaygroundSection"
 import { PipelineSection } from "@/components/interactive/PipelineSection"
 import { AccountDeploySection } from "@/components/interactive/AccountDeploySection"
@@ -24,7 +23,6 @@ export default function Home(): React.JSX.Element {
       <ScrollReveal>
         <PerformanceStats />
       </ScrollReveal>
-      <CredibilityBar />
       <ScrollReveal>
         <PlaygroundSection />
       </ScrollReveal>
