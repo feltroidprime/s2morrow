@@ -58,74 +58,44 @@ describe("pipelineStepsAtom defaults", () => {
     expect(steps.every((s) => s.status === "pending")).toBe(true)
   })
 
-  it("step IDs are correct and in order", () => {
+  it("step IDs are correct and in order (AA lifecycle)", () => {
     const registry = makeRegistry()
     const steps = registry.get(pipelineStepsAtom)
     const ids = steps.map((s) => s.id)
     expect(ids).toEqual([
-      "hash-to-point",
-      "ntt-s1",
-      "pointwise-mul",
-      "ntt-hint",
-      "recover-s0",
-      "norm-check",
+      "sign-tx",
+      "validate",
+      "falcon-verify",
+      "execute",
+      "stark-proof",
+      "settled",
     ])
   })
 
-  it("step[0] hash-to-point has stepCount = 5988 (README: hash_to_point profiling)", () => {
+  it("falcon-verify step has stepCount = 9500000 (~9.5M L2 gas)", () => {
     const registry = makeRegistry()
     const steps = registry.get(pipelineStepsAtom)
-    expect(steps[0].id).toBe("hash-to-point")
-    expect(steps[0].stepCount).toBe(5988)
+    const verifyStep = steps.find((s) => s.id === "falcon-verify")!
+    expect(verifyStep.stepCount).toBe(9500000)
   })
 
-  it("step[1] NTT(s1) has stepCount = 15000 (NTT-512 approximate)", () => {
+  it("only falcon-verify has a non-zero stepCount", () => {
     const registry = makeRegistry()
     const steps = registry.get(pipelineStepsAtom)
-    expect(steps[1].id).toBe("ntt-s1")
-    expect(steps[1].stepCount).toBe(15000)
+    for (const step of steps) {
+      if (step.id === "falcon-verify") {
+        expect(step.stepCount).toBe(9500000)
+      } else {
+        expect(step.stepCount).toBe(0)
+      }
+    }
   })
 
-  it("step[2] pointwise-mul has stepCount = 1500", () => {
-    const registry = makeRegistry()
-    const steps = registry.get(pipelineStepsAtom)
-    expect(steps[2].id).toBe("pointwise-mul")
-    expect(steps[2].stepCount).toBe(1500)
-  })
-
-  it("step[3] NTT(mul_hint) has stepCount = 15000", () => {
-    const registry = makeRegistry()
-    const steps = registry.get(pipelineStepsAtom)
-    expect(steps[3].id).toBe("ntt-hint")
-    expect(steps[3].stepCount).toBe(15000)
-  })
-
-  it("step[4] recover-s0 has stepCount = 500", () => {
-    const registry = makeRegistry()
-    const steps = registry.get(pipelineStepsAtom)
-    expect(steps[4].id).toBe("recover-s0")
-    expect(steps[4].stepCount).toBe(500)
-  })
-
-  it("step[5] norm-check has stepCount = 26000 (norm check dominates: ~26K steps)", () => {
-    const registry = makeRegistry()
-    const steps = registry.get(pipelineStepsAtom)
-    expect(steps[5].id).toBe("norm-check")
-    expect(steps[5].stepCount).toBe(26000)
-  })
-
-  it("total step count = 63988 (5988+15000+1500+15000+500+26000)", () => {
-    const registry = makeRegistry()
-    const steps = registry.get(pipelineStepsAtom)
-    const total = steps.reduce((sum, s) => sum + s.stepCount, 0)
-    expect(total).toBe(63988)
-  })
-
-  it("step counts match the exact spec: [5988, 15000, 1500, 15000, 500, 26000]", () => {
+  it("step counts match: [0, 0, 9500000, 0, 0, 0]", () => {
     const registry = makeRegistry()
     const steps = registry.get(pipelineStepsAtom)
     const counts = steps.map((s) => s.stepCount)
-    expect(counts).toEqual([5988, 15000, 1500, 15000, 500, 26000])
+    expect(counts).toEqual([0, 0, 9500000, 0, 0, 0])
   })
 
   it("can reset all steps to pending via INITIAL_PIPELINE_STEPS", () => {

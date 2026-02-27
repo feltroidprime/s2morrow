@@ -33,12 +33,12 @@ const PIPELINE_STEPS: PipelineStep[] = [
     name: "Falcon-512 verify",
     phase: "validation",
     description:
-      "Unpack 29-slot polynomials to 512 Zq coefficients. Run hash_to_point, 2 forward NTTs, pointwise product check, and Euclidean norm bound. 132K Cairo steps total.",
+      "Unpack 29-slot polynomials to 512 Zq coefficients. Run hash_to_point, 2 forward NTTs, pointwise product check, and Euclidean norm bound. ~9.5M L2 gas total.",
     insight:
-      "132K steps \u2014 43% cheaper than secp256r1 ECDSA (230K). The hint-based approach eliminates inverse NTTs entirely.",
+      "~9.5M L2 gas \u2014 65% cheaper than secp256r1 ECDSA (~27.4M). The hint-based approach eliminates inverse NTTs entirely.",
     input: "pk (29 slots), sig (29 slots), mul_hint (29 slots)",
     output: "valid (\u2016(s0,s1)\u2016\u00b2 \u2264 34,034,726)",
-    stepCount: 132000,
+    stepCount: 9500000,
     status: "pending",
   },
   {
