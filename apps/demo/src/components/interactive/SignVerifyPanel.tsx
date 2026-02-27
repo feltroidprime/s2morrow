@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useCallback } from "react"
-import { Cause, Exit, Layer, ManagedRuntime, Option } from "effect"
+import { Cause, Effect, Exit, Layer, ManagedRuntime, Option } from "effect"
 import { useAtomValue, useAtomSet } from "@effect-atom/atom-react"
 import { FalconService } from "@/services/FalconService"
 import { WasmRuntimeLive } from "@/services/WasmRuntime"
@@ -45,70 +45,40 @@ export function SignVerifyPanel(): React.JSX.Element {
     if (!kp) return
 
     const messageBytes = new TextEncoder().encode(message)
-    let computeMs = 0
 
-    setStep({ step: "signing" })
-    let t0 = performance.now()
-    const signExit = await appRuntime.runPromiseExit(
-      FalconService.sign(kp.secretKey, messageBytes),
-    )
-    computeMs += performance.now() - t0
-
-    if (Exit.isFailure(signExit)) {
-      const errOpt = Cause.failureOption(signExit.cause)
-      const msg = Option.match(errOpt, {
-        onNone: () => "Signing failed",
-        onSome: (e) => e.message,
-      })
-      setStep({ step: "error", message: msg })
-      return
-    }
-
-    const sigResult = signExit.value
-    setSignature(Option.some(sigResult))
-
-    setStep({ step: "packing" })
     const pkNtt16 = new Uint16Array(kp.publicKeyNtt.length)
     for (let i = 0; i < kp.publicKeyNtt.length; i++) {
       pkNtt16[i] = kp.publicKeyNtt[i]
     }
-    t0 = performance.now()
-    const packExit = await appRuntime.runPromiseExit(
-      FalconService.packPublicKey(pkNtt16),
-    )
-    computeMs += performance.now() - t0
 
-    if (Exit.isFailure(packExit)) {
-      const errOpt = Cause.failureOption(packExit.cause)
+    // Run sign + pack + verify in a single Effect fiber to avoid
+    // per-fiber scheduling overhead inflating the measured time.
+    const pipeline = Effect.gen(function* () {
+      const sigResult = yield* FalconService.sign(kp.secretKey, messageBytes)
+      const packedPk = yield* FalconService.packPublicKey(pkNtt16)
+      const valid = yield* FalconService.verify(kp.verifyingKey, messageBytes, sigResult.signature)
+      return { sigResult, packedPk, valid }
+    })
+
+    setStep({ step: "signing" })
+    const t0 = performance.now()
+    const exit = await appRuntime.runPromiseExit(pipeline)
+    const durationMs = Math.round(performance.now() - t0)
+
+    if (Exit.isFailure(exit)) {
+      const errOpt = Cause.failureOption(exit.cause)
       const msg = Option.match(errOpt, {
-        onNone: () => "Packing failed",
+        onNone: () => "Sign & verify failed",
         onSome: (e) => e.message,
       })
       setStep({ step: "error", message: msg })
       return
     }
 
-    setPackedKey(Option.some(packExit.value))
-
-    setStep({ step: "verifying", substep: "verify" })
-    t0 = performance.now()
-    const verifyExit = await appRuntime.runPromiseExit(
-      FalconService.verify(kp.verifyingKey, messageBytes, sigResult.signature),
-    )
-    computeMs += performance.now() - t0
-
-    if (Exit.isFailure(verifyExit)) {
-      const errOpt = Cause.failureOption(verifyExit.cause)
-      const msg = Option.match(errOpt, {
-        onNone: () => "Verification failed",
-        onSome: (e) => e.message,
-      })
-      setStep({ step: "error", message: msg })
-      return
-    }
-
-    const durationMs = Math.round(computeMs)
-    setStep({ step: "complete", valid: verifyExit.value, durationMs })
+    const { sigResult, packedPk, valid } = exit.value
+    setSignature(Option.some(sigResult))
+    setPackedKey(Option.some(packedPk))
+    setStep({ step: "complete", valid, durationMs })
   }, [keypair, message, setPackedKey, setSignature, setStep])
 
   const signatureHex = Option.match(signature, {
@@ -152,14 +122,14 @@ export function SignVerifyPanel(): React.JSX.Element {
         disabled={!canSign}
         className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-b from-falcon-accent to-falcon-accent/80 px-7 py-3 text-sm font-semibold text-white shadow-md shadow-falcon-accent/15 transition-all duration-200 hover:scale-[1.02] hover:shadow-lg hover:shadow-falcon-accent/20 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-falcon-accent/40 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:scale-100"
       >
-        {(step.step === "signing" || step.step === "packing" || step.step === "verifying") ? (
+        {step.step === "signing" ? (
           <>
             <svg className="animate-spin-ring" width="20" height="20" viewBox="0 0 20 20" fill="none">
               <circle cx="10" cy="10" r="7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="opacity-20" />
               <circle cx="10" cy="10" r="7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeDasharray="33" strokeDashoffset="23" />
               <circle cx="10" cy="10" r="9" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeDasharray="40" strokeDashoffset="30" className="opacity-30" style={{ animation: "spin-ring 1.8s cubic-bezier(0.5, 0, 0.5, 1) infinite reverse" }} />
             </svg>
-            {step.step === "signing" ? "Quantum-signing..." : step.step === "packing" ? "Packing..." : "Verifying..."}
+            Quantum-signing...
           </>
         ) : (
           "Quantum-Sign & Verify"
