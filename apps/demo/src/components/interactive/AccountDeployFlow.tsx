@@ -3,7 +3,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useAtomSet, useAtomValue } from "@effect-atom/atom-react"
 import { Exit, Layer, ManagedRuntime, Option } from "effect"
-import { keypairAtom } from "@/atoms/falcon"
+import { keypairAtom, packedKeyAtom } from "@/atoms/falcon"
 import {
   deployStepAtom,
   deployedAddressAtom,
@@ -45,6 +45,7 @@ function createDeployRuntime(config: NetworkConfig) {
 
 export function AccountDeployFlow(): React.JSX.Element {
   const keypair = useAtomValue(keypairAtom)
+  const packedKey = useAtomValue(packedKeyAtom)
   const deployStep = useAtomValue(deployStepAtom)
   const setKeypair = useAtomSet(keypairAtom)
   const setDeployStep = useAtomSet(deployStepAtom)
@@ -65,11 +66,68 @@ export function AccountDeployFlow(): React.JSX.Element {
   const [preparedDeploy, setPreparedDeploy] =
     useState<Option.Option<PreparedAccountDeploy>>(Option.none())
   const [balance, setBalance] = useState<bigint | null>(null)
+  const [autoRestoring, setAutoRestoring] = useState(false)
 
+  // ── Auto-restore: if keypair+packedKey exist in localStorage, restore flow state ──
+  const autoRestoreRan = useRef(false)
+  useEffect(() => {
+    if (autoRestoreRan.current) return
+    if (!Option.isSome(keypair) || !Option.isSome(packedKey)) return
+    if (deployStep.step !== "idle") return
+    if (networkConfig.classHash === "0x0") return
+
+    autoRestoreRan.current = true
+    setAutoRestoring(true)
+
+    const restore = async () => {
+      // Prepare using existing keypair
+      const prepareExit = await deployRuntimeRef.current.runPromiseExit(
+        prepareAccountDeployEffect({
+          privateKey: "",
+          existingKeypair: keypair,
+        }),
+      )
+
+      if (Exit.isFailure(prepareExit)) {
+        setAutoRestoring(false)
+        return
+      }
+
+      const prepared = prepareExit.value
+      setPreparedDeploy(Option.some(prepared))
+
+      // Check if already deployed on-chain
+      const deployedExit = await deployRuntimeRef.current.runPromiseExit(
+        StarknetService.isDeployed(prepared.address),
+      )
+
+      if (Exit.isSuccess(deployedExit) && deployedExit.value) {
+        // Already deployed — skip straight to deployed state
+        setDeployedAddress(Option.some(prepared.address))
+        setDeployTxHash(Option.some("already-deployed" as any))
+        setDeployStep({
+          step: "deployed",
+          txHash: "already-deployed" as any,
+          address: prepared.address,
+        })
+        setAutoRestoring(false)
+        return
+      }
+
+      // Not deployed — check balance and go to awaiting-funds
+      setDeployStep({ step: "awaiting-funds", address: prepared.address })
+      setAutoRestoring(false)
+    }
+
+    restore()
+  }, [keypair, packedKey, deployStep.step, networkConfig.classHash, setDeployStep, setDeployedAddress, setDeployTxHash])
+
+  // Reset on network change
   useEffect(() => {
     setDeployStep({ step: "idle" })
     setPreparedDeploy(Option.none())
     setBalance(null)
+    autoRestoreRan.current = false
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [networkId])
 
@@ -207,6 +265,7 @@ export function AccountDeployFlow(): React.JSX.Element {
     setDeployTxHash(Option.none())
     setDeployedAddress(Option.none())
     setDeployStep({ step: "idle" })
+    autoRestoreRan.current = false
   }, [setDeployStep, setDeployTxHash, setDeployedAddress])
 
   const stepFlags = useMemo(() => {
@@ -269,6 +328,8 @@ export function AccountDeployFlow(): React.JSX.Element {
     }
   }, [deployStep])
 
+  const isAlreadyDeployed = deployStep.step === "deployed" && deployStep.txHash === "already-deployed"
+
   const DEPLOY_STEPS = [
     { number: 1, title: "Generate Keypair", description: "Create or reuse a Falcon-512 keypair.", active: stepFlags.step1Active, complete: stepFlags.step1Complete },
     { number: 2, title: "Pack Public Key", description: "Compress public key into 29 felt252 slots.", active: stepFlags.step2Active, complete: stepFlags.step2Complete },
@@ -297,123 +358,135 @@ export function AccountDeployFlow(): React.JSX.Element {
           {liveStatus}
         </p>
 
-        {/* Vertical progress line with step cards */}
-        <div className="relative mt-10 space-y-0">
-          {/* Vertical line */}
-          <div
-            className="absolute left-[19px] top-4 bottom-4 w-px bg-falcon-muted/15"
-          />
+        {/* Auto-restore loading state */}
+        {autoRestoring && (
+          <div className="mt-8 flex items-center gap-3 text-sm text-falcon-text/40">
+            <div className="h-4 w-4 animate-spin rounded-full border-2 border-falcon-primary/30 border-t-falcon-primary" />
+            Restoring your wallet...
+          </div>
+        )}
 
-          {DEPLOY_STEPS.map((s, i) => (
-            <div key={s.number} className="relative flex items-start gap-5 py-3">
-              {/* Step dot/check on the line */}
-              <div className="relative z-10 flex h-10 w-10 shrink-0 items-center justify-center">
-                <div
-                  className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold transition-all duration-300 ${
-                    s.complete
-                      ? "bg-falcon-success/15 text-falcon-success"
-                      : s.active
-                        ? "bg-falcon-primary/15 text-falcon-primary shadow-[0_0_12px_rgba(99,102,241,0.3)]"
-                        : "text-falcon-text/40 bg-falcon-muted/10 border border-falcon-muted/20"
-                  }`}
-                >
-                  {s.complete ? "\u2713" : s.number}
+        {/* Vertical progress line with step cards */}
+        {!autoRestoring && (
+          <div className="relative mt-10 space-y-0">
+            {/* Vertical line */}
+            <div
+              className="absolute left-[19px] top-4 bottom-4 w-px bg-falcon-muted/15"
+            />
+
+            {DEPLOY_STEPS.map((s) => (
+              <div key={s.number} className="relative flex items-start gap-5 py-3">
+                {/* Step dot/check on the line */}
+                <div className="relative z-10 flex h-10 w-10 shrink-0 items-center justify-center">
+                  <div
+                    className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold transition-all duration-300 ${
+                      s.complete
+                        ? "bg-falcon-success/15 text-falcon-success"
+                        : s.active
+                          ? "bg-falcon-primary/15 text-falcon-primary shadow-[0_0_12px_rgba(99,102,241,0.3)]"
+                          : "text-falcon-text/40 bg-falcon-muted/10 border border-falcon-muted/20"
+                    }`}
+                  >
+                    {s.complete ? "\u2713" : s.number}
+                  </div>
+                </div>
+
+                {/* Step content */}
+                <div className="flex-1 pb-2">
+                  <h3 className={`text-sm font-semibold transition-colors duration-200 ${
+                    s.active ? "text-falcon-text" : s.complete ? "text-falcon-text/60" : "text-falcon-text/40"
+                  }`}>
+                    {s.title}
+                  </h3>
+                  <p className="mt-0.5 text-xs text-falcon-text/25">{s.description}</p>
+
+                  {/* Fund Account expanded content */}
+                  {s.number === 4 && deployStep.step === "awaiting-funds" && (
+                    <div className="mt-4 space-y-3">
+                      <div className="glass-card-static rounded-xl p-4">
+                        <p className="text-[10px] font-medium tracking-widest text-falcon-text/20 uppercase">Send STRK to</p>
+                        <AddressDisplay
+                          address={deployStep.address}
+                          explorerBaseUrl={networkConfig.explorerBaseUrl}
+                          className="mt-2"
+                        />
+                      </div>
+                      {networkConfig.isTestnet && !networkConfig.isDevnet && (
+                        <a
+                          href="https://starknet-faucet.vercel.app/"
+                          target="_blank"
+                          rel="noreferrer noopener"
+                          className="inline-block text-xs text-falcon-accent/60 transition-colors duration-200 hover:text-falcon-accent"
+                        >
+                          Get testnet STRK from the Starknet Faucet &rarr;
+                        </a>
+                      )}
+                      {balance !== null && (
+                        <div className="flex items-center gap-2 text-xs text-falcon-text/30">
+                          <span>Balance:</span>
+                          <TokenAmount amount={balance} className={balance > 0n ? "text-falcon-success/80" : "text-falcon-text/30"} />
+                          {balance > 0n && (
+                            <span className="text-falcon-success/60">Ready to deploy</span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
+            ))}
+          </div>
+        )}
 
-              {/* Step content */}
-              <div className="flex-1 pb-2">
-                <h3 className={`text-sm font-semibold transition-colors duration-200 ${
-                  s.active ? "text-falcon-text" : s.complete ? "text-falcon-text/60" : "text-falcon-text/40"
-                }`}>
-                  {s.title}
-                </h3>
-                <p className="mt-0.5 text-xs text-falcon-text/25">{s.description}</p>
-
-                {/* Fund Account expanded content */}
-                {s.number === 4 && deployStep.step === "awaiting-funds" && (
-                  <div className="mt-4 space-y-3">
-                    <div className="glass-card-static rounded-xl p-4">
-                      <p className="text-[10px] font-medium tracking-widest text-falcon-text/20 uppercase">Send STRK to</p>
-                      <AddressDisplay
-                        address={deployStep.address}
-                        explorerBaseUrl={networkConfig.explorerBaseUrl}
-                        className="mt-2"
-                      />
-                    </div>
-                    {networkConfig.isTestnet && !networkConfig.isDevnet && (
-                      <a
-                        href="https://starknet-faucet.vercel.app/"
-                        target="_blank"
-                        rel="noreferrer noopener"
-                        className="inline-block text-xs text-falcon-accent/60 transition-colors duration-200 hover:text-falcon-accent"
-                      >
-                        Get testnet STRK from the Starknet Faucet &rarr;
-                      </a>
-                    )}
-                    {balance !== null && (
-                      <div className="flex items-center gap-2 text-xs text-falcon-text/30">
-                        <span>Balance:</span>
-                        <TokenAmount amount={balance} className={balance > 0n ? "text-falcon-success/80" : "text-falcon-text/30"} />
-                        {balance > 0n && (
-                          <span className="text-falcon-success/60">Ready to deploy</span>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                )}
+        {!autoRestoring && (
+          <div className="mt-8 space-y-3">
+            {networkConfig.isDevnet && devnetAccounts.length > 0 ? (
+              <div>
+                <label htmlFor="devnet-account" className="block text-xs font-medium text-falcon-text/30">
+                  Deployer Account
+                </label>
+                <select
+                  id="devnet-account"
+                  value={privateKey}
+                  onChange={(e) => setPrivateKey(e.target.value)}
+                  className="glass-select mt-2 w-full px-4 py-3 font-mono text-sm text-falcon-text/80"
+                >
+                  {devnetAccounts.map((acc, i) => (
+                    <option key={acc.address} value={acc.private_key}>
+                      Account #{i} ({acc.address.slice(0, 10)}...{acc.address.slice(-4)})
+                    </option>
+                  ))}
+                </select>
               </div>
-            </div>
-          ))}
-        </div>
+            ) : null}
 
-        <div className="mt-8 space-y-3">
-          {networkConfig.isDevnet && devnetAccounts.length > 0 ? (
-            <div>
-              <label htmlFor="devnet-account" className="block text-xs font-medium text-falcon-text/30">
-                Deployer Account
-              </label>
-              <select
-                id="devnet-account"
-                value={privateKey}
-                onChange={(e) => setPrivateKey(e.target.value)}
-                className="glass-select mt-2 w-full px-4 py-3 font-mono text-sm text-falcon-text/80"
-              >
-                {devnetAccounts.map((acc, i) => (
-                  <option key={acc.address} value={acc.private_key}>
-                    Account #{i} ({acc.address.slice(0, 10)}...{acc.address.slice(-4)})
-                  </option>
-                ))}
-              </select>
-            </div>
-          ) : null}
+            {deployStep.step === "idle" && (() => {
+              const classHashValid = networkConfig.classHash !== "0x0"
+              return (
+                <button
+                  onClick={handlePrepare}
+                  disabled={!classHashValid}
+                  className={`rounded-xl px-7 py-3 text-sm font-semibold transition-all duration-200 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-falcon-primary/40 ${
+                    classHashValid
+                      ? "bg-gradient-to-b from-falcon-primary to-falcon-primary/80 text-white shadow-md shadow-falcon-primary/15 hover:scale-[1.02] hover:shadow-lg hover:shadow-falcon-primary/20"
+                      : "glass-btn cursor-not-allowed opacity-40 text-falcon-text/40"
+                  }`}
+                >
+                  Prepare Deploy
+                </button>
+              )
+            })()}
 
-          {deployStep.step === "idle" && (() => {
-            const classHashValid = networkConfig.classHash !== "0x0"
-            return (
+            {deployStep.step === "awaiting-funds" && (
               <button
-                onClick={handlePrepare}
-                disabled={!classHashValid}
-                className={`rounded-xl px-7 py-3 text-sm font-semibold transition-all duration-200 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-falcon-primary/40 ${
-                  classHashValid
-                    ? "bg-gradient-to-b from-falcon-primary to-falcon-primary/80 text-white shadow-md shadow-falcon-primary/15 hover:scale-[1.02] hover:shadow-lg hover:shadow-falcon-primary/20"
-                    : "glass-btn cursor-not-allowed opacity-40 text-falcon-text/40"
-                }`}
+                onClick={handleDeploy}
+                className="rounded-xl bg-gradient-to-b from-falcon-accent to-falcon-accent/80 px-7 py-3 text-sm font-semibold text-white shadow-md shadow-falcon-accent/15 transition-all duration-200 hover:scale-[1.02] hover:shadow-lg hover:shadow-falcon-accent/20 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-falcon-accent/40"
               >
-                Prepare Deploy
+                Deploy Account
               </button>
-            )
-          })()}
-
-          {deployStep.step === "awaiting-funds" && (
-            <button
-              onClick={handleDeploy}
-              className="rounded-xl bg-gradient-to-b from-falcon-accent to-falcon-accent/80 px-7 py-3 text-sm font-semibold text-white shadow-md shadow-falcon-accent/15 transition-all duration-200 hover:scale-[1.02] hover:shadow-lg hover:shadow-falcon-accent/20 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-falcon-accent/40"
-            >
-              Deploy Account
-            </button>
-          )}
-        </div>
+            )}
+          </div>
+        )}
 
         {deployStep.step === "deploying" && (
           <TransactionPending
@@ -429,17 +502,23 @@ export function AccountDeployFlow(): React.JSX.Element {
               aria-live="polite"
               className="glass-card-static glass-card-success mt-8 rounded-2xl p-6 animate-fade-in"
             >
-              <h3 className="text-sm font-semibold text-falcon-success/80">Account Deployed</h3>
+              <h3 className="text-sm font-semibold text-falcon-success/80">
+                {isAlreadyDeployed ? "Account Already Deployed" : "Account Deployed"}
+              </h3>
               <AddressDisplay
                 label="Address"
                 address={deployStep.address}
                 explorerBaseUrl={networkConfig.explorerBaseUrl}
                 className="mt-3"
               />
-              <p className="mt-2 break-all font-mono tabular-nums text-xs text-falcon-text/50">
-                Tx: {deployStep.txHash}
-              </p>
-              <ExplorerLink baseUrl={networkConfig.explorerBaseUrl} txHash={deployStep.txHash} className="mt-3" />
+              {!isAlreadyDeployed && (
+                <>
+                  <p className="mt-2 break-all font-mono tabular-nums text-xs text-falcon-text/50">
+                    Tx: {deployStep.txHash}
+                  </p>
+                  <ExplorerLink baseUrl={networkConfig.explorerBaseUrl} txHash={deployStep.txHash} className="mt-3" />
+                </>
+              )}
             </div>
             <SendTransaction
               deployedAddress={deployStep.address}

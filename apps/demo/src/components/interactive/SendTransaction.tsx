@@ -20,6 +20,7 @@ import type { FalconService } from "@/services/FalconService"
 
 type TxPhase =
   | { phase: "idle" }
+  | { phase: "prefetching" }
   | { phase: "signing" }
   | { phase: "submitting"; signMs: number }
   | { phase: "confirming"; signMs: number; txHash: string }
@@ -54,7 +55,7 @@ export function SendTransaction({
 
   const [recipient, setRecipient] = useState(deployedAddress as string)
   const [amount, setAmount] = useState("0.001")
-  const [txPhase, setTxPhase] = useState<TxPhase>({ phase: "idle" })
+  const [txPhase, setTxPhase] = useState<TxPhase>({ phase: "prefetching" })
 
   const timingRef = useRef({ signMs: 0, networkStartedAt: 0 })
 
@@ -74,22 +75,46 @@ export function SendTransaction({
         chainId: chainExit.value,
         resourceBounds: rbExit.value,
       }
+      return true
     }
+    return false
   }, [deployRuntime, deployedAddress])
 
   useEffect(() => {
-    doPrefetch()
+    let cancelled = false
+    const init = async () => {
+      // Retry prefetch up to 3 times with delay for post-deploy nonce propagation
+      for (let attempt = 0; attempt < 3; attempt++) {
+        if (cancelled) return
+        const ok = await doPrefetch()
+        if (ok) {
+          if (!cancelled) setTxPhase({ phase: "idle" })
+          return
+        }
+        // Wait a bit for the node to update nonce after deploy
+        await new Promise((r) => setTimeout(r, 1500))
+      }
+      if (!cancelled) {
+        setTxPhase({ phase: "idle" }) // show UI even if prefetch partially failed
+      }
+    }
+    init()
+    return () => { cancelled = true }
   }, [doPrefetch])
 
   const handleSend = useCallback(async () => {
     const kp = Option.match(keypair, { onNone: () => null, onSome: (k) => k })
     if (!kp) return
 
-    const prefetched = prefetchRef.current
+    let prefetched = prefetchRef.current
     if (!prefetched) {
-      setTxPhase({ phase: "error", message: "Network data not ready. Please try again." })
-      doPrefetch()
-      return
+      setTxPhase({ phase: "prefetching" })
+      const ok = await doPrefetch()
+      prefetched = prefetchRef.current
+      if (!ok || !prefetched) {
+        setTxPhase({ phase: "error", message: "Network data not ready. Please try again." })
+        return
+      }
     }
 
     // ── Phase 1: Sign ───────────────────────────────────────────────
@@ -146,8 +171,15 @@ export function SendTransaction({
     )
 
     if (Exit.isFailure(submitExit)) {
-      setTxPhase({ phase: "error", message: extractUserMessage(submitExit, "Transaction failed") })
-      doPrefetch()
+      const msg = extractUserMessage(submitExit, "Transaction failed")
+      // If nonce conflict, refetch and let user retry
+      if (msg.toLowerCase().includes("nonce")) {
+        await doPrefetch()
+        setTxPhase({ phase: "error", message: "Transaction nonce conflict. Wait for your previous transaction to confirm, then try again." })
+      } else {
+        setTxPhase({ phase: "error", message: msg })
+        doPrefetch()
+      }
       return
     }
 
@@ -174,19 +206,25 @@ export function SendTransaction({
   const isBusy =
     txPhase.phase === "signing" ||
     txPhase.phase === "submitting" ||
-    txPhase.phase === "confirming"
+    txPhase.phase === "confirming" ||
+    txPhase.phase === "prefetching"
 
   return (
     <div className="glass-card-static mt-8 rounded-2xl p-6">
       <h3 className="text-base font-semibold tracking-tight text-falcon-text/90">Test Your Falcon Account</h3>
       <p className="mt-1.5 text-xs text-falcon-text/30">
-        Send STRK using your post-quantum account.
+        Send a small amount of STRK to yourself to verify your post-quantum account works correctly.
       </p>
 
       <div className="mt-5 space-y-4">
         <div>
           <label htmlFor="tx-recipient" className="block text-xs font-medium text-falcon-text/30">
             Recipient
+            {(deployedAddress as string) === recipient && (
+              <span className="ml-2 inline-flex items-center rounded-md bg-falcon-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-falcon-primary/70">
+                You
+              </span>
+            )}
           </label>
           <input
             id="tx-recipient"
@@ -215,13 +253,13 @@ export function SendTransaction({
           disabled={isBusy || !Option.isSome(keypair)}
           className="rounded-xl bg-gradient-to-b from-falcon-accent to-falcon-accent/80 px-7 py-3 text-sm font-semibold text-white shadow-md shadow-falcon-accent/15 transition-all duration-200 hover:scale-[1.02] hover:shadow-lg hover:shadow-falcon-accent/20 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-falcon-accent/40 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:scale-100"
         >
-          {isBusy ? "Sending..." : "Send STRK"}
+          {txPhase.phase === "prefetching" ? "Preparing..." : isBusy ? "Sending..." : "Send STRK"}
         </button>
       </div>
 
-      {isBusy && (
+      {(txPhase.phase === "signing" || txPhase.phase === "submitting" || txPhase.phase === "confirming") && (
         <TransactionPhases
-          phase={txPhase.phase as "signing" | "submitting" | "confirming"}
+          phase={txPhase.phase}
           signMs={"signMs" in txPhase ? txPhase.signMs : undefined}
         />
       )}
