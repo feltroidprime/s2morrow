@@ -26,3 +26,7 @@ commit this and push
 
 still takes 200 ms which is weird.
 
+### Prompt 5
+
+Add this skil to this project :   /home/felt/Downloads/ux-review-skill
+
