@@ -1,0 +1,33 @@
+{
+  "cli_version": "0.4.2",
+  "checkpoint_id": "e0ace3584b97",
+  "session_id": "ff0e948a-9701-4fe5-9922-c21db1882455",
+  "strategy": "manual-commit",
+  "created_at": "2026-02-27T16:02:07.880357174Z",
+  "branch": "frontend",
+  "checkpoints_count": 1,
+  "files_touched": [
+    ".claude/skills/ux-review/SKILL.md",
+    ".claude/skills/ux-review/references/laws-of-ux.md",
+    "apps/demo/src/app/page.tsx",
+    "apps/demo/src/components/landing/Footer.tsx"
+  ],
+  "agent": "Claude Code",
+  "transcript_identifier_at_start": "1d1c11bd-db75-47bd-b46b-37193244db32",
+  "token_usage": {
+    "input_tokens": 12,
+    "cache_creation_tokens": 19772,
+    "cache_read_tokens": 327737,
+    "output_tokens": 2435,
+    "api_call_count": 10
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-02-27T16:02:07.872858305Z",
+    "agent_lines": 0,
+    "human_added": 0,
+    "human_modified": 28,
+    "human_removed": 678,
+    "total_committed": 28,
+    "agent_percentage": 0
+  }
+}
