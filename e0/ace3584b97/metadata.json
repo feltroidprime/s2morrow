@@ -1,0 +1,35 @@
+{
+  "cli_version": "0.4.2",
+  "checkpoint_id": "e0ace3584b97",
+  "strategy": "manual-commit",
+  "branch": "frontend",
+  "checkpoints_count": 2,
+  "files_touched": [
+    "apps/demo/src/app/globals.css",
+    "apps/demo/src/components/interactive/AccountDeployFlow.tsx",
+    "apps/demo/src/components/interactive/KeyManagementPanel.tsx",
+    "apps/demo/src/components/interactive/SendTransaction.tsx",
+    "apps/demo/src/components/interactive/SignVerifyPanel.tsx",
+    "apps/demo/src/components/ui/EntropyStrip.tsx",
+    "apps/demo/src/components/ui/LatticeGrid.tsx",
+    "apps/demo/src/components/ui/ParticleBurst.tsx",
+    "apps/demo/src/components/ui/QuantumShield.tsx",
+    "apps/demo/src/components/ui/TransactionPhases.tsx"
+  ],
+  "sessions": [
+    {
+      "metadata": "/e0/ace3584b97/0/metadata.json",
+      "transcript": "/e0/ace3584b97/0/full.jsonl",
+      "context": "/e0/ace3584b97/0/context.md",
+      "content_hash": "/e0/ace3584b97/0/content_hash.txt",
+      "prompt": "/e0/ace3584b97/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 85,
+    "cache_creation_tokens": 79846,
+    "cache_read_tokens": 5910258,
+    "output_tokens": 23499,
+    "api_call_count": 79
+  }
+}
