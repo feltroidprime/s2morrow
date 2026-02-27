@@ -1,0 +1,33 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "2f3d03ce615a",
+  "session_id": "e31623b1-64db-48fd-aabb-3ab1a022b32d",
+  "strategy": "manual-commit",
+  "created_at": "2026-02-24T20:04:01.305841874Z",
+  "branch": "frontend",
+  "checkpoints_count": 1,
+  "files_touched": [
+    ".gitignore"
+  ],
+  "agent": "Claude Code",
+  "transcript_identifier_at_start": "d2d5507c-25d7-406f-afaa-a711e09f77c8",
+  "checkpoint_transcript_start": 153,
+  "transcript_lines_at_start": 153,
+  "token_usage": {
+    "input_tokens": 12,
+    "cache_creation_tokens": 2662,
+    "cache_read_tokens": 457860,
+    "output_tokens": 210,
+    "api_call_count": 8
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-02-24T20:04:01.225360124Z",
+    "agent_lines": 0,
+    "human_added": 335962,
+    "human_modified": 9,
+    "human_removed": 0,
+    "total_committed": 335969,
+    "agent_percentage": 0
+  },
+  "transcript_path": ".claude/projects/-home-felt-PycharmProjects-s2morrow/e31623b1-64db-48fd-aabb-3ab1a022b32d.jsonl"
+}

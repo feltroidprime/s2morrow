@@ -1,0 +1,40 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "2f3d03ce615a",
+  "session_id": "5c25f175-6f91-4306-8805-100629deceaa",
+  "strategy": "manual-commit",
+  "created_at": "2026-02-24T19:50:47.803168192Z",
+  "branch": "frontend",
+  "checkpoints_count": 1,
+  "files_touched": [
+    ".claude/settings.local.json",
+    ".claude/skills/benchmarking-cairo",
+    ".claude/skills/cairo-coding",
+    ".smithers/executions/0d95bd92-0187-4580-925c-c64f3d5fd07d/logs/stream.ndjson",
+    "apps/demo/.next/cache/webpack/client-production/0.pack",
+    "apps/demo/.next/cache/webpack/server-production/0.pack",
+    "apps/demo/src/__tests__/effect-services/wasm-runtime.test.ts",
+    "apps/demo/src/__tests__/verify-playground/atoms.test.ts",
+    "apps/demo/src/types/falcon-rs-wasm.d.ts",
+    "docs/plans/LANDING-002.md",
+    "packages/falcon/.claude/settings.local.json"
+  ],
+  "agent": "Claude Code",
+  "token_usage": {
+    "input_tokens": 23,
+    "cache_creation_tokens": 40241,
+    "cache_read_tokens": 834589,
+    "output_tokens": 208,
+    "api_call_count": 20
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-02-24T19:50:47.614293166Z",
+    "agent_lines": 0,
+    "human_added": 8156,
+    "human_modified": 409,
+    "human_removed": 0,
+    "total_committed": 8246,
+    "agent_percentage": 0
+  },
+  "transcript_path": ".claude/projects/-home-felt-PycharmProjects-s2morrow/5c25f175-6f91-4306-8805-100629deceaa.jsonl"
+}

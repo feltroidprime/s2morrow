@@ -1,0 +1,61 @@
+IMPORTANT: After completing the task below, you MUST output a JSON object in a ```json code fence at the very end of your response. Do NOT forget this — the workflow fails without it.
+
+RESEARCH PHASE — Ticket: VP-005
+
+Title: Implement VerificationPlayground client component with HexDisplay
+Description: Create apps/demo/src/components/interactive/VerificationPlayground.tsx as &#x27;use client&#x27; component. Must include: text input for message, Generate Keypair button with generating... state, Sign &amp; Verify button with full pipeline display, green checkmark / red X result with duration, disabled states (no keypair → can&#x27;t sign, no message → can&#x27;t sign, during operations → disabled). Create HexDisplay.tsx for truncated hex/felt252 rendering. Wire to atoms for state. Load via next/dynamic with ssr:false and skeleton loader in page.tsx. Fix planned code: replace Option.getOrThrow with proper Option.match, replace Buffer.from with Uint8Array-based hex conversion for browser compatibility.
+Category: verify-playground
+
+Your job is to gather all reference materials needed to implement this ticket.
+
+## Reference Paths
+
+Read these reference paths:
+- docs/specs/
+- docs/specs/falcon-demo-website.md
+- docs/plans/2026-02-23-falcon-demo-website-design.md
+- docs/plans/2026-02-23-falcon-demo-website-impl.md
+- CLAUDE.md
+- apps/demo/src/
+## Steps
+
+- **Read the specs** — Review all relevant specification documents
+
+- **Read reference materials** — Browse reference documentation for patterns and examples
+
+- **Read existing implementation** — Read any files listed in the ticket&#x27;s relevantFiles
+
+- **Write context file** — Write docs/context/VP-005.md with all paths and summaries
+
+## Commit
+
+After writing the context file:
+
+`jj describe -m &quot;📝 docs({props.ticketCategory}): gather research for {props.ticketId}&quot;
+jj new
+jj bookmark set ticket/{props.ticketId} -r @
+jj git push --bookmark ticket/{props.ticketId}
+`
+
+
+**REQUIRED OUTPUT** — You MUST end your response with a JSON object in a code fence matching this schema:
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "contextFilePath": {
+      "type": "string"
+    },
+    "summary": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "contextFilePath",
+    "summary"
+  ],
+  "additionalProperties": false
+}
+```
+Output the JSON at the END of your response. The workflow will fail without it.

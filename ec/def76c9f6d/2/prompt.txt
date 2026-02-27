@@ -1,0 +1,9 @@
+add a makefile target to stop / serve the server on 0.0.0.0 (so that it's available on my tailscale network). Choose unused port
+
+---
+
+try launching it
+
+---
+
+even if i stop it's still running

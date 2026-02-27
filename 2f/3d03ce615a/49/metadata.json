@@ -1,0 +1,35 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "2f3d03ce615a",
+  "session_id": "d943a78f-0edb-4fc6-ac0d-8dfd9b0e52f7",
+  "strategy": "manual-commit",
+  "created_at": "2026-02-24T19:51:18.79105195Z",
+  "branch": "frontend",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/demo/src/__tests__/providers/atom-provider.test.ts",
+    "apps/demo/src/components/interactive/PipelineSection.tsx",
+    "apps/demo/src/components/interactive/PipelineVisualizer.tsx",
+    "apps/demo/src/components/interactive/__tests__/PipelineSection.test.ts",
+    "apps/demo/src/tests/atoms.test.ts",
+    "apps/demo/src/tests/scaffold/providers.test.ts"
+  ],
+  "agent": "Claude Code",
+  "token_usage": {
+    "input_tokens": 130,
+    "cache_creation_tokens": 169318,
+    "cache_read_tokens": 13498889,
+    "output_tokens": 1593,
+    "api_call_count": 125
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-02-24T19:51:18.353724191Z",
+    "agent_lines": 0,
+    "human_added": 0,
+    "human_modified": 188,
+    "human_removed": 193,
+    "total_committed": 135,
+    "agent_percentage": 0
+  },
+  "transcript_path": ".claude/projects/-home-felt-PycharmProjects-s2morrow/d943a78f-0edb-4fc6-ac0d-8dfd9b0e52f7.jsonl"
+}

@@ -1,0 +1,34 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "2f3d03ce615a",
+  "session_id": "a09c77e0-4a65-4d12-aac3-a01654d9a3b8",
+  "strategy": "manual-commit",
+  "created_at": "2026-02-16T17:55:52.392748909Z",
+  "branch": "master",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "packages/falcon_account/src/account.cairo",
+    "packages/falcon_account/src/preset.cairo"
+  ],
+  "agent": "Claude Code",
+  "transcript_identifier_at_start": "4389b16f-377a-45f3-b886-084e9ad173d1",
+  "checkpoint_transcript_start": 3580,
+  "transcript_lines_at_start": 3580,
+  "token_usage": {
+    "input_tokens": 13,
+    "cache_creation_tokens": 7659,
+    "cache_read_tokens": 703811,
+    "output_tokens": 117,
+    "api_call_count": 9
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-02-16T17:55:47.037314818Z",
+    "agent_lines": 0,
+    "human_added": 188,
+    "human_modified": 515,
+    "human_removed": 0,
+    "total_committed": 202,
+    "agent_percentage": 0
+  },
+  "transcript_path": ".claude/projects/-home-felt-PycharmProjects-s2morrow/a09c77e0-4a65-4d12-aac3-a01654d9a3b8.jsonl"
+}

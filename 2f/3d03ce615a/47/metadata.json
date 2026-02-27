@@ -1,0 +1,42 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "2f3d03ce615a",
+  "session_id": "d8159da4-dcaa-4752-8bb8-07235096d8b2",
+  "strategy": "manual-commit",
+  "created_at": "2026-02-24T19:51:14.103522769Z",
+  "branch": "frontend",
+  "checkpoints_count": 1,
+  "files_touched": [
+    ".claude/settings.local.json",
+    ".claude/skills/benchmarking-cairo",
+    ".claude/skills/cairo-coding",
+    "apps/demo/.next/cache/webpack/client-production/4.pack_",
+    "apps/demo/.next/cache/webpack/server-production/3.pack_",
+    "apps/demo/.workflow/.claude/settings.local.json",
+    "apps/demo/src/__tests__/account-deploy/account-deploy-flow.test.ts",
+    "apps/demo/src/__tests__/effect-services/starknet-service.test.ts",
+    "apps/demo/src/services/StarknetService.ts",
+    "apps/demo/src/tests/atoms.test.ts",
+    "apps/demo/tests/atoms/starknet.test.ts",
+    "apps/demo/tsconfig.tsbuildinfo",
+    "packages/falcon/.claude/settings.local.json"
+  ],
+  "agent": "Claude Code",
+  "token_usage": {
+    "input_tokens": 185,
+    "cache_creation_tokens": 228202,
+    "cache_read_tokens": 16979473,
+    "output_tokens": 1999,
+    "api_call_count": 180
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-02-24T19:51:13.24379796Z",
+    "agent_lines": 0,
+    "human_added": 0,
+    "human_modified": 310,
+    "human_removed": 849,
+    "total_committed": 0,
+    "agent_percentage": 0
+  },
+  "transcript_path": ".claude/projects/-home-felt-PycharmProjects-s2morrow/d8159da4-dcaa-4752-8bb8-07235096d8b2.jsonl"
+}

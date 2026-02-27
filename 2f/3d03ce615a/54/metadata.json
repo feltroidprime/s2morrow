@@ -1,0 +1,33 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "2f3d03ce615a",
+  "session_id": "e4aed221-eb4d-47fb-a2b1-6eddb86b30f9",
+  "strategy": "manual-commit",
+  "created_at": "2026-02-24T19:51:26.056511761Z",
+  "branch": "frontend",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/demo/src/app/layout.tsx",
+    "apps/demo/src/providers/AtomProvider.tsx",
+    "apps/demo/src/tests/providers/atom-provider.test.ts",
+    "apps/demo/src/tests/providers/layout-atom-provider.integration.test.ts"
+  ],
+  "agent": "Claude Code",
+  "token_usage": {
+    "input_tokens": 37,
+    "cache_creation_tokens": 33473,
+    "cache_read_tokens": 1433675,
+    "output_tokens": 411,
+    "api_call_count": 34
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-02-24T19:51:25.995954731Z",
+    "agent_lines": 0,
+    "human_added": 43,
+    "human_modified": 142,
+    "human_removed": 0,
+    "total_committed": 107,
+    "agent_percentage": 0
+  },
+  "transcript_path": ".claude/projects/-home-felt-PycharmProjects-s2morrow/e4aed221-eb4d-47fb-a2b1-6eddb86b30f9.jsonl"
+}

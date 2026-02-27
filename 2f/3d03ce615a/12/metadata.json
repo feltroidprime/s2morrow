@@ -1,0 +1,31 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "2f3d03ce615a",
+  "session_id": "055242ee-5d9e-447b-90c3-b793b6a0e0e6",
+  "strategy": "manual-commit",
+  "created_at": "2026-02-24T19:50:18.426997535Z",
+  "branch": "frontend",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "docs/plans/STYLE-003.md",
+    "docs/plans/STYLE-004.md"
+  ],
+  "agent": "Claude Code",
+  "token_usage": {
+    "input_tokens": 17,
+    "cache_creation_tokens": 42377,
+    "cache_read_tokens": 645787,
+    "output_tokens": 153,
+    "api_call_count": 14
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-02-24T19:50:18.241220884Z",
+    "agent_lines": 0,
+    "human_added": 3208,
+    "human_modified": 786,
+    "human_removed": 0,
+    "total_committed": 3755,
+    "agent_percentage": 0
+  },
+  "transcript_path": ".claude/projects/-home-felt-PycharmProjects-s2morrow/055242ee-5d9e-447b-90c3-b793b6a0e0e6.jsonl"
+}

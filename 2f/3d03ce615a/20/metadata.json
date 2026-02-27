@@ -1,0 +1,32 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "2f3d03ce615a",
+  "session_id": "32282c62-e1b5-4245-8df9-873baafb3b8b",
+  "strategy": "manual-commit",
+  "created_at": "2026-02-24T19:50:27.014903731Z",
+  "branch": "frontend",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/demo/.next/cache/webpack/client-production/0.pack",
+    "apps/demo/.next/cache/webpack/server-production/0.pack",
+    "docs/plans/LANDING-006.md"
+  ],
+  "agent": "Claude Code",
+  "token_usage": {
+    "input_tokens": 21,
+    "cache_creation_tokens": 49215,
+    "cache_read_tokens": 859015,
+    "output_tokens": 235,
+    "api_call_count": 18
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-02-24T19:50:26.829732264Z",
+    "agent_lines": 0,
+    "human_added": 7339,
+    "human_modified": 2,
+    "human_removed": 0,
+    "total_committed": 7339,
+    "agent_percentage": 0
+  },
+  "transcript_path": ".claude/projects/-home-felt-PycharmProjects-s2morrow/32282c62-e1b5-4245-8df9-873baafb3b8b.jsonl"
+}

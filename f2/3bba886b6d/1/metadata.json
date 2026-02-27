@@ -1,0 +1,36 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "f23bba886b6d",
+  "session_id": "ec6e8295-ebc0-4a17-81d8-5a8b791cc5e0",
+  "strategy": "manual-commit",
+  "created_at": "2026-02-25T13:27:43.162452824Z",
+  "branch": "frontend",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/demo/src/__tests__/account-deploy/account-deploy-view.test.tsx",
+    "apps/demo/src/components/interactive/AccountDeployFlow.tsx",
+    "apps/demo/src/components/landing/NavHeader.tsx",
+    "apps/demo/src/services/StarknetService.ts"
+  ],
+  "agent": "Claude Code",
+  "transcript_identifier_at_start": "eaa2de7a-3054-49a4-91d2-cf0a32a30580",
+  "checkpoint_transcript_start": 201,
+  "transcript_lines_at_start": 201,
+  "token_usage": {
+    "input_tokens": 37,
+    "cache_creation_tokens": 21459,
+    "cache_read_tokens": 3667505,
+    "output_tokens": 1648,
+    "api_call_count": 34
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-02-25T13:27:42.765016463Z",
+    "agent_lines": 0,
+    "human_added": 606,
+    "human_modified": 101,
+    "human_removed": 0,
+    "total_committed": 705,
+    "agent_percentage": 0
+  },
+  "transcript_path": ".claude/projects/-home-felt-PycharmProjects-s2morrow/ec6e8295-ebc0-4a17-81d8-5a8b791cc5e0.jsonl"
+}

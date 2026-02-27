@@ -1,0 +1,138 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "f23bba886b6d",
+  "strategy": "manual-commit",
+  "branch": "frontend",
+  "checkpoints_count": 10,
+  "files_touched": [
+    "Makefile",
+    "Scarb.toml",
+    "apps/demo/src/__tests__/account-deploy/account-deploy-flow.test.ts",
+    "apps/demo/src/__tests__/account-deploy/account-deploy-pipeline.test.ts",
+    "apps/demo/src/__tests__/account-deploy/account-deploy-view.test.tsx",
+    "apps/demo/src/__tests__/config/networks.test.ts",
+    "apps/demo/src/__tests__/pipeline-viz.test.ts",
+    "apps/demo/src/__tests__/starknet/falcon-signer.test.ts",
+    "apps/demo/src/__tests__/verify-playground/falcon-service.test.ts",
+    "apps/demo/src/__tests__/verify-playground/keyfile.test.ts",
+    "apps/demo/src/__tests__/verify-playground/verification-playground.test.tsx",
+    "apps/demo/src/app/globals.css",
+    "apps/demo/src/app/page.tsx",
+    "apps/demo/src/atoms/falcon.ts",
+    "apps/demo/src/atoms/pipeline.ts",
+    "apps/demo/src/atoms/starknet.ts",
+    "apps/demo/src/components/interactive/AccountDeployFlow.tsx",
+    "apps/demo/src/components/interactive/AccountDeploySection.tsx",
+    "apps/demo/src/components/interactive/KeyManagementPanel.tsx",
+    "apps/demo/src/components/interactive/PipelineSection.tsx",
+    "apps/demo/src/components/interactive/PipelineVisualizer.tsx",
+    "apps/demo/src/components/interactive/PlaygroundSection.tsx",
+    "apps/demo/src/components/interactive/SendTransaction.tsx",
+    "apps/demo/src/components/interactive/SignVerifyPanel.tsx",
+    "apps/demo/src/components/interactive/VerificationPlayground.tsx",
+    "apps/demo/src/components/landing/ComparisonChart.tsx",
+    "apps/demo/src/components/landing/CredibilityBar.tsx",
+    "apps/demo/src/components/landing/Footer.tsx",
+    "apps/demo/src/components/landing/Hero.tsx",
+    "apps/demo/src/components/landing/NavHeader.tsx",
+    "apps/demo/src/components/landing/PerformanceStats.tsx",
+    "apps/demo/src/components/landing/TheProblem.tsx",
+    "apps/demo/src/components/landing/WhyStarknet.tsx",
+    "apps/demo/src/config/networks.ts",
+    "apps/demo/src/services/FalconService.ts",
+    "apps/demo/src/services/FalconSigner.ts",
+    "apps/demo/src/services/StarknetService.ts",
+    "apps/demo/src/services/WasmRuntime.ts",
+    "apps/demo/src/services/__tests__/WasmRuntime.test.ts",
+    "apps/demo/src/services/errors.ts",
+    "apps/demo/src/services/keyfile.ts",
+    "apps/demo/src/services/types.ts",
+    "apps/demo/src/tests/atoms.test.ts",
+    "apps/demo/tests/atoms/pipeline.test.ts",
+    "bin/declare.sh",
+    "docs/plans/2026-02-25-demo-production-design.md",
+    "docs/plans/2026-02-25-demo-production-impl.md",
+    "docs/plans/2026-02-25-network-switcher-design.md",
+    "docs/plans/2026-02-25-network-switcher.md",
+    "docs/plans/2026-02-26-demo-redesign-design.md",
+    "docs/plans/2026-02-26-demo-redesign.md",
+    "packages/bench_ecdsa/.tool-versions",
+    "packages/bench_ecdsa/Scarb.lock",
+    "packages/bench_ecdsa/Scarb.toml",
+    "packages/bench_ecdsa/src/lib.cairo",
+    "packages/bench_ecdsa/tests/bench.cairo",
+    "sncast.toml"
+  ],
+  "sessions": [
+    {
+      "metadata": "/f2/3bba886b6d/0/metadata.json",
+      "transcript": "/f2/3bba886b6d/0/full.jsonl",
+      "context": "/f2/3bba886b6d/0/context.md",
+      "content_hash": "/f2/3bba886b6d/0/content_hash.txt",
+      "prompt": "/f2/3bba886b6d/0/prompt.txt"
+    },
+    {
+      "metadata": "/f2/3bba886b6d/1/metadata.json",
+      "transcript": "/f2/3bba886b6d/1/full.jsonl",
+      "context": "/f2/3bba886b6d/1/context.md",
+      "content_hash": "/f2/3bba886b6d/1/content_hash.txt",
+      "prompt": "/f2/3bba886b6d/1/prompt.txt"
+    },
+    {
+      "metadata": "/f2/3bba886b6d/2/metadata.json",
+      "transcript": "/f2/3bba886b6d/2/full.jsonl",
+      "context": "/f2/3bba886b6d/2/context.md",
+      "content_hash": "/f2/3bba886b6d/2/content_hash.txt",
+      "prompt": "/f2/3bba886b6d/2/prompt.txt"
+    },
+    {
+      "metadata": "/f2/3bba886b6d/3/metadata.json",
+      "transcript": "/f2/3bba886b6d/3/full.jsonl",
+      "context": "/f2/3bba886b6d/3/context.md",
+      "content_hash": "/f2/3bba886b6d/3/content_hash.txt",
+      "prompt": "/f2/3bba886b6d/3/prompt.txt"
+    },
+    {
+      "metadata": "/f2/3bba886b6d/4/metadata.json",
+      "transcript": "/f2/3bba886b6d/4/full.jsonl",
+      "context": "/f2/3bba886b6d/4/context.md",
+      "content_hash": "/f2/3bba886b6d/4/content_hash.txt",
+      "prompt": "/f2/3bba886b6d/4/prompt.txt"
+    },
+    {
+      "metadata": "/f2/3bba886b6d/5/metadata.json",
+      "transcript": "/f2/3bba886b6d/5/full.jsonl",
+      "context": "/f2/3bba886b6d/5/context.md",
+      "content_hash": "/f2/3bba886b6d/5/content_hash.txt",
+      "prompt": "/f2/3bba886b6d/5/prompt.txt"
+    },
+    {
+      "metadata": "/f2/3bba886b6d/6/metadata.json",
+      "transcript": "/f2/3bba886b6d/6/full.jsonl",
+      "context": "/f2/3bba886b6d/6/context.md",
+      "content_hash": "/f2/3bba886b6d/6/content_hash.txt",
+      "prompt": "/f2/3bba886b6d/6/prompt.txt"
+    },
+    {
+      "metadata": "/f2/3bba886b6d/7/metadata.json",
+      "transcript": "/f2/3bba886b6d/7/full.jsonl",
+      "context": "/f2/3bba886b6d/7/context.md",
+      "content_hash": "/f2/3bba886b6d/7/content_hash.txt",
+      "prompt": "/f2/3bba886b6d/7/prompt.txt"
+    },
+    {
+      "metadata": "/f2/3bba886b6d/8/metadata.json",
+      "transcript": "/f2/3bba886b6d/8/full.jsonl",
+      "context": "/f2/3bba886b6d/8/context.md",
+      "content_hash": "/f2/3bba886b6d/8/content_hash.txt",
+      "prompt": "/f2/3bba886b6d/8/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 3549,
+    "cache_creation_tokens": 1877326,
+    "cache_read_tokens": 96155819,
+    "output_tokens": 225455,
+    "api_call_count": 987
+  }
+}

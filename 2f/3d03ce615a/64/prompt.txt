@@ -1,0 +1,461 @@
+IMPORTANT: After completing the task below, you MUST output a JSON object in a ```json code fence at the very end of your response. Do NOT forget this — the workflow fails without it.
+
+REVIEW FIX PHASE — Ticket: PV-001
+
+Title: Implement Pipeline Visualizer component from Task 7 of impl plan
+Category: pipeline-viz
+
+Two reviews have been completed. Fix ALL issues from BOTH reviews.
+
+## Spec Review Issues
+
+Severity: critical
+Feedback: The Pipeline Visualizer component (PV-001) was NOT implemented. All 5 files listed as &#x27;Created&#x27; in the ticket do not exist: PipelineVisualizer.tsx, PipelineSection.tsx, pipeline-utils.ts, and their test files are completely missing from the codebase. The page.tsx was NOT modified to include the Pipeline section. Only the underlying atom/data layer (atoms/pipeline.ts, services/types.ts) exists from a prior task, and the existing test file explicitly states &#x27;The PipelineVisualizer.tsx component is NOT YET IMPLEMENTED.&#x27; All 9 P0 spec requirements for pipeline-viz (6-step cards, play/pause/step/reset controls, auto-advance at 2s intervals, expanded active step details, green checkmark for complete, blue ring for active, total step count header, next/dynamic lazy loading) are unmet. This ticket must be rejected and the component must actually be built.
+Issues:
+
+1. CRITICAL: PipelineVisualizer.tsx component file does not exist — claimed as created but never written
+2. CRITICAL: PipelineSection.tsx component file does not exist — claimed as created but never written
+3. CRITICAL: pipeline-utils.ts utility file does not exist — claimed as created but never written
+4. CRITICAL: __tests__/PipelineVisualizer.test.ts does not exist — claimed as created but never written
+5. CRITICAL: __tests__/PipelineSection.test.ts does not exist — claimed as created but never written
+6. CRITICAL: page.tsx not modified — no Pipeline Visualizer section rendered on the page, no dynamic import added
+7. MAJOR: PRD P0 — 6 pipeline step cards with step counts not implemented
+8. MAJOR: PRD P0 — Play button with 2-second auto-advance not implemented
+9. MAJOR: PRD P0 — Pause button not implemented
+10. MAJOR: PRD P0 — Step button (advance one step) not implemented
+11. MAJOR: PRD P0 — Reset button not implemented
+12. MAJOR: PRD P0 — Active step expanded input/output details not implemented
+13. MAJOR: PRD P0 — Completed steps green checkmark / active step blue ring not implemented
+14. MAJOR: PRD P0 — Total step count in section header not implemented
+15. MAJOR: PRD P0 — Component not lazy-loaded via next/dynamic with ssr: false
+## Code Review Issues
+
+Severity: major
+Feedback: Claude: Implementation not completed. The PV-001 worktree contains only prerequisite files (atoms/pipeline.ts, services/types.ts, pipeline-viz tests) but NONE of the 5 component files listed as &#x27;Created&#x27; exist: pipeline-utils.ts, PipelineVisualizer.tsx, PipelineSection.tsx, and their tests are all missing. page.tsx was not modified. The interactive/ directory does not even exist in the worktree. The plan (docs/plans/PV-001.md) is well-written and the prerequisites are solid, but zero implementation tasks from the plan were executed.
+Issues:
+
+1. [Claude] MAJOR: pipeline-utils.ts does not exist — computeStepStatuses and computeTotalSteps pure functions not implemented
+2. [Claude] MAJOR: PipelineVisualizer.tsx does not exist — main component with 6 step cards, play/pause/step/reset controls, auto-advance timer not created
+3. [Claude] MAJOR: PipelineSection.tsx does not exist — next/dynamic wrapper with ssr:false not created
+4. [Claude] MAJOR: __tests__/PipelineVisualizer.test.ts does not exist — no unit tests for component logic
+5. [Claude] MAJOR: __tests__/PipelineSection.test.ts does not exist — no integration tests for dynamic import wiring
+6. [Claude] MAJOR: page.tsx not modified — PipelineSection not imported or rendered between PlaygroundSection and deploy section
+7. [Claude] MINOR: atoms/pipeline.ts exports INITIAL_PIPELINE_STEPS as a mutable array alias rather than a frozen/readonly copy
+8. [Claude] MINOR: pipeline-viz.test.ts defines a local computeStepStatuses helper that duplicates future pipeline-utils.ts logic — should import from shared module once created
+## Your Task
+
+For EACH issue from both reviews:
+
+- Read the relevant file
+
+- Determine if the issue is valid or a false positive
+
+- If valid: make the fix
+
+- If false positive: document why in your output
+
+- After each fix, run relevant validation commands:
+
+   - cd apps/demo &amp;&amp; bun test
+   - cd ../../falcon-rs &amp;&amp; cargo test
+## TDD for Fixes
+
+If a fix requires new behavior:
+
+- Write a test for the expected behavior FIRST
+
+- Verify the test fails
+
+- Make the fix
+
+- Verify the test passes
+
+## JJ COMMIT — MANDATORY (DO NOT SKIP)
+
+You MUST commit and push your changes to the ticket branch before finishing. Uncommitted work is lost work.
+
+- `jj describe -m &quot;{props.commitPrefix || &#x27;EMOJI&#x27;} type(scope): description&quot;` — describe each fix separately.
+
+- `jj new` — create a new change for the next fix. Do NOT batch all fixes into one change.
+
+- `jj bookmark set ticket/{props.ticketId} -r @`
+
+- `jj git push --bookmark ticket/{props.ticketId}`
+
+Emoji prefixes: ✨ feat, 🐛 fix, ♻️ refactor, 📝 docs, 🧪 test
+**If you do not commit and push to the ticket branch, your work does not count. This is non-negotiable.**
+
+
+**REQUIRED OUTPUT** — You MUST end your response with a JSON object in a code fence matching this schema:
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "allIssuesResolved": {
+      "type": "boolean"
+    },
+    "summary": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "allIssuesResolved",
+    "summary"
+  ],
+  "additionalProperties": false
+}
+```
+Output the JSON at the END of your response. The workflow will fail without it.
+
+---
+
+Base directory for this skill: /home/felt/.claude/plugins/cache/claude-plugins-official/superpowers/4.3.1/skills/receiving-code-review
+
+# Code Review Reception
+
+## Overview
+
+Code review requires technical evaluation, not emotional performance.
+
+**Core principle:** Verify before implementing. Ask before assuming. Technical correctness over social comfort.
+
+## The Response Pattern
+
+```
+WHEN receiving code review feedback:
+
+1. READ: Complete feedback without reacting
+2. UNDERSTAND: Restate requirement in own words (or ask)
+3. VERIFY: Check against codebase reality
+4. EVALUATE: Technically sound for THIS codebase?
+5. RESPOND: Technical acknowledgment or reasoned pushback
+6. IMPLEMENT: One item at a time, test each
+```
+
+## Forbidden Responses
+
+**NEVER:**
+- "You're absolutely right!" (explicit CLAUDE.md violation)
+- "Great point!" / "Excellent feedback!" (performative)
+- "Let me implement that now" (before verification)
+
+**INSTEAD:**
+- Restate the technical requirement
+- Ask clarifying questions
+- Push back with technical reasoning if wrong
+- Just start working (actions > words)
+
+## Handling Unclear Feedback
+
+```
+IF any item is unclear:
+  STOP - do not implement anything yet
+  ASK for clarification on unclear items
+
+WHY: Items may be related. Partial understanding = wrong implementation.
+```
+
+**Example:**
+```
+your human partner: "Fix 1-6"
+You understand 1,2,3,6. Unclear on 4,5.
+
+❌ WRONG: Implement 1,2,3,6 now, ask about 4,5 later
+✅ RIGHT: "I understand items 1,2,3,6. Need clarification on 4 and 5 before proceeding."
+```
+
+## Source-Specific Handling
+
+### From your human partner
+- **Trusted** - implement after understanding
+- **Still ask** if scope unclear
+- **No performative agreement**
+- **Skip to action** or technical acknowledgment
+
+### From External Reviewers
+```
+BEFORE implementing:
+  1. Check: Technically correct for THIS codebase?
+  2. Check: Breaks existing functionality?
+  3. Check: Reason for current implementation?
+  4. Check: Works on all platforms/versions?
+  5. Check: Does reviewer understand full context?
+
+IF suggestion seems wrong:
+  Push back with technical reasoning
+
+IF can't easily verify:
+  Say so: "I can't verify this without [X]. Should I [investigate/ask/proceed]?"
+
+IF conflicts with your human partner's prior decisions:
+  Stop and discuss with your human partner first
+```
+
+**your human partner's rule:** "External feedback - be skeptical, but check carefully"
+
+## YAGNI Check for "Professional" Features
+
+```
+IF reviewer suggests "implementing properly":
+  grep codebase for actual usage
+
+  IF unused: "This endpoint isn't called. Remove it (YAGNI)?"
+  IF used: Then implement properly
+```
+
+**your human partner's rule:** "You and reviewer both report to me. If we don't need this feature, don't add it."
+
+## Implementation Order
+
+```
+FOR multi-item feedback:
+  1. Clarify anything unclear FIRST
+  2. Then implement in this order:
+     - Blocking issues (breaks, security)
+     - Simple fixes (typos, imports)
+     - Complex fixes (refactoring, logic)
+  3. Test each fix individually
+  4. Verify no regressions
+```
+
+## When To Push Back
+
+Push back when:
+- Suggestion breaks existing functionality
+- Reviewer lacks full context
+- Violates YAGNI (unused feature)
+- Technically incorrect for this stack
+- Legacy/compatibility reasons exist
+- Conflicts with your human partner's architectural decisions
+
+**How to push back:**
+- Use technical reasoning, not defensiveness
+- Ask specific questions
+- Reference working tests/code
+- Involve your human partner if architectural
+
+**Signal if uncomfortable pushing back out loud:** "Strange things are afoot at the Circle K"
+
+## Acknowledging Correct Feedback
+
+When feedback IS correct:
+```
+✅ "Fixed. [Brief description of what changed]"
+✅ "Good catch - [specific issue]. Fixed in [location]."
+✅ [Just fix it and show in the code]
+
+❌ "You're absolutely right!"
+❌ "Great point!"
+❌ "Thanks for catching that!"
+❌ "Thanks for [anything]"
+❌ ANY gratitude expression
+```
+
+**Why no thanks:** Actions speak. Just fix it. The code itself shows you heard the feedback.
+
+**If you catch yourself about to write "Thanks":** DELETE IT. State the fix instead.
+
+## Gracefully Correcting Your Pushback
+
+If you pushed back and were wrong:
+```
+✅ "You were right - I checked [X] and it does [Y]. Implementing now."
+✅ "Verified this and you're correct. My initial understanding was wrong because [reason]. Fixing."
+
+❌ Long apology
+❌ Defending why you pushed back
+❌ Over-explaining
+```
+
+State the correction factually and move on.
+
+## Common Mistakes
+
+| Mistake | Fix |
+|---------|-----|
+| Performative agreement | State requirement or just act |
+| Blind implementation | Verify against codebase first |
+| Batch without testing | One at a time, test each |
+| Assuming reviewer is right | Check if breaks things |
+| Avoiding pushback | Technical correctness > comfort |
+| Partial implementation | Clarify all items first |
+| Can't verify, proceed anyway | State limitation, ask for direction |
+
+## Real Examples
+
+**Performative Agreement (Bad):**
+```
+Reviewer: "Remove legacy code"
+❌ "You're absolutely right! Let me remove that..."
+```
+
+**Technical Verification (Good):**
+```
+Reviewer: "Remove legacy code"
+✅ "Checking... build target is 10.15+, this API needs 13+. Need legacy for backward compat. Current impl has wrong bundle ID - fix it or drop pre-13 support?"
+```
+
+**YAGNI (Good):**
+```
+Reviewer: "Implement proper metrics tracking with database, date filters, CSV export"
+✅ "Grepped codebase - nothing calls this endpoint. Remove it (YAGNI)? Or is there usage I'm missing?"
+```
+
+**Unclear Item (Good):**
+```
+your human partner: "Fix items 1-6"
+You understand 1,2,3,6. Unclear on 4,5.
+✅ "Understand 1,2,3,6. Need clarification on 4 and 5 before implementing."
+```
+
+## GitHub Thread Replies
+
+When replying to inline review comments on GitHub, reply in the comment thread (`gh api repos/{owner}/{repo}/pulls/{pr}/comments/{id}/replies`), not as a top-level PR comment.
+
+## The Bottom Line
+
+**External feedback = suggestions to evaluate, not orders to follow.**
+
+Verify. Question. Then implement.
+
+No performative agreement. Technical rigor always.
+
+---
+
+Base directory for this skill: /home/felt/.claude/plugins/cache/claude-plugins-official/superpowers/4.3.1/skills/verification-before-completion
+
+# Verification Before Completion
+
+## Overview
+
+Claiming work is complete without verification is dishonesty, not efficiency.
+
+**Core principle:** Evidence before claims, always.
+
+**Violating the letter of this rule is violating the spirit of this rule.**
+
+## The Iron Law
+
+```
+NO COMPLETION CLAIMS WITHOUT FRESH VERIFICATION EVIDENCE
+```
+
+If you haven't run the verification command in this message, you cannot claim it passes.
+
+## The Gate Function
+
+```
+BEFORE claiming any status or expressing satisfaction:
+
+1. IDENTIFY: What command proves this claim?
+2. RUN: Execute the FULL command (fresh, complete)
+3. READ: Full output, check exit code, count failures
+4. VERIFY: Does output confirm the claim?
+   - If NO: State actual status with evidence
+   - If YES: State claim WITH evidence
+5. ONLY THEN: Make the claim
+
+Skip any step = lying, not verifying
+```
+
+## Common Failures
+
+| Claim | Requires | Not Sufficient |
+|-------|----------|----------------|
+| Tests pass | Test command output: 0 failures | Previous run, "should pass" |
+| Linter clean | Linter output: 0 errors | Partial check, extrapolation |
+| Build succeeds | Build command: exit 0 | Linter passing, logs look good |
+| Bug fixed | Test original symptom: passes | Code changed, assumed fixed |
+| Regression test works | Red-green cycle verified | Test passes once |
+| Agent completed | VCS diff shows changes | Agent reports "success" |
+| Requirements met | Line-by-line checklist | Tests passing |
+
+## Red Flags - STOP
+
+- Using "should", "probably", "seems to"
+- Expressing satisfaction before verification ("Great!", "Perfect!", "Done!", etc.)
+- About to commit/push/PR without verification
+- Trusting agent success reports
+- Relying on partial verification
+- Thinking "just this once"
+- Tired and wanting work over
+- **ANY wording implying success without having run verification**
+
+## Rationalization Prevention
+
+| Excuse | Reality |
+|--------|---------|
+| "Should work now" | RUN the verification |
+| "I'm confident" | Confidence ≠ evidence |
+| "Just this once" | No exceptions |
+| "Linter passed" | Linter ≠ compiler |
+| "Agent said success" | Verify independently |
+| "I'm tired" | Exhaustion ≠ excuse |
+| "Partial check is enough" | Partial proves nothing |
+| "Different words so rule doesn't apply" | Spirit over letter |
+
+## Key Patterns
+
+**Tests:**
+```
+✅ [Run test command] [See: 34/34 pass] "All tests pass"
+❌ "Should pass now" / "Looks correct"
+```
+
+**Regression tests (TDD Red-Green):**
+```
+✅ Write → Run (pass) → Revert fix → Run (MUST FAIL) → Restore → Run (pass)
+❌ "I've written a regression test" (without red-green verification)
+```
+
+**Build:**
+```
+✅ [Run build] [See: exit 0] "Build passes"
+❌ "Linter passed" (linter doesn't check compilation)
+```
+
+**Requirements:**
+```
+✅ Re-read plan → Create checklist → Verify each → Report gaps or completion
+❌ "Tests pass, phase complete"
+```
+
+**Agent delegation:**
+```
+✅ Agent reports success → Check VCS diff → Verify changes → Report actual state
+❌ Trust agent report
+```
+
+## Why This Matters
+
+From 24 failure memories:
+- your human partner said "I don't believe you" - trust broken
+- Undefined functions shipped - would crash
+- Missing requirements shipped - incomplete features
+- Time wasted on false completion → redirect → rework
+- Violates: "Honesty is a core value. If you lie, you'll be replaced."
+
+## When To Apply
+
+**ALWAYS before:**
+- ANY variation of success/completion claims
+- ANY expression of satisfaction
+- ANY positive statement about work state
+- Committing, PR creation, task completion
+- Moving to next task
+- Delegating to agents
+
+**Rule applies to:**
+- Exact phrases
+- Paraphrases and synonyms
+- Implications of success
+- ANY communication suggesting completion/correctness
+
+## The Bottom Line
+
+**No shortcuts for verification.**
+
+Run the command. Read the output. THEN claim the result.
+
+This is non-negotiable.

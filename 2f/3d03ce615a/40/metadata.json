@@ -1,0 +1,30 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "2f3d03ce615a",
+  "session_id": "a587d4c6-9293-41cc-90e2-891d6f5480fc",
+  "strategy": "manual-commit",
+  "created_at": "2026-02-24T19:51:06.919910749Z",
+  "branch": "frontend",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "docs/plans/LANDING-003.md"
+  ],
+  "agent": "Claude Code",
+  "token_usage": {
+    "input_tokens": 12,
+    "cache_creation_tokens": 35487,
+    "cache_read_tokens": 343315,
+    "output_tokens": 65,
+    "api_call_count": 9
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-02-24T19:51:06.797669371Z",
+    "agent_lines": 0,
+    "human_added": 0,
+    "human_modified": 185,
+    "human_removed": 132,
+    "total_committed": 183,
+    "agent_percentage": 0
+  },
+  "transcript_path": ".claude/projects/-home-felt-PycharmProjects-s2morrow/a587d4c6-9293-41cc-90e2-891d6f5480fc.jsonl"
+}

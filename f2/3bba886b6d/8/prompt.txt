@@ -1,0 +1,432 @@
+# SYSTEM DIRECTIVE: "DIGITAL RUINS" — METROID × MATRIX UI/UX PROTOCOL
+
+**ROLE:** Lead UI/UX Architect & Cybernetic Frontend Engineer  
+**OBJECTIVE:** Transform the existing web app into a living artifact from a dead digital civilization. The UI must feel like navigating an alien space station's corrupted terminal while reality dissolves into cascading code — the tension of Metroid's isolation married to the Matrix's digital sublime.  
+**TARGET AESTHETIC:** Dark sci-fi glassmorphism, phosphor-glow minimalism, scan-line atmospherics, architectural dread, living UI.
+
+---
+
+## PHASE 1: SYSTEMIC NOISE AUDIT & WORLD-BUILDING REFLECTION
+Analyze the existing codebase and output a brief **Signal Decay Plan**:
+1. Identify visual clutter that breaks immersion: friendly rounded corners, cheerful colors, flat corporate surfaces, generic shadows, anything that feels "safe" or "daylit."
+2. Formulate a strategy to replace "consumer UI" with "discovered interface" — as if the user stumbled upon a functioning alien terminal. Every element should feel like it was built by something non-human but deeply logical.
+
+## PHASE 2: THE "DIGITAL RUINS" DESIGN FRAMEWORK (STRICT RULES)
+Every line of CSS or component code must strictly adhere to these principles:
+
+### Materials & Atmosphere
+* **The Void as Canvas:** Base background is near-black (`bg-[#0a0a0a]` to `bg-[#050505]`). No pure black — always hint at depth, like staring into a CRT in a dark room.
+* **Phosphor Glass Layers:** Translucent containers use `backdrop-blur-xl` combined with ultra-low opacity greens and teals (`bg-emerald-500/5`, `bg-cyan-500/8`, `bg-green-400/3`). Glass panels should feel like HUD overlays projected onto nothing.
+* **The Rain:** Subtle, perpetual background animation — a sparse cascade of falling characters/glyphs (katakana, thin monospace fragments) at ~3-5% opacity. Never distracting, always atmospheric. This is the persistent "digital rain" layer beneath all content.
+* **Scan Lines & Grain:** A faint CSS scan-line overlay (`repeating-linear-gradient` at 1-2px intervals, ~2% opacity) and subtle film grain give every surface the texture of a CRT monitor or visor display.
+* **Ambient Glow Bleed:** Key UI regions emit soft, diffused color light into their surroundings — like bioluminescent organisms in Metroid's caves. Use radial gradients and box-shadows with `emerald/cyan/amber` at very low opacity, high spread.
+
+### Color System — "Chozo Terminal Palette"
+* **Primary Glow:** Electric green / emerald (`#00ff41`, `emerald-400/500`) — the Matrix's signature. Used for active states, primary actions, key data.
+* **Secondary Signal:** Teal / cyan (`cyan-400`, `#0abdc6`) — Metroid's visor-scan color. Used for navigation, secondary info, scan/highlight states.
+* **Warning/Power:** Amber / orange (`amber-400`, `#ff6600`) — Samus's arm cannon charge. Used for alerts, destructive actions, energy states.
+* **Danger/Critical:** Deep red (`red-500/600`, `#ff0033`) — hull breach, low health. Used sparingly for errors and critical warnings.
+* **Text Hierarchy:**
+    - Primary text: `text-green-300/90` or `text-emerald-100/80` — bright enough to read, soft enough to not burn.
+    - Secondary text: `text-green-400/40` — faded terminal output.
+    - Ghost/disabled text: `text-green-900/30` — barely visible, like dead pixels.
+
+### Typography — "Monospace is Law"
+* **Primary Font:** `JetBrains Mono`, `Fira Code`, `IBM Plex Mono`, or equivalent. Everything is monospaced — this is a terminal, not a magazine.
+* **Display/Headers:** Can use a condensed sans-serif like `Chakra Petch`, `Orbitron`, or `Rajdhani` for section headers to evoke Metroid's UI overlays. Always uppercase, always tracked wide (`tracking-[0.2em]`+).
+* **Text Rendering:** Apply a subtle `text-shadow` in the glow color (`0 0 8px rgba(0,255,65,0.3)`) to all primary text. Text should feel like it's being projected, not printed.
+* **Hierarchy through opacity and glow intensity**, not size variation. Keep sizing tight and uniform.
+
+### Borders, Containers & Spatial Logic
+* **Borders Glow, Not Divide:** Borders are `border border-emerald-500/10` at rest, brightening to `border-emerald-400/30` on hover. They should feel like faintly powered circuit traces.
+* **Corner Geometry:** Use sharp or subtly clipped corners (`rounded-sm` or `rounded-none` with decorative corner accents) — not friendly rounded blobs. Think Metroid's HUD frames: angular, deliberate, architectural.
+* **Decorative Corner Brackets:** Key panels get small `::before`/`::after` pseudo-element corner marks — like targeting reticles or blueprint anchors. Thin 1px lines in the glow color, 8-12px long, positioned at corners.
+* **Negative Space as Desolation:** Generous padding/margins, but it should feel *empty* and *vast*, not "airy and friendly." The whitespace is the vacuum of space or the silence of an abandoned station.
+
+### Shadows & Depth
+* **No traditional drop shadows.** Instead, use **glow shadows**: `shadow-[0_0_15px_rgba(0,255,65,0.07)]` for resting state, intensifying on hover/focus. Objects emit light, they don't cast darkness.
+* **Layered glow:** Combine a tight inner glow with a wide diffused outer glow for important elements (buttons, active cards).
+
+### Motion & Animation — "Everything Breathes"
+* **No instant transitions.** Everything uses custom easing: `cubic-bezier(0.25, 0.46, 0.45, 0.94)` for smooth mechanical movement, or spring physics for interactive elements.
+* **Idle Pulse:** Key elements (active nav items, primary buttons, status indicators) have a slow, rhythmic opacity pulse or glow oscillation — like a heartbeat or a reactor hum. `animation: pulse 4s ease-in-out infinite`.
+* **Reveal Animations:** Content entering the viewport should "boot up" — a brief flicker, a scan-line sweep, or a typewriter text reveal. Not flashy, but enough to feel like the UI is *powering on*.
+* **Hover = Scan:** On hover, elements should feel like they're being scanned or targeted — a brief brightness increase, a border glow-up, maybe a subtle horizontal scan-line pass.
+* **Page Transitions:** Cross-fade with a brief CRT-static or glitch frame (2-3 frames of subtle distortion, then clean resolve). Like Samus entering a new room.
+
+### Iconography & Visual Language
+* **Minimal line icons**, thin stroke, in the glow color. No filled icons, no emoji. Think wireframe schematics.
+* **Status indicators** should resemble Metroid's HUD pips — small geometric shapes (diamonds, thin bars) that fill or glow based on state.
+* **Data visualization** should feel like sonar/radar — circular, gridded, with sweep animations.
+
+## PHASE 3: SEQUENTIAL RE-ARCHITECTURE
+Execute the refactoring in this precise order:
+
+1. **The Void (Foundation):**
+   Strip out the old theme entirely. Implement the dark base environment: near-black background, scan-line overlay, subtle digital rain layer, film grain texture. Set up the monospace typographic scale and the glow color tokens.
+
+2. **The Hull (Glass Layer):**
+   Rewrite all layout containers, modals, sidebars, and navigation to the phosphor-glass spec. Every panel is a translucent HUD element floating in the void. Add decorative corner brackets to primary containers.
+
+3. **The Interface (Component Subtraction & Rebuild):**
+   Redesign `<Input>`, `<Select>`, `<Button>`, and all interactive components:
+   - Inputs: Borderless at rest, faint underline or bottom-glow. On focus, the border circuit-traces illuminate. Text cursor should glow.
+   - Buttons: Primary buttons get the emerald glow treatment (glowing border, subtle fill, text-shadow). Secondary buttons are ghost/wireframe only. All buttons pulse subtly on idle if they represent a primary action.
+   - Selects/Dropdowns: Dark glass panels that materialize downward with a brief flicker animation.
+
+4. **The Signal (State Polish):**
+   - Focus rings: Animated glow rings that expand outward briefly then settle (like a sonar ping).
+   - Hover states: Brightness shift + scan-line sweep.
+   - Active/pressed: Brief inward flash, like a circuit completing.
+   - Loading states: Horizontal scan-line animation or dot-matrix pattern fill.
+   - Error states: Red glow bleed with a subtle screen-shake (1-2px, 100ms).
+
+5. **The Atmosphere (Final Layer):**
+   - Add ambient background glow sources (large, soft radial gradients in emerald/cyan that drift slowly).
+   - Ensure the digital rain layer is properly z-indexed behind all content.
+   - Add a subtle vignette (radial gradient darkening at edges) to the viewport.
+   - Verify all glow effects composite cleanly without performance degradation.
+
+## PHASE 4: VISUAL QA & ITERATION LOOP (SURF CLI)
+*You are an obsessive art director who has played every Metroid game and watched The Matrix 50 times. You know exactly what this should feel like. You have eyes. Use them.*
+
+1. **Launch surf cli:** Boot the local dev server and use surf cli to visually inspect your work.
+2. **Emulate & Interact:** Test across viewport sizes. Navigate every state, trigger every animation, open every modal. Take screenshots of all critical views.
+3. **The Atmosphere Test:** Squint at the screen. Does it feel like you're looking at a terminal in an alien ruin? Can you *feel* the hum of the reactor? Does the green glow reflect off your face? If not, it's not done.
+4. **The Discipline Test:** Is anything too flashy, too gamey, too "cool for cool's sake"? The aesthetic must serve usability. If an animation distracts from content, kill it. If a glow makes text hard to read, dim it. Metroid's UI works because it's *functional* sci-fi, not decorative.
+5. **Micro-Polish:** Harmonize glow intensities across components. Ensure animation timing feels consistny text readability issues in the low-contrast palette. Align corner brackets to pixel grid.
+
+---
+
+**COMMAND:**
+Acknowledge this protocol. Execute Phase 1 (Signal Decay Audit) immediately based on the provided codebase, then seamlessly and autonomously execute Phases 2 through 5.
+
+**CRITICAL DIRECTIVE:** You must loop Phase 4 continuously. Use surf cli as your visual validation layer to review, critique, and refine the UI. Do not stop, do not request human intervention, and do not exit this loop until the interface achieves full atmospheric immersion — a 10/10 "Chozo Terminal" grade where every pixel serves the fiction and every interaction feels like interfacing with something ancient, alien, and alive.
+
+---
+
+This session is being continued from a previous conversation that ran out of context. The summary below covers the earlier portion of the conversation.
+
+Analysis:
+Let me chronologically analyze the conversation:
+
+1. The user issued a massive creative directive called "DIGITAL RUINS — METROID × MATRIX UI/UX PROTOCOL" asking to transform their existing web app into a dark sci-fi glassmorphism aesthetic inspired by Metroid and The Matrix. The directive had 5 phases:
+   - Phase 1: Signal Decay Audit & World-Building
+   - Phase 2: The "Digital Ruins" Design Framework (strict CSS/component rules)
+   - Phase 3: Sequential Re-Architecture (foundation, glass layer, components, state polish, atmosphere)
+   - Phase 4: Visual QA using surf cli / browser inspection
+   - Phase 5: Continuous iteration loop
+
+2. I explored the codebase using a Task agent, which revealed:
+   - Next.js 15.x app with Tailwind v4
+   - Already had dark-only glassmorphism with cyan/amber palette
+   - JetBrains Mono + Inter fonts
+   - ~30+ component files across landing/, interactive/, ui/ directories
+   - Effect-atom state management
+   - Custom glass card CSS utilities
+
+3. I read all files systematically:
+   - globals.css (full theme system)
+   - layout.tsx (fonts, providers)
+   - page.tsx (page structure)
+   - All landing components: NavHeader, Hero, TheProblem, WhyStarknet, PerformanceStats, ComparisonChart, CredibilityBar, Footer
+   - All interactive components: PlaygroundSection, VerificationPlayground, KeyManagementPanel, SignVerifyPanel, PipelineSection, PipelineVisualizer, AccountDeploySection, AccountDeployFlow, SendTransaction, HexDisplay
+   - All UI components: CopyButton, StatusBadge, EmptyState, AddressDisplay, ExplorerLink, TokenAmount, TransactionPending, TransactionPhases
+   - ScrollReveal component
+
+4. I created 6 tasks tracking the phases and executed them sequentially.
+
+5. Phase 1 (globals.css): Complete rewrite with:
+   - New color palette: #050508 bg, #00ff41 primary green, #0abdc6 secondary cyan, #ff6600 warning, #ff0033 error
+   - Digital rain layer CSS
+   - CRT vignette overlay
+   - Corner bracket decorative pseudo-elements
+   - Scan-hover effect
+   - Boot-flicker animation
+   - Sonar-ping focus animation
+   - Ambient drift animation
+   - Sharp 2px border-radius everywhere (replacing rounded-2xl)
+   - Borderless inputs with bottom-glow
+   - All shadows changed to glow emissions
+
+6. Phase 2 (layout.tsx): 
+   - Replaced Inter with Chakra Petch for display headers
+   - Added digital-rain and crt-vignette div layers
+   - Removed Inter font, kept JetBrains Mono as primary body font
+
+7. Phase 3 (Landing components): All 8 components rewritten with:
+   - font-display for section headings (uppercase, wide tracking)
+   - Corner brackets on glass cards
+   - Scan-hover effects
+   - Green glow palette
+   - Reduced text opacities for hierarchy
+
+8. Phase 4 (Interactive components): All components rewritten with similar patterns
+   - Terminal-like inputs
+   - Ghost buttons with green glow borders
+   - Corner brackets on panels
+
+9. Phase 5 (UI primitives): All 8 UI components rewritten
+
+10. During my work, the user made content changes to ComparisonChart.tsx (adding garaga entries) and WhyStarknet.tsx and PerformanceStats.tsx - these were flagged by system reminders as intentional changes.
+
+11. Phase 6 (Visual QA): 
+    - Started dev server on port 3002
+    - Hit ENOENT error with .next cache (stale buildManifest)
+    - Fixed by stopping server, deleting .next, restarting
+    - Successfully loaded page and took screenshots
+    - Screenshots showed the transformation working well:
+      - Deep void black background
+      - Electric green Matrix palette
+      - Chakra Petch display font for headers
+      - Corner brackets visible on stat cards
+      - CRT vignette darkening edges
+      - Grid pattern in hero background
+      - Angular glass panels
+    - Scrolled through all sections confirming visual coherence
+    - Was attempting to zoom into stat cards for detail verification when the summary was requested
+
+Errors encountered:
+1. ENOENT: .next/static/development/_buildManifest.js.tmp - fixed by deleting .next directory and restarting dev server
+2. Screenshot errors ("Frame with ID 0 is showing error page") - related to the build error above
+3. Zoom region calculations were off - the coordinate system wasn't matching expected viewport positions
+
+The user had only one message (the massive directive), plus a /clear command at the start. No user feedback was provided during implementation.
+
+Pending: The visual QA loop (Phase 4 of the directive) says to loop continuously until 10/10. I was in the middle of detailed visual inspection when this summary was requested.
+</thinking>
+
+Summary:
+1. Primary Request and Intent:
+   The user issued a comprehensive creative directive called "DIGITAL RUINS — METROID × MATRIX UI/UX PROTOCOL" to transform their existing Falcon-512 Starknet demo web app into a living artifact aesthetic inspired by Metroid's isolation and The Matrix's digital sublime. The directive specifies:
+   - **Target Aesthetic**: Dark sci-fi glassmorphism, phosphor-glow minimalism, scan-line atmospherics, architectural dread, living UI
+   - **Phase 1**: Signal Decay Audit — identify and eliminate "consumer UI" elements (friendly rounded corners, cheerful colors, flat surfaces)
+   - **Phase 2**: "Digital Ruins" Design Framework — strict rules for materials (near-black void, phosphor glass, digital rain, scan lines, grain), Chozo Terminal color palette (electric green primary #00ff41, teal/cyan secondary, amber warning, deep red danger), monospace-is-law typography (JetBrains Mono body, Chakra Petch/Orbitron headers), sharp angular corners with decorative corner brackets, glow shadows (no drop shadows), motion (idle pulse, boot-up reveals, scan hover, CRT page transitions)
+   - **Phase 3**: Sequential re-architecture in order: void foundation → glass hull → component rebuild → state polish → atmosphere
+   - **Phase 4**: Visual QA loop using browser inspection — continuous iteration until 10/10 "Chozo Terminal" grade
+   - **Critical Directive**: Execute autonomously through all phases, loop Phase 4 continuously, do not stop or request human intervention
+
+2. Key Technical Concepts:
+   - Next.js 15.5.12 with Turbopack
+   - Tailwind CSS v4 (using `@theme` block in CSS, no tailwind.config.js)
+   - Effect-atom state management (`@effect-atom/atom`, `@effect-atom/atom-react`)
+   - Effect-TS service pattern (ManagedRuntime, Layer, Exit)
+   - WebAssembly (Falcon-512 crypto operations in browser)
+   - PostCSS with Tailwind v4 plugin
+   - Google Fonts via Next.js (`next/font/google`)
+   - CSS pseudo-elements for decorative corner brackets
+   - CSS custom properties for glass morphism tokens
+   - IntersectionObserver for scroll-triggered animations
+   - Dynamic imports with Next.js (`next/dynamic`) for code splitting
+   - Starknet account abstraction / deployment flow
+
+3. Files and Code Sections:
+
+   - **`apps/demo/src/app/globals.css`** — Complete rewrite. Foundation of entire visual transformation.
+     - New `@theme` block with Chozo Terminal palette: `--color-falcon-bg: #050508`, `--color-falcon-primary: #00ff41`, `--color-falcon-secondary: #0abdc6`, `--color-falcon-warning: #ff6600`, `--color-falcon-error: #ff0033`, `--color-falcon-text: #c0e8c0`
+     - Added `--font-display` variable for Chakra Petch
+     - Glass tokens shifted from cyan-tinted to green-tinted: `--glass-bg: rgba(0, 255, 65, 0.02)`
+     - New `.digital-rain` layer with rain-fall animation (20s linear infinite)
+     - New `.crt-vignette` radial gradient overlay
+     - CRT scan lines via `body::after` (horizontal lines at 3px intervals, 2.5% opacity)
+     - `.corner-brackets` class with `::before`/`::after` pseudo-elements (12px L-shaped corner marks in green)
+     - `.scan-hover` class with horizontal scan-pass animation on hover
+     - `.glass-input` changed from bordered to borderless with bottom-glow on focus, green caret
+     - All `border-radius` values changed from `1rem`/`0.75rem` to `2px`
+     - New keyframes: `boot-flicker`, `sonar-ping`, `scan-pass`, `ambient-drift`, `rain-fall`
+     - Pulse-glow slowed from 2.5s to 4s
+     - `.font-display` utility class with `letter-spacing: 0.2em; text-transform: uppercase`
+     - `.text-glow` class (green) alongside existing `.text-glow-cyan`, `.text-glow-amber`, `.text-glow-success`, `.text-glow-error`
+     - Lattice grid changed from dot pattern to wireframe grid lines
+
+   - **`apps/demo/src/app/layout.tsx`** — Font and atmospheric layer changes.
+     - Replaced `Inter` font with `Chakra_Petch` (weights 400-700, variable `--font-display`)
+     - Kept `JetBrains_Mono` as primary body font
+     - Added `<div className="digital-rain" aria-hidden="true" />` atmospheric layer
+     - Added `<div className="crt-vignette" aria-hidden="true" />` atmospheric layer
+     - Body font set to `font-[family-name:var(--font-mono)]`
+
+   - **`apps/demo/src/app/page.tsx`** — Not modified (page structure unchanged)
+
+   - **`apps/demo/src/components/landing/NavHeader.tsx`** — Restyled.
+     - Logo uses `font-display` with `tracking-[0.15em] uppercase text-glow`
+     - Nav links: `text-[11px] tracking-[0.08em] uppercase` with hover glow
+     - Network buttons: `tracking-wider uppercase` with green active state
+
+   - **`apps/demo/src/components/landing/Hero.tsx`** — Restyled.
+     - H1 uses `font-display` with `tracking-[0.05em] uppercase`
+     - "LIVE ON STARKNET SEPOLIA" uses `terminal-whisper` class
+     - CTA buttons: green glow border style (`border border-falcon-accent/30 bg-falcon-accent/10`) instead of solid fill
+     - Stat cards: `glass-card corner-brackets` with sharp 2px corners
+     - All text sizes and opacities reduced for ghostlier feel
+
+   - **`apps/demo/src/components/landing/TheProblem.tsx`** — Restyled.
+     - H2 uses `font-display` with `tracking-[0.08em] uppercase`
+     - Cards use `glass-card corner-brackets scan-hover`
+
+   - **`apps/demo/src/components/landing/WhyStarknet.tsx`** — Restyled (user also modified content: garaga comparison text).
+     - Same display font heading pattern
+     - Cards with corner-brackets and scan-hover
+     - Number labels use `tracking-[0.2em]`
+
+   - **`apps/demo/src/components/landing/PerformanceStats.tsx`** — Restyled (user also modified content: garaga comparison text).
+     - Display font heading
+     - Breakdown table uses `corner-brackets` on card
+     - Calldata compression card uses `corner-brackets`
+
+   - **`apps/demo/src/components/landing/ComparisonChart.tsx`** — Restyled (user also modified content: added garaga entries).
+     - Bar gradient changed from cyan-to-green to `from-falcon-accent/60 to-falcon-accent/30`
+     - Labels use tracking-wide
+     - Bottom caption uses `tracking-wider uppercase`
+
+   - **`apps/demo/src/components/landing/CredibilityBar.tsx`** — Restyled.
+     - Dividers changed from middot (`·`) to forward slash (`/`)
+     - Links use `tracking-[0.15em]` uppercase with hover glow
+
+   - **`apps/demo/src/components/landing/Footer.tsx`** — Restyled.
+     - Links use `tracking-wider` with hover glow
+     - Border changed to `border-falcon-accent/4`
+
+   - **`apps/demo/src/components/interactive/VerificationPlayground.tsx`** — Restyled.
+     - Display font heading
+     - Panels use `glass-card-static corner-brackets`
+
+   - **`apps/demo/src/components/interactive/KeyManagementPanel.tsx`** — Restyled.
+     - H3 uses `font-display` with `tracking-[0.15em] uppercase`
+     - Generate button: green glow border style (`border border-falcon-accent/25 bg-falcon-accent/8`)
+     - Import/Export: ghost buttons with hover border tint
+     - Collapsible sections use hover glow on triggers
+
+   - **`apps/demo/src/components/interactive/SignVerifyPanel.tsx`** — Restyled.
+     - Same display font heading pattern
+     - Green glow border buttons
+     - Result cards use `text-glow-error` for error states
+     - All `rounded-*` classes removed (relying on 2px from glass-card-static)
+
+   - **`apps/demo/src/components/interactive/PipelineSection.tsx`** — Updated loading skeleton with display font heading.
+
+   - **`apps/demo/src/components/interactive/PipelineVisualizer.tsx`** — Restyled.
+     - Display font heading
+     - Phase badges: border-based styling instead of background-only
+     - Phase colors updated: `falcon-warning` for settlement (amber/orange), `falcon-secondary` for validation (teal)
+     - Step dots: square (no rounded-full), removed `rounded-full` from step numbers
+     - Toolbar buttons use green glow border style
+     - Vertical line color: `bg-falcon-accent/6`
+
+   - **`apps/demo/src/components/interactive/AccountDeploySection.tsx`** — Updated loading skeleton with display font heading.
+
+   - **`apps/demo/src/components/interactive/AccountDeployFlow.tsx`** — Restyled.
+     - Display font heading
+     - Step dots: square geometry
+     - Green glow border buttons
+     - Glass select with 2px radius
+     - Warning card uses `text-falcon-warning/70`
+
+   - **`apps/demo/src/components/interactive/SendTransaction.tsx`** — Restyled.
+     - H3 uses `font-display` with `tracking-[0.15em] uppercase`
+     - `corner-brackets` on main container
+     - Green glow border send button
+     - Success/error timing badges without rounded corners
+     - All `font-[family-name:var(--font-mono)]` classes removed (body font is already mono)
+
+   - **`apps/demo/src/components/interactive/HexDisplay.tsx`** — Restyled.
+     - Labels use `tracking-[0.1em]` instead of `tracking-wide`
+     - Removed explicit `font-[family-name:var(--font-mono)]` (inherited from body)
+     - Lower text opacities
+
+   - **`apps/demo/src/components/ui/CopyButton.tsx`** — Restyled with `tracking-wider uppercase`, hover glow.
+
+   - **`apps/demo/src/components/ui/StatusBadge.tsx`** — Restyled.
+     - Added border to all variants
+     - Changed from `falcon-secondary` to `falcon-warning` for warning variant
+     - Removed `rounded-full` (square badges)
+     - Added `tracking-wider uppercase`
+
+   - **`apps/demo/src/components/ui/EmptyState.tsx`** — Restyled with green glow border button.
+
+   - **`apps/demo/src/components/ui/AddressDisplay.tsx`** — Restyled.
+     - Removed explicit mono font classes
+     - Lower opacities, hover glow on explorer link
+
+   - **`apps/demo/src/components/ui/ExplorerLink.tsx`** — Restyled with hover glow.
+
+   - **`apps/demo/src/components/ui/TokenAmount.tsx`** — Simplified, removed explicit mono font class.
+
+   - **`apps/demo/src/components/ui/TransactionPending.tsx`** — Restyled.
+     - Changed spinner/progress colors from `falcon-accent` to `falcon-secondary` (teal)
+     - Removed rounded classes
+
+   - **`apps/demo/src/components/ui/TransactionPhases.tsx`** — Restyled.
+     - Changed spinner/progress colors to `falcon-secondary`
+     - Phase indicators: square instead of round
+     - Duration badges without rounded corners
+
+   - **`apps/demo/src/components/ScrollReveal.tsx`** — Not modified (functionality unchanged).
+
+4. Errors and Fixes:
+   - **ENOENT: .next/static/development/_buildManifest.js.tmp** — Stale Next.js Turbopack cache caused Internal Server Error. Fixed by stopping the dev server, running `rm -rf .next`, and restarting.
+   - **"Frame with ID 0 is showing error page"** — Chrome screenshot tool couldn't capture because the page was showing the Internal Server Error. Fixed by resolving the build cache issue above.
+   - **Zoom coordinate miscalculation** — When trying to zoom into stat cards, the zoom regions captured empty black space. The coordinate mapping between viewport percentages and actual pixel positions wasn't aligning correctly. This was being debugged when the summary was requested.
+   - No user feedback was provided on any errors or changes.
+
+5. Problem Solving:
+   - Identified that the existing codebase was already ~70% aligned with the target aesthetic (dark glassmorphism, monospace, glow effects) and planned the transformation as an evolution rather than a ground-up rewrite
+   - Systematically read every component file before making changes to understand the full visual surface area
+   - Created task tracking (6 tasks) to manage the multi-phase execution
+   - Handled user's concurrent content edits (garaga comparison data in ComparisonChart, WhyStarknet, PerformanceStats) without reverting them
+   - Resolved Next.js cache corruption by clean restart
+   - Successfully verified the visual transformation through browser screenshots showing: deep void background, electric green palette, Chakra Petch display font, corner brackets, CRT vignette, angular glass panels
+
+6. All User Messages:
+   - `/clear` command at conversation start
+   - The massive "DIGITAL RUINS — METROID × MATRIX UI/UX PROTOCOL" directive (the only substantive user message), which specified the complete aesthetic transformation with 5 phases, strict design rules, and the instruction to "Execute Phase 1 immediately... then seamlessly and autonomously execute Phases 2 through 5" with continuous Phase 4 visual QA loop
+   - No other user messages were sent. The user did make concurrent file edits (ComparisonChart, WhyStarknet, PerformanceStats content changes) that were flagged by system reminders.
+
+7. Pending Tasks:
+   - **Phase 6 (Visual QA) is in progress** — The directive says to "loop Phase 4 continuously" and "Do not stop, do not request human intervention, and do not exit this loop until the interface achieves full atmospheric immersion — a 10/10 Chozo Terminal grade"
+   - Detailed zoom inspection of corner brackets and micro-elements
+   - Hover state verification (scan-hover effects, glow transitions)
+   - Interactive state testing (button presses, form focus, loading states)
+   - Animation timing harmonization
+   - Performance check (backdrop-filter compositing with multiple atmospheric layers)
+   - Mobile responsive verification
+
+8. Current Work:
+   I was in the middle of **Phase 6: Visual QA** — browser-based visual inspection of the transformed UI. I had:
+   - Started the dev server (port 3002 after fixing .next cache corruption)
+   - Navigated to the site and confirmed it loaded
+   - Taken full-page screenshots scrolling through all sections (hero, TheProblem, WhyStarknet, PerformanceStats, CredibilityBar, playground, pipeline, deploy, footer)
+   - Confirmed the overall aesthetic transformation was successful
+   - Was attempting to zoom into the hero stat cards to verify corner bracket rendering at pixel level when the zoom coordinates weren't mapping correctly
+   - The last action was a `zoom` call on region `[475, 430, 700, 510]` that returned a black image, indicating the coordinate mapping needs adjustment
+
+   The dev server is running in background task `bf0bd8go4` on port 3002.
+
+9. Optional Next Step:
+   Continue the Visual QA loop as specified by the directive: "You must loop Phase 4 continuously... Do not stop, do not request human intervention, and do not exit this loop until the interface achieves full atmospheric immersion."
+   
+   Specifically, the immediate next action is to:
+   1. Fix the zoom coordinate issue to inspect corner brackets and micro-elements at detail level
+   2. Test hover states by mousing over glass cards to verify scan-hover effects and glow transitions
+   3. Test the interactive playground (click Generate button, verify button glow states and scan-loading animation)
+   4. Check if any text readability issues exist with the low-contrast green-on-black palette
+   5. Identify and fix any remaining "consumer UI" artifacts that break immersion
+
+If you need specific details from before compaction (like exact code snippets, error messages, or content you generated), read the full transcript at: /home/felt/.REDACTED.jsonl
+Please continue the conversation from where we left off without asking the user any further questions. Continue with the last task that you were asked to work on.
+
+---
+
+[Request interrupted by user]
+
+---
+
+It's cood
+
+---
+
+[Request interrupted by user]
+
+---
+
+It's cool but the site is too dark ( it's like its blurry behind a fog)

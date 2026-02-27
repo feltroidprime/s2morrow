@@ -1,0 +1,119 @@
+IMPORTANT: After completing the task below, you MUST output a JSON object in a ```json code fence at the very end of your response. Do NOT forget this — the workflow fails without it.
+
+IMPLEMENTATION PHASE — Ticket: WASM-001
+
+Title: Implement SecretKey::from_bytes() for WASM secret key reconstruction
+Category: wasm
+
+## Context
+
+Read the plan file: docs/plans/WASM-001.md
+Read the context file: docs/context/WASM-001.md
+
+Implementation steps from plan:
+
+1. Write failing roundtrip test: keygen → to_bytes → from_bytes → sign → verify
+2. Write failing error-case tests: wrong length, invalid coefficients, empty bytes
+3. Implement SecretKey::from_bytes() with coefficient centering and b0_fft/LDL tree reconstruction
+4. Write b0_fft equivalence test comparing keygen vs from_bytes element-by-element
+5. Write multi-message signing test with 4 different messages using reconstructed key
+6. Final verification: run full test suite and clippy with zero regressions
+
+## TDD IS MANDATORY — Follow This Order Exactly
+
+### Step 1: Write Failing Tests FIRST
+
+Write unit tests AND integration tests
+### Step 2: Write Minimal Implementation (Green Phase)
+
+- Write the SMALLEST amount of code to make failing tests pass
+- Follow architecture patterns from specs
+
+### Step 3: Refactor (Refactor Phase)
+
+- Clean up while keeping tests green
+
+- Extract shared logic
+
+- Improve naming
+- Run formatters: Format typecheck, Format build
+
+### Step 4: Verify
+
+- Run `cd apps/demo &amp;&amp; bun run typecheck`
+- Run `cd apps/demo &amp;&amp; bun run build`
+## Architecture Rules
+
+- Read docs/specs/ for patterns
+## JJ COMMIT — MANDATORY (DO NOT SKIP)
+
+You MUST commit and push your changes to the ticket branch before finishing. Uncommitted work is lost work.
+
+- `jj describe -m &quot;{props.commitPrefix || &#x27;EMOJI&#x27;} type(scope): description&quot;` — describe your changes with a meaningful message.
+
+- `jj new` — create a new change for the next logical step. Repeat describe+new for each atomic change.
+
+- `jj bookmark set ticket/{props.ticketId} -r @`
+
+- `jj git push --bookmark ticket/{props.ticketId}`
+
+Emoji prefixes: ✨ feat, 🐛 fix, ♻️ refactor, 📝 docs, 🧪 test
+**If you do not commit and push to the ticket branch, your work does not count. This is non-negotiable.**
+
+
+**REQUIRED OUTPUT** — You MUST end your response with a JSON object in a code fence matching this schema:
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "whatWasDone": {
+      "type": "string"
+    },
+    "filesCreated": {
+      "anyOf": [
+        {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "filesModified": {
+      "anyOf": [
+        {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "nextSteps": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "required": [
+    "whatWasDone",
+    "filesCreated",
+    "filesModified",
+    "nextSteps"
+  ],
+  "additionalProperties": false
+}
+```
+Output the JSON at the END of your response. The workflow will fail without it.

@@ -1,0 +1,561 @@
+@docs/plans/2026-02-25-demo-production-impl.md Go.
+
+---
+
+Base directory for this skill: /home/felt/.claude/plugins/cache/claude-plugins-official/superpowers/4.3.1/skills/executing-plans
+
+# Executing Plans
+
+## Overview
+
+Load plan, review critically, execute tasks in batches, report for review between batches.
+
+**Core principle:** Batch execution with checkpoints for architect review.
+
+**Announce at start:** "I'm using the executing-plans skill to implement this plan."
+
+## The Process
+
+### Step 1: Load and Review Plan
+1. Read plan file
+2. Review critically - identify any questions or concerns about the plan
+3. If concerns: Raise them with your human partner before starting
+4. If no concerns: Create TodoWrite and proceed
+
+### Step 2: Execute Batch
+**Default: First 3 tasks**
+
+For each task:
+1. Mark as in_progress
+2. Follow each step exactly (plan has bite-sized steps)
+3. Run verifications as specified
+4. Mark as completed
+
+### Step 3: Report
+When batch complete:
+- Show what was implemented
+- Show verification output
+- Say: "Ready for feedback."
+
+### Step 4: Continue
+Based on feedback:
+- Apply changes if needed
+- Execute next batch
+- Repeat until complete
+
+### Step 5: Complete Development
+
+After all tasks complete and verified:
+- Announce: "I'm using the finishing-a-development-branch skill to complete this work."
+- **REQUIRED SUB-SKILL:** Use superpowers:finishing-a-development-branch
+- Follow that skill to verify tests, present options, execute choice
+
+## When to Stop and Ask for Help
+
+**STOP executing immediately when:**
+- Hit a blocker mid-batch (missing dependency, test fails, instruction unclear)
+- Plan has critical gaps preventing starting
+- You don't understand an instruction
+- Verification fails repeatedly
+
+**Ask for clarification rather than guessing.**
+
+## When to Revisit Earlier Steps
+
+**Return to Review (Step 1) when:**
+- Partner updates the plan based on your feedback
+- Fundamental approach needs rethinking
+
+**Don't force through blockers** - stop and ask.
+
+## Remember
+- Review plan critically first
+- Follow plan steps exactly
+- Don't skip verifications
+- Reference skills when plan says to
+- Between batches: just report and wait
+- Stop when blocked, don't guess
+- Never start implementation on main/master branch without explicit user consent
+
+## Integration
+
+**Required workflow skills:**
+- **superpowers:using-git-worktrees** - REQUIRED: Set up isolated workspace before starting
+- **superpowers:writing-plans** - Creates the plan this skill executes
+- **superpowers:finishing-a-development-branch** - Complete development after all tasks
+
+---
+
+continue
+
+---
+
+continue
+
+---
+
+[Request interrupted by user for tool use]
+
+---
+
+continue, use subagents
+
+---
+
+This session is being continued from a previous conversation that ran out of context. The summary below covers the earlier portion of the conversation.
+
+Analysis:
+Let me chronologically analyze the conversation:
+
+1. The user opened the plan file `docs/plans/2026-02-25-demo-production-impl.md` and said "Go." - meaning execute the plan.
+
+2. I invoked the `superpowers:executing-plans` skill which instructs to load plan, review critically, execute in batches of 3, report for review.
+
+3. The plan has 14 tasks for shipping a demo app end-to-end with Falcon-512 post-quantum signatures on Starknet. The plan covers:
+   - Network config (devnet)
+   - Unified declare script
+   - Error types and DeployStep extensions
+   - Key import/export
+   - UI components (KeyManagementPanel, SignVerifyPanel, VerificationPlayground refactor)
+   - Class hash guard
+   - Devnet prefunded accounts
+   - Devnet dropdown
+   - WASM sign_for_starknet (Rust)
+   - FalconSigner
+   - SendTransaction
+   - E2E smoke test
+
+4. I explored the codebase to understand current state - all 14 tasks were NOT STARTED.
+
+5. Created all 14 tasks with dependencies in the task tracker.
+
+6. **Batch 1 (Tasks 1-3):**
+   - Task 1: Added devnet to NetworkConfig with isDevnet flag, updated readStoredNetwork, NavHeader 3 pills
+     - Had to fix a test that checked default network was "sepolia" → changed to "devnet"
+   - Task 2: Created unified bin/declare.sh, updated sncast.toml with profiles, deleted declare-sepolia.sh
+   - Task 3: Added TransactionSignError, TransactionSubmitError, DevnetFetchError; extended DeployStep; added FalconKeyFile and DevnetAccount types
+
+7. User said "continue" (first time)
+
+8. **Batch 2 (Tasks 4-10):**
+   - Task 4: Created keyfile.ts with exportKeyFile/parseKeyFile, TDD passing
+   - Task 5: Created KeyManagementPanel component with generate/import/export
+   - Task 6: Created SignVerifyPanel component
+   - Task 7: Refactored VerificationPlayground to 2-panel layout, updated tests
+   - Task 8: (via agent) Added class hash guard banner, disabled button, fixed computing-address bug
+   - Task 9: (via agent) Added parsePrefundedAccounts and fetchPrefundedAccounts
+   - Task 10: (via agent) Added devnet dropdown, hide faucet/explorer for devnet
+
+9. User said "continue" (second time)
+
+10. **Batch 3 (Tasks 11-14) - In Progress:**
+    - Task 11: WASM sign_for_starknet - this is the complex Rust+TS task
+    - Explored falcon-rs crate thoroughly via agent
+    - Implemented Rust side via agent (added sign_for_starknet to wasm.rs, cargo check passes)
+    - Updated TypeScript side:
+      - WasmRuntime.ts: Added sign_for_starknet to WasmModule interface, isValidWasmModule, error message
+      - FalconService.ts: Added signForStarknet method
+      - falcon-service.test.ts: Updated both mock factories with sign_for_starknet
+    - Hit typecheck errors: two more test files have FalconService/WasmModule mocks missing sign_for_starknet:
+      - `apps/demo/src/__tests__/account-deploy/account-deploy-pipeline.test.ts` (line 142) - FalconService mock missing signForStarknet
+      - `apps/demo/src/services/__tests__/WasmRuntime.test.ts` (line 38) - WasmModule mock missing sign_for_starknet
+    - I was reading these files to fix the mocks when the summary was requested
+
+Let me also track all the commits made:
+1. `9f51b916` - feat(demo): add devnet as third network option with isDevnet flag
+2. `3f4a7a51` - feat: unified bin/declare.sh for devnet/sepolia/mainnet with auto-patch
+3. `5c2bd272` - feat(demo): add transaction error types, extended DeployStep, key file schema
+4. `f25aa0b6` - feat(demo): add key file import/export with validation
+5. `2edcf5a1` - feat(demo): KeyManagementPanel with generate/import/export and expandable key views
+6. `22abf9f8` - feat(demo): add class hash guard banner and fix computing-address double-set
+7. `04a594ea` - feat(demo): add fetchPrefundedAccounts for devnet auto-populate
+8. `40f54668` - feat(demo): SignVerifyPanel with signature/salt hex display
+9. `4dea3608` - refactor(demo): split VerificationPlayground into 2-panel layout
+10. `8574c5f7` - feat(demo): devnet account dropdown with auto-populate from prefunded accounts
+
+Task 11 TS changes are NOT yet committed - still fixing typecheck errors.
+
+The user's messages were:
+1. "@docs/plans/2026-02-25-demo-production-impl.md Go."
+2. "continue" (after batch 1 report)
+3. "continue" (after batch 2 report)
+4. "continue, use subagents" (after I tried to use Explore agent and user rejected it, then I was told to use subagents)
+
+Summary:
+1. Primary Request and Intent:
+   The user wants to execute the implementation plan at `docs/plans/2026-02-25-demo-production-impl.md` — a 14-task plan to ship a Falcon-512 post-quantum demo app end-to-end. The plan covers: professional verification playground with key import/export, devnet network support, full account deploy flow through to sending a STRK transfer. The user explicitly said "Go." and then "continue" multiple times to proceed through batches. On the last continuation, the user specifically said "continue, use subagents" when I tried to use an Explore agent (which was rejected).
+
+2. Key Technical Concepts:
+   - **Effect-TS patterns**: Effect.Service, Schema.TaggedError, Effect.fn for tracing, ManagedRuntime, Layer composition, Atom state management
+   - **Falcon-512 post-quantum cryptography**: keypair generation, signing, verification, NTT/INTT, base-Q Horner packing into felt252
+   - **WASM bridge**: falcon-rs Rust crate compiled to WASM via wasm-pack, WasmModule interface in TypeScript
+   - **Starknet**: starknet.js v9, FalconSigner implementing SignerInterface, account deployment, STRK transfers
+   - **Poseidon hash-to-point**: Starknet-native hashing for Falcon signatures (vs SHAKE256 for standard Falcon)
+   - **TDD workflow**: Write failing test → implement → verify pass → commit
+   - **Network config**: devnet (localhost:5050), sepolia, mainnet with isDevnet flag
+   - **Tech stack**: Next.js 15, React 19, Effect 3.13, starknet.js 9.2.1, bun test, Tailwind 4
+
+3. Files and Code Sections:
+
+   - **`apps/demo/src/config/networks.ts`** — Network configuration. Added `"devnet"` to NetworkId union, `isDevnet: boolean` to NetworkConfig, devnet entry pointing to localhost:5050, changed DEFAULT_NETWORK to "devnet".
+
+   - **`apps/demo/src/atoms/starknet.ts`** — Starknet atoms. Updated `readStoredNetwork()` to handle "devnet" string. Extended DeployStep with `sending-tx` and `tx-confirmed` variants.
+   ```typescript
+   export type DeployStep =
+     | { step: "idle" }
+     | { step: "generating-keypair" }
+     | { step: "packing" }
+     | { step: "computing-address" }
+     | { step: "awaiting-funds"; address: ContractAddress }
+     | { step: "deploying"; address: ContractAddress }
+     | { step: "deployed"; address: ContractAddress; txHash: TxHash }
+     | { step: "sending-tx"; address: ContractAddress }
+     | { step: "tx-confirmed"; address: ContractAddress; txHash: TxHash; transferTxHash: TxHash }
+     | { step: "error"; message: string }
+   ```
+
+   - **`apps/demo/src/components/landing/NavHeader.tsx`** — Updated network pills from `["sepolia", "mainnet"]` to `["devnet", "sepolia", "mainnet"]`, updated localStorage hydration to handle all three values.
+
+   - **`apps/demo/src/services/errors.ts`** — Added three new error types:
+   ```typescript
+   export class TransactionSignError extends Schema.TaggedError<TransactionSignError>()("TransactionSignError", { message: Schema.String }) {}
+   export class TransactionSubmitError extends Schema.TaggedError<TransactionSubmitError>()("TransactionSubmitError", { message: Schema.String, txHash: Schema.optional(Schema.String) }) {}
+   export class DevnetFetchError extends Schema.TaggedError<DevnetFetchError>()("DevnetFetchError", { message: Schema.String }) {}
+   ```
+
+   - **`apps/demo/src/services/types.ts`** — Added FalconKeyFile and DevnetAccount interfaces.
+
+   - **`apps/demo/src/services/keyfile.ts`** — NEW. Key import/export with `exportKeyFile()` and `parseKeyFile()` (Effect.fn). Includes local bytesToHex/hexToBytes helpers, KeyFileParseError, validation for version, algorithm, coefficient range.
+
+   - **`apps/demo/src/components/interactive/KeyManagementPanel.tsx`** — NEW. Component with Generate/Import/Export buttons, expandable NTT coefficients and packed public key views. Uses ManagedRuntime with FalconService.
+
+   - **`apps/demo/src/components/interactive/SignVerifyPanel.tsx`** — NEW. Component with message input, Sign & Verify button, signature/salt hex display, success/error status.
+
+   - **`apps/demo/src/components/interactive/VerificationPlayground.tsx`** — REWRITTEN from ~315 lines to ~35 lines composing KeyManagementPanel + SignVerifyPanel in a 2-column grid.
+
+   - **`apps/demo/src/components/interactive/AccountDeployFlow.tsx`** — Modified by agents:
+     - Task 8: Added yellow warning banner when classHash is "0x0", disabled Prepare Deploy button, removed duplicate setDeployStep computing-address call
+     - Task 10: Added DevnetAccount state, useEffect for fetchPrefundedAccounts, dropdown selector, hid faucet for devnet, wrapped explorer link in conditional
+
+   - **`apps/demo/src/services/StarknetService.ts`** — Added module-level `parsePrefundedAccounts()` function and `fetchPrefundedAccounts` Effect method inside makeService.
+
+   - **`apps/demo/src/atoms/falcon.ts`** — Made packedKeyAtom keepAlive: `.pipe(Atom.keepAlive)`
+
+   - **`bin/declare.sh`** — NEW. Unified declare script for devnet/sepolia/mainnet with auto-patch of networks.ts classHash.
+
+   - **`sncast.toml`** — Updated with devnet/sepolia/mainnet profiles.
+
+   - **`bin/declare-sepolia.sh`** — DELETED (replaced by declare.sh).
+
+   - **`apps/demo/src/services/WasmRuntime.ts`** — Task 11 (IN PROGRESS). Added `sign_for_starknet` to WasmModule interface, isValidWasmModule methods list, and error message:
+   ```typescript
+   readonly sign_for_starknet: (
+     skBytes: Uint8Array,
+     txHash: string,
+     pkNtt: Int32Array,
+   ) => string[]
+   ```
+
+   - **`apps/demo/src/services/FalconService.ts`** — Task 11 (IN PROGRESS). Added signForStarknet method:
+   ```typescript
+   const signForStarknet = Effect.fn("Falcon.signForStarknet")(
+     function* (secretKey: Uint8Array, txHash: string, pkNtt: Int32Array) {
+       return yield* Effect.try({
+         try: () => wasm.sign_for_starknet(secretKey, txHash, pkNtt),
+         catch: (error) => new SigningError({ message: String(error) }),
+       })
+     },
+   )
+   ```
+
+   - **`/home/felt/PycharmProjects/falcon-rs/src/wasm.rs`** — Rust side completed by agent. Added `sign_for_starknet` WASM export (~90 lines), `bytes_to_hex` helper, `getrandom_salt` helper. Function: parse tx_hash as Felt, generate 2-felt salt, PoseidonHashToPoint, sign_prehashed, pack s1 and mul_hint into 29 felt252 each, return 61 hex strings.
+
+   - **Test files created/modified:**
+     - `apps/demo/src/__tests__/config/networks.test.ts` — NEW, 6 tests for devnet config
+     - `apps/demo/src/__tests__/verify-playground/keyfile.test.ts` — NEW, 6 tests for keyfile import/export
+     - `apps/demo/src/__tests__/starknet/prefunded-accounts.test.ts` — NEW, 2 tests for parsePrefundedAccounts
+     - `apps/demo/src/__tests__/verify-playground/verification-playground.test.tsx` — REWRITTEN for 2-panel layout
+     - `apps/demo/src/__tests__/account-deploy/account-deploy-flow.test.ts` — Updated default network test from "sepolia" to "devnet"
+     - `apps/demo/src/__tests__/verify-playground/falcon-service.test.ts` — Updated both mock factories with sign_for_starknet
+
+4. Errors and fixes:
+   - **Test failure after changing DEFAULT_NETWORK**: `networkAtom > defaults to 'sepolia'` failed because DEFAULT_NETWORK changed to "devnet". Fixed by updating the test expectation in `account-deploy-flow.test.ts`.
+   - **Test failures after VerificationPlayground refactor**: Tests expected `aria-label="Generate Keypair"` but new KeyManagementPanel uses just "Generate". Fixed by rewriting the test assertions to match the new 2-panel layout.
+   - **git commit from wrong directory**: `git add apps/demo/src/services/errors.ts` failed with "pathspec did not match" because working directory was apps/demo (from bun test). Fixed by using `cd /home/felt/PycharmProjects/s2morrow &&` prefix.
+   - **TypeScript errors after adding signForStarknet to FalconService** (CURRENT): Two additional test files have FalconService/WasmModule mocks that are now missing the new `signForStarknet`/`sign_for_starknet` property:
+     - `apps/demo/src/__tests__/account-deploy/account-deploy-pipeline.test.ts` (line 142) - FalconService mock missing `signForStarknet`
+     - `apps/demo/src/services/__tests__/WasmRuntime.test.ts` (line 38) - WasmModule mock missing `sign_for_starknet`
+   - **User rejected Explore agent**: When I tried to use `subagent_type=Explore` for the falcon-rs crate exploration, the user rejected it and said "continue, use subagents" — I then used `general-purpose` subagents instead.
+
+5. Problem Solving:
+   - Successfully completed Tasks 1-10 with all tests passing (498 pass, 0 fail)
+   - Used parallel subagents effectively for independent tasks (8+9 in parallel, 10 in background while doing 5-7)
+   - Task 11 Rust implementation completed successfully (cargo check passes)
+   - Task 11 TypeScript side partially complete — two mock files still need updating to fix typecheck
+
+6. All user messages:
+   - "@docs/plans/2026-02-25-demo-production-impl.md Go." — Initial request to execute the plan
+   - "continue" — After Batch 1 report (Tasks 1-3), continue to next batch
+   - "continue" — After Batch 2 report (Tasks 4-10), continue to Tasks 11-14
+   - "continue, use subagents" — After I tried an Explore agent that was rejected; user wants me to use general-purpose subagents
+
+7. Pending Tasks:
+   - **Task 11 (in progress)**: Fix two remaining TypeScript mock files to add sign_for_starknet/signForStarknet, then rebuild WASM artifacts, run typecheck, run tests, commit
+   - **Task 12**: FalconSigner implementing starknet.js SignerInterface (blocked by Task 11)
+   - **Task 13**: SendTransaction component and deploy integration (blocked by Task 12)
+   - **Task 14**: End-to-end smoke test with devnet (blocked by Task 13)
+
+8. Current Work:
+   Working on **Task 11: WASM sign_for_starknet export**. The Rust side is complete (agent confirmed cargo check passes). The TypeScript side has been partially updated:
+   - WasmRuntime.ts: Updated with sign_for_starknet in interface, validator, error message ✓
+   - FalconService.ts: Added signForStarknet method ✓
+   - falcon-service.test.ts: Updated both mock factories ✓
+   
+   But typecheck revealed **two more files with mocks that need updating**:
+   1. `apps/demo/src/__tests__/account-deploy/account-deploy-pipeline.test.ts` (line 142) — FalconService mock at `makeFalconLayer` is missing `signForStarknet` property
+   2. `apps/demo/src/services/__tests__/WasmRuntime.test.ts` (line 38) — `makeMockWasmModule` is missing `sign_for_starknet` property
+   
+   I had just read both files to see their content when the summary was requested. The pipeline test mock (line 139-159) uses `FalconService.make({...})` and needs a `signForStarknet` entry. The WasmRuntime test mock (line 38-49) needs `sign_for_starknet` added.
+
+   After fixing these mocks, I still need to:
+   - Rebuild WASM: `cd falcon-rs && wasm-pack build --target web --out-dir ../s2morrow/apps/demo/public/wasm`
+   - Run typecheck and full test suite
+   - Commit Task 11
+   - Then proceed to Tasks 12-14
+
+9. Optional Next Step:
+   Fix the two remaining TypeScript mock files to resolve typecheck errors for Task 11. Specifically:
+   - Add `signForStarknet` to the FalconService mock in `account-deploy-pipeline.test.ts` (~line 142)
+   - Add `sign_for_starknet` to the WasmModule mock in `WasmRuntime.test.ts` (~line 38)
+   
+   Then rebuild WASM artifacts and complete Task 11's commit. This directly continues the work from the user's last "continue, use subagents" instruction.
+
+   Relevant quote from the last read showing what needs fixing — account-deploy-pipeline.test.ts line 139-159:
+   ```typescript
+   const makeFalconLayer = (options: FalconLayerOptions) =>
+     Layer.succeed(
+       FalconService,
+       FalconService.make({
+       generateKeypair: (_seed?: Uint8Array) => { ... },
+       sign: ...,
+       verify: ...,
+       createHint: ...,
+       packPublicKey: ...,
+   ```
+   Missing: `signForStarknet` method.
+
+   WasmRuntime.test.ts line 38-49:
+   ```typescript
+   const makeMockWasmModule = (): WasmModule => ({
+     keygen: ..., sign: ..., verify: ...,
+     create_verification_hint: ...,
+     pack_public_key_wasm: ...,
+     public_key_length: () => 896,
+     salt_length: () => 40,
+   ```
+   Missing: `sign_for_starknet` method.
+
+   10 commits have been made so far on the `frontend` branch. Task 11 changes are uncommitted.
+
+If you need specific details from before compaction (like exact code snippets, error messages, or content you generated), read the full transcript at: /home/felt/.REDACTED.jsonl
+Please continue the conversation from where we left off without asking the user any further questions. Continue with the last task that you were asked to work on.
+
+---
+
+Base directory for this skill: /home/felt/.claude/plugins/cache/claude-plugins-official/superpowers/4.3.1/skills/finishing-a-development-branch
+
+# Finishing a Development Branch
+
+## Overview
+
+Guide completion of development work by presenting clear options and handling chosen workflow.
+
+**Core principle:** Verify tests → Present options → Execute choice → Clean up.
+
+**Announce at start:** "I'm using the finishing-a-development-branch skill to complete this work."
+
+## The Process
+
+### Step 1: Verify Tests
+
+**Before presenting options, verify tests pass:**
+
+```bash
+# Run project's test suite
+npm test / cargo test / pytest / go test ./...
+```
+
+**If tests fail:**
+```
+Tests failing (<N> failures). Must fix before completing:
+
+[Show failures]
+
+Cannot proceed with merge/PR until tests pass.
+```
+
+Stop. Don't proceed to Step 2.
+
+**If tests pass:** Continue to Step 2.
+
+### Step 2: Determine Base Branch
+
+```bash
+# Try common base branches
+git merge-base HEAD main 2>/dev/null || git merge-base HEAD master 2>/dev/null
+```
+
+Or ask: "This branch split from main - is that correct?"
+
+### Step 3: Present Options
+
+Present exactly these 4 options:
+
+```
+Implementation complete. What would you like to do?
+
+1. Merge back to <base-branch> locally
+2. Push and create a Pull Request
+3. Keep the branch as-is (I'll handle it later)
+4. Discard this work
+
+Which option?
+```
+
+**Don't add explanation** - keep options concise.
+
+### Step 4: Execute Choice
+
+#### Option 1: Merge Locally
+
+```bash
+# Switch to base branch
+git checkout <base-branch>
+
+# Pull latest
+git pull
+
+# Merge feature branch
+git merge <feature-branch>
+
+# Verify tests on merged result
+<test command>
+
+# If tests pass
+git branch -d <feature-branch>
+```
+
+Then: Cleanup worktree (Step 5)
+
+#### Option 2: Push and Create PR
+
+```bash
+# Push branch
+git push -u origin <feature-branch>
+
+# Create PR
+gh pr create --title "<title>" --body "$(cat <<'EOF'
+## Summary
+<2-3 bullets of what changed>
+
+## Test Plan
+- [ ] <verification steps>
+EOF
+)"
+```
+
+Then: Cleanup worktree (Step 5)
+
+#### Option 3: Keep As-Is
+
+Report: "Keeping branch <name>. Worktree preserved at <path>."
+
+**Don't cleanup worktree.**
+
+#### Option 4: Discard
+
+**Confirm first:**
+```
+This will permanently delete:
+- Branch <name>
+- All commits: <commit-list>
+- Worktree at <path>
+
+Type 'discard' to confirm.
+```
+
+Wait for exact confirmation.
+
+If confirmed:
+```bash
+git checkout <base-branch>
+git branch -D <feature-branch>
+```
+
+Then: Cleanup worktree (Step 5)
+
+### Step 5: Cleanup Worktree
+
+**For Options 1, 2, 4:**
+
+Check if in worktree:
+```bash
+git worktree list | grep $(git branch --show-current)
+```
+
+If yes:
+```bash
+git worktree remove <worktree-path>
+```
+
+**For Option 3:** Keep worktree.
+
+## Quick Reference
+
+| Option | Merge | Push | Keep Worktree | Cleanup Branch |
+|--------|-------|------|---------------|----------------|
+| 1. Merge locally | ✓ | - | - | ✓ |
+| 2. Create PR | - | ✓ | ✓ | - |
+| 3. Keep as-is | - | - | ✓ | - |
+| 4. Discard | - | - | - | ✓ (force) |
+
+## Common Mistakes
+
+**Skipping test verification**
+- **Problem:** Merge broken code, create failing PR
+- **Fix:** Always verify tests before offering options
+
+**Open-ended questions**
+- **Problem:** "What should I do next?" → ambiguous
+- **Fix:** Present exactly 4 structured options
+
+**Automatic worktree cleanup**
+- **Problem:** Remove worktree when might need it (Option 2, 3)
+- **Fix:** Only cleanup for Options 1 and 4
+
+**No confirmation for discard**
+- **Problem:** Accidentally delete work
+- **Fix:** Require typed "discard" confirmation
+
+## Red Flags
+
+**Never:**
+- Proceed with failing tests
+- Merge without verifying tests on result
+- Delete work without confirmation
+- Force-push without explicit request
+
+**Always:**
+- Verify tests before offering options
+- Present exactly 4 options
+- Get typed confirmation for Option 4
+- Clean up worktree for Options 1 & 4 only
+
+## Integration
+
+**Called by:**
+- **subagent-driven-development** (Step 7) - After all tasks complete
+- **executing-plans** (Step 5) - After all batches complete
+
+**Pairs with:**
+- **using-git-worktrees** - Cleans up worktree created by that skill

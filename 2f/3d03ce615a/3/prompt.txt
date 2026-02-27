@@ -1,0 +1,1485 @@
+Using the super-ralph skill, the brainstorming skill, help me create a demo website for falcon signature verification for starknet (using effect, see effect skills). You MUST load all skills mentioned before continuing.
+
+---
+
+Base directory for this skill: /home/felt/.claude/plugins/cache/claude-plugins-official/superpowers/4.3.1/skills/brainstorming
+
+# Brainstorming Ideas Into Designs
+
+## Overview
+
+Help turn ideas into fully formed designs and specs through natural collaborative dialogue.
+
+Start by understanding the current project context, then ask questions one at a time to refine the idea. Once you understand what you're building, present the design and get user approval.
+
+<HARD-GATE>
+Do NOT invoke any implementation skill, write any code, scaffold any project, or take any implementation action until you have presented a design and the user has approved it. This applies to EVERY project regardless of perceived simplicity.
+</HARD-GATE>
+
+## Anti-Pattern: "This Is Too Simple To Need A Design"
+
+Every project goes through this process. A todo list, a single-function utility, a config change — all of them. "Simple" projects are where unexamined assumptions cause the most wasted work. The design can be short (a few sentences for truly simple projects), but you MUST present it and get approval.
+
+## Checklist
+
+You MUST create a task for each of these items and complete them in order:
+
+1. **Explore project context** — check files, docs, recent commits
+2. **Ask clarifying questions** — one at a time, understand purpose/constraints/success criteria
+3. **Propose 2-3 approaches** — with trade-offs and your recommendation
+4. **Present design** — in sections scaled to their complexity, get user approval after each section
+5. **Write design doc** — save to `docs/plans/YYYY-MM-DD-<topic>-design.md` and commit
+6. **Transition to implementation** — invoke writing-plans skill to create implementation plan
+
+## Process Flow
+
+```dot
+digraph brainstorming {
+    "Explore project context" [shape=box];
+    "Ask clarifying questions" [shape=box];
+    "Propose 2-3 approaches" [shape=box];
+    "Present design sections" [shape=box];
+    "User approves design?" [shape=diamond];
+    "Write design doc" [shape=box];
+    "Invoke writing-plans skill" [shape=doublecircle];
+
+    "Explore project context" -> "Ask clarifying questions";
+    "Ask clarifying questions" -> "Propose 2-3 approaches";
+    "Propose 2-3 approaches" -> "Present design sections";
+    "Present design sections" -> "User approves design?";
+    "User approves design?" -> "Present design sections" [label="no, revise"];
+    "User approves design?" -> "Write design doc" [label="yes"];
+    "Write design doc" -> "Invoke writing-plans skill";
+}
+```
+
+**The terminal state is invoking writing-plans.** Do NOT invoke frontend-design, mcp-builder, or any other implementation skill. The ONLY skill you invoke after brainstorming is writing-plans.
+
+## The Process
+
+**Understanding the idea:**
+- Check out the current project state first (files, docs, recent commits)
+- Ask questions one at a time to refine the idea
+- Prefer multiple choice questions when possible, but open-ended is fine too
+- Only one question per message - if a topic needs more exploration, break it into multiple questions
+- Focus on understanding: purpose, constraints, success criteria
+
+**Exploring approaches:**
+- Propose 2-3 different approaches with trade-offs
+- Present options conversationally with your recommendation and reasoning
+- Lead with your recommended option and explain why
+
+**Presenting the design:**
+- Once you believe you understand what you're building, present the design
+- Scale each section to its complexity: a few sentences if straightforward, up to 200-300 words if nuanced
+- Ask after each section whether it looks right so far
+- Cover: architecture, components, data flow, error handling, testing
+- Be ready to go back and clarify if something doesn't make sense
+
+## After the Design
+
+**Documentation:**
+- Write the validated design to `docs/plans/YYYY-MM-DD-<topic>-design.md`
+- Use elements-of-style:writing-clearly-and-concisely skill if available
+- Commit the design document to git
+
+**Implementation:**
+- Invoke the writing-plans skill to create a detailed implementation plan
+- Do NOT invoke any other skill. writing-plans is the next step.
+
+## Key Principles
+
+- **One question at a time** - Don't overwhelm with multiple questions
+- **Multiple choice preferred** - Easier to answer than open-ended when possible
+- **YAGNI ruthlessly** - Remove unnecessary features from all designs
+- **Explore alternatives** - Always propose 2-3 approaches before settling
+- **Incremental validation** - Present design, get approval before moving on
+- **Be flexible** - Go back and clarify when something doesn't make sense
+
+---
+
+Base directory for this skill: /home/felt/.claude/plugins/cache/eni-skills/personal-skills/1.0.0/skills/super-ralph
+
+# Super-Ralph Workflow
+
+Ticket-driven development with multi-agent review loops. Wraps the Smithers engine
+with a full pipeline: discover → research → plan → implement → test → review → land.
+
+Runtime: Bun >= 1.3. VCS: jj-colocated git. State: SQLite (resumable).
+
+## Init
+
+```bash
+uv run <skill-path>/scripts/init_super_ralph.py <target-dir> --root <relative-to-repo-root>
+```
+
+Options: `--name "My Project"`, `--id my-project`, `--no-install`, `--no-jj`.
+
+This copies the template, patches placeholders, runs `bun install`, and initializes jj.
+
+## Post-Init Customization (3 files)
+
+### 1. `components/focuses.ts` — Domain Areas
+
+Replace placeholder focuses with 6–15 areas matching your project's architecture.
+Each focus drives CategoryReview audits, IntegrationTest suites, and ticket discovery.
+Remove completed focuses to save agent time.
+
+```ts
+export const focuses = [
+  { id: "auth", name: "Authentication (JWT, OAuth, sessions)" },
+  { id: "api",  name: "REST API routes and middleware" },
+  // ...
+] as const;
+```
+
+### 2. `components/workflow.tsx` — Workflow Configuration
+
+Fill in all `TODO` sections:
+
+**Agent prompts** — project-specific instructions for each role (planning, implementation, testing, reviewing, reporting). Include architecture rules, security invariants, framework patterns, spec file paths.
+
+**SuperRalph props:**
+
+```tsx
+specsPath="docs/specs/"                         // where spec docs live
+referenceFiles={["SPEC.md", "src/", "test/"]}   // context for agents
+buildCmds={{ ts: "pnpm run typecheck" }}        // must pass for build-verify
+testCmds={{ unit: "pnpm test" }}                // must pass for test-verify
+codeStyle="TypeScript strict, camelCase..."      // style guide for reviewers
+reviewChecklist={["Spec compliance", ...]}       // violations → major/critical
+```
+
+**Agents** — adjust models per role, add fallback chains:
+
+```tsx
+agents={{
+  planning: [
+    new ClaudeCodeAgent({ model: "claude-opus-4-6", ... }),
+    new GeminiAgent({ model: "gemini-2.5-pro", ... }),  // fallback
+  ],
+  implementation: new CodexAgent({ model: "gpt-5.3-codex", yolo: true, ... }),
+  // ...
+}}
+```
+
+### 3. `components/focuses.ts` — (optional) focusTestSuites / focusDirs
+
+For per-focus test and directory hints, add `focusTestSuites.ts` and `focusDirs.ts`
+then pass them as props to SuperRalph.
+
+## Run
+
+```bash
+cd <target-dir> && bun run index.ts
+```
+
+The run manager shows all past runs with resume/cancel/delete options.
+
+**Phase skipping:** `SKIPTO_PHASE=TICKETS bun run index.ts`
+**Concurrency:** `WORKFLOW_MAX_CONCURRENCY=4 bun run index.ts`
+
+## Pipeline Per Ticket
+
+```
+Research → Plan → [Implement → Test → BuildVerify → (SpecReview ∥ CodeReview) → ReviewFix?] → Report → MergeQueue
+                  └──────────────── ValidationLoop (reruns if reviews fail) ────────────────┘
+```
+
+Global tasks run every Ralph iteration in parallel: UpdateProgress, CategoryReview (per focus),
+Discover (3–5 new tickets), IntegrationTest (per focus).
+
+## Key Requirements
+
+- **jj** must be installed (`brew install jj`) — all VCS operations use jj, not raw git
+- **bunfig.toml** with `preload = ["./preload.ts"]` is critical — without it, MDX prompts fail with `[object Object]` errors. This is the top-level preload (NOT `[run]` section)
+- Agent `cwd` must point to the repo root (not the workflow directory)
+- `delete process.env.CLAUDECODE` in index.ts allows Claude Code sub-processes inside a Claude Code session
+
+## Resources
+
+See [references/customization.md](references/customization.md) for the full SuperRalph props
+reference, agent types, fallback chains, focus design guidelines, focusTestSuites/focusDirs
+configuration, custom step overrides, and merge queue tuning.
+
+---
+
+Base directory for this skill: /home/felt/.claude/plugins/cache/eni-skills/personal-skills/1.0.0/skills/effect-ts
+
+# Effect-TS Expert
+
+Expert guidance for functional programming with the Effect library, covering error handling, dependency injection,
+composability, and testing patterns.
+
+## Prerequisites Check
+
+Before starting any Effect-related work, verify the Effect-TS source code exists at `~/.effect`.
+
+**If missing, stop immediately and inform the user.** Clone it before proceeding:
+
+```bash
+git clone https://github.com/Effect-TS/effect.git ~/.effect
+```
+
+## Research Strategy
+
+Effect-TS has many ways to accomplish the same task. Proactively research best practices using the Task tool to spawn
+research agents when working with Effect patterns, especially for moderate to high complexity tasks.
+
+### Research Sources (Priority Order)
+
+1. **Codebase Patterns First** — Examine similar patterns in the current project before implementing. If Effect patterns
+   exist in the codebase, follow them for consistency. If no patterns exist, skip this step.
+
+2. **Effect Source Code** — For complex type errors, unclear behavior, or implementation details, examine the Effect
+   source at `~/.effect/packages/effect/src/`. This contains the core Effect logic and modules.
+
+### When to Research
+
+**HIGH Priority (Always Research):**
+
+- Implementing Services, Layers, or complex dependency injection
+- Error handling with multiple error types or complex error hierarchies
+- Stream-based operations and reactive patterns
+- Resource management with scoped effects and cleanup
+- Concurrent/parallel operations and performance-critical code
+- Testing patterns, especially unfamiliar test scenarios
+
+**MEDIUM Priority (Research if Complex):**
+
+- Refactoring imperative code (try-catch, promises) to Effect patterns
+- Adding new service dependencies or restructuring service layers
+- Custom error types or extending existing error hierarchies
+- Integrations with external systems (databases, APIs, third-party services)
+
+### Research Approach
+
+- Spawn multiple concurrent Task agents when investigating multiple related patterns
+- Focus on finding canonical, readable, and maintainable solutions rather than clever optimizations
+- Verify suggested approaches against existing codebase patterns for consistency (if patterns exist)
+- When multiple approaches are possible, research to find the most idiomatic Effect-TS solution
+
+## Codebase Pattern Discovery
+
+When working in a project that uses Effect, check for existing patterns before implementing new code:
+
+1. **Search for Effect imports** — Look for files importing from `'effect'` to understand existing usage
+2. **Identify service patterns** — Find how Services and Layers are structured in the project
+3. **Note error handling conventions** — Check how errors are defined and propagated
+4. **Examine test patterns** — Look at how Effect code is tested in the project
+
+**If no Effect patterns exist in the codebase**, proceed using canonical patterns from the Effect source and examples.
+Do not block on missing codebase patterns.
+
+## Effect Principles
+
+Apply these core principles when writing Effect code:
+
+### Error Handling
+
+- Use Effect's typed error system instead of throwing exceptions
+- Define descriptive error types with proper error propagation
+- Use `Effect.fail`, `Effect.catchTag`, `Effect.catchAll` for error control flow
+- See `./references/CRITICAL_RULES.md` for forbidden patterns
+
+### Dependency Injection
+
+- Implement dependency injection using Services and Layers
+- Define services with `Context.Tag`
+- Compose layers with `Layer.merge`, `Layer.provide`
+- Use `Effect.provide` to inject dependencies
+
+### Composability
+
+- Leverage Effect's composability for complex operations
+- Use appropriate constructors: `Effect.succeed`, `Effect.fail`, `Effect.tryPromise`, `Effect.try`
+- Apply proper resource management with scoped effects
+- Chain operations with `Effect.flatMap`, `Effect.map`, `Effect.tap`
+
+### Code Quality
+
+- Write type-safe code that leverages Effect's type system
+- Use `Effect.gen` for readable sequential code
+- Implement proper testing patterns using Effect's testing utilities
+- Prefer `Effect.fn()` for automatic telemetry and better stack traces
+
+## Critical Rules
+
+Read and internalize `./references/CRITICAL_RULES.md` before writing any Effect code. Key guidelines:
+
+- **INEFFECTIVE:** try-catch in Effect.gen (Effect failures aren't thrown)
+- **AVOID:** Type assertions (as never/any/unknown)
+- **RECOMMENDED:** `return yield*` pattern for errors (makes termination explicit)
+
+## Common Failure Modes
+
+Quick links to patterns that frequently cause issues:
+
+- **SubscriptionRef version mismatch** — `unsafeMake is not a function` → [Quick Reference](#subscriptionref-reactive-references)
+- **Cancellation vs Failure** — Interrupts aren't errors → [Error Taxonomy](#error-taxonomy)
+- **Option vs null** — Use Option internally, null at boundaries → [OPTION_NULL.md](./references/OPTION_NULL.md)
+- **Stream backpressure** — Infinite streams hang → [STREAMS.md](./references/STREAMS.md)
+
+## Explaining Solutions
+
+When providing solutions, explain the Effect-TS concepts being used and why they're appropriate for the specific use
+case. If encountering patterns not covered in the documentation, suggest improvements while maintaining consistency with
+existing codebase patterns (when they exist).
+
+## Quick Reference
+
+### Creating Effects
+
+```typescript
+Effect.succeed(value)           // Wrap success value
+Effect.fail(error)              // Create failed effect
+Effect.tryPromise(fn)           // Wrap promise-returning function
+Effect.try(fn)                  // Wrap synchronous throwing function
+Effect.sync(fn)                 // Wrap synchronous non-throwing function
+```
+
+### Composing Effects
+
+```typescript
+Effect.flatMap(effect, fn)      // Chain effects
+Effect.map(effect, fn)          // Transform success value
+Effect.tap(effect, fn)          // Side effect without changing value
+Effect.all([...effects])        // Run effects (concurrency configurable)
+Effect.forEach(items, fn)       // Map over items with effects
+
+// Collect ALL errors (not just first)
+Effect.all([e1, e2, e3], { mode: "validate" })  // Returns all failures
+
+// Partial success handling
+Effect.partition([e1, e2, e3])  // Returns [failures, successes]
+```
+
+### Error Handling
+
+```typescript
+// Define typed errors with Data.TaggedError (preferred)
+class UserNotFoundError extends Data.TaggedError("UserNotFoundError")<{
+  userId: string
+}> {}
+
+// Direct yield of errors (no Effect.fail wrapper needed)
+Effect.gen(function* () {
+  if (!user) {
+    return yield* new UserNotFoundError({ userId })
+  }
+})
+
+Effect.catchTag(effect, tag, fn) // Handle specific error tag
+Effect.catchAll(effect, fn)      // Handle all errors
+Effect.result(effect)            // Convert to Exit value
+Effect.orElse(effect, alt)       // Fallback effect
+```
+
+### Error Taxonomy
+
+Categorize errors for appropriate handling:
+
+| Category                | Examples                   | Handling                  |
+| ----------------------- | -------------------------- | ------------------------- |
+| **Expected Rejections** | User cancel, deny          | Graceful exit, no retry   |
+| **Domain Errors**       | Validation, business rules | Show to user, don't retry |
+| **Defects**             | Bugs, assertions           | Log + alert, investigate  |
+| **Interruptions**       | Fiber cancel, timeout      | Cleanup, may retry        |
+| **Unknown/Foreign**     | Thrown exceptions          | Normalize at boundary     |
+
+```typescript
+// Pattern: Normalize unknown errors at boundary
+const safeBoundary = Effect.catchAllDefect(effect, (defect) =>
+  Effect.fail(new UnknownError({ cause: defect }))
+)
+
+// Pattern: Catch user-initiated cancellations separately
+Effect.catchTag(effect, "UserCancelledError", () => Effect.succeed(null))
+
+// Pattern: Handle interruptions differently from failures
+Effect.onInterrupt(effect, () => Effect.log("Operation cancelled"))
+```
+
+### Pattern Matching (Match Module)
+
+**Default branching tool for tagged unions and complex conditionals.**
+
+```typescript
+import { Match } from "effect"
+
+// Type-safe exhaustive matching on tagged errors
+const handleError = Match.type<AppError>().pipe(
+  Match.tag("UserCancelledError", () => null),          // Expected rejection
+  Match.tag("ValidationError", (e) => e.message),       // Domain error
+  Match.tag("NetworkError", () => "Connection failed"), // Retryable
+  Match.exhaustive  // Compile error if case missing
+)
+
+// Replace nested catchTag chains
+// BEFORE: effect.pipe(catchTag("A", ...), catchTag("B", ...), catchTag("C", ...))
+// AFTER:
+Effect.catchAll(effect, (error) =>
+  Match.value(error).pipe(
+    Match.tag("A", handleA),
+    Match.tag("B", handleB),
+    Match.tag("C", handleC),
+    Match.exhaustive
+  )
+)
+
+// Match on values (cleaner than if/else)
+const describe = Match.value(status).pipe(
+  Match.when("pending", () => "Loading..."),
+  Match.when("success", () => "Done!"),
+  Match.orElse(() => "Unknown")
+)
+```
+
+### Services and Layers
+
+```typescript
+// Pattern 1: Context.Tag (implementation provided separately via Layer)
+class MyService extends Context.Tag("MyService")<MyService, { ... }>() {}
+const MyServiceLive = Layer.succeed(MyService, { ... })
+Effect.provide(effect, MyServiceLive)
+
+// Pattern 2: Effect.Service (default implementation bundled)
+class UserRepo extends Effect.Service<UserRepo>()("UserRepo", {
+  effect: Effect.gen(function* () {
+    const db = yield* Database
+    return { findAll: db.query("SELECT * FROM users") }
+  }),
+  dependencies: [Database.Default],  // Optional service dependencies
+  accessors: true                     // Auto-generate method accessors
+}) {}
+Effect.provide(effect, UserRepo.Default)  // .Default layer auto-generated
+// Use UserRepo.DefaultWithoutDependencies when deps provided separately
+
+// Effect.Service with parameters (3.16.0+)
+class ConfiguredApi extends Effect.Service<ConfiguredApi>()("ConfiguredApi", {
+  effect: (config: { baseUrl: string }) =>
+    Effect.succeed({ fetch: (path: string) => `${config.baseUrl}/${path}` })
+}) {}
+
+// Pattern 3: Context.Reference (defaultable tags - 3.11.0+)
+class SpecialNumber extends Context.Reference<SpecialNumber>()(
+  "SpecialNumber",
+  { defaultValue: () => 2048 }
+) {}
+// No Layer required if default value suffices
+
+// Pattern 4: Context.ReadonlyTag (covariant - 3.18.0+)
+// Use for functions that consume services without modifying the type
+function effectHandler<I, A, E, R>(service: Context.ReadonlyTag<I, Effect.Effect<A, E, R>>) {
+  // Handler can use service in a covariant position
+}
+```
+
+### Generator Pattern
+
+```typescript
+Effect.gen(function* () {
+  const a = yield* effectA;
+  const b = yield* effectB;
+  if (error) {
+    return yield* Effect.fail(new MyError());
+  }
+  return result;
+});
+
+// Effect.fn - automatic tracing and telemetry (preferred for named functions)
+const fetchUser = Effect.fn("fetchUser")(function* (id: string) {
+  const db = yield* Database
+  return yield* db.query(id)
+})
+// Creates spans, captures call sites, provides better stack traces
+```
+
+### Resource Management
+
+```typescript
+Effect.acquireUseRelease(acquire, use, release)  // Bracket pattern
+Effect.scoped(effect)                            // Scope lifetime to effect
+Effect.addFinalizer(cleanup)                     // Register cleanup action
+```
+
+### Duration
+
+Effect accepts human-readable duration strings anywhere a `DurationInput` is expected:
+
+```typescript
+// String syntax (preferred) - singular or plural forms work
+Duration.toMillis("5 minutes")    // 300000
+Duration.toMillis("1 minute")     // 60000
+Duration.toMillis("30 seconds")   // 30000
+Duration.toMillis("100 millis")   // 100
+
+// Verbose syntax (avoid)
+Duration.toMillis(Duration.minutes(5))  // Same result, more verbose
+
+// Common units: millis, seconds, minutes, hours, days, weeks
+// Also: nanos, micros
+```
+
+### Scheduling
+
+```typescript
+Effect.retry(effect, Schedule.exponential("100 millis"))  // Retry with backoff
+Effect.repeat(effect, Schedule.fixed("1 second"))         // Repeat on schedule
+Schedule.compose(s1, s2)                                  // Combine schedules
+```
+
+### State Management
+
+```typescript
+Ref.make(initialValue)       // Mutable reference
+Ref.get(ref)                 // Read value
+Ref.set(ref, value)          // Write value
+Deferred.make<E, A>()        // One-time async value
+```
+
+### SubscriptionRef (Reactive References)
+
+```typescript
+// WARNING: Never use unsafeMake - it may not exist in your Effect version.
+// If you see "unsafeMake is not a function", use the safe API below.
+
+SubscriptionRef.make(initial)      // Create reactive reference (safe)
+SubscriptionRef.get(ref)           // Read current value
+SubscriptionRef.set(ref, value)    // Update value (notifies subscribers)
+SubscriptionRef.changes(ref)       // Stream of value changes
+
+// React integration (effect-atom pattern)
+const ref = yield* SubscriptionRef.make<User | null>(null)
+// Hook reads: useSubscriptionRef(ref) — returns current value or null
+// Handle null explicitly in components
+```
+
+### Concurrency
+
+```typescript
+Effect.fork(effect)              // Run in background fiber
+Fiber.join(fiber)                // Wait for fiber result
+Effect.race(effect1, effect2)    // First to complete wins
+Effect.all([...effects], { concurrency: "unbounded" })
+```
+
+### Configuration & Environment Variables
+
+```typescript
+import { Config, ConfigProvider, Effect, Layer, Redacted } from "effect"
+
+// Basic config values
+const port = Config.number("PORT")                    // Required number
+const host = Config.string("HOST").pipe(              // Optional with default
+  Config.withDefault("localhost")
+)
+
+// Sensitive values (masked in logs)
+const apiKey = Config.redacted("API_KEY")             // Returns Redacted<string>
+const secret = Redacted.value(yield* apiKey)          // Unwrap when needed
+
+// Nested configuration with prefix
+const dbConfig = Config.all({
+  host: Config.string("HOST"),
+  port: Config.number("PORT"),
+  name: Config.string("NAME"),
+}).pipe(Config.nested("DATABASE"))                    // DATABASE_HOST, DATABASE_PORT, etc.
+
+// Using config in effects
+const program = Effect.gen(function* () {
+  const p = yield* Config.number("PORT")
+  const key = yield* Config.redacted("API_KEY")
+  return { port: p, apiKey: Redacted.value(key) }
+})
+
+// Custom config provider (e.g., from object instead of env)
+const customProvider = ConfigProvider.fromMap(
+  new Map([["PORT", "3000"], ["API_KEY", "secret"]])
+)
+const withCustomConfig = Effect.provide(
+  program,
+  Layer.setConfigProvider(customProvider)
+)
+
+// Config validation and transformation
+const validPort = Config.number("PORT").pipe(
+  Config.validate({
+    message: "Port must be between 1 and 65535",
+    validation: (n) => n >= 1 && n <= 65535,
+  })
+)
+```
+
+### Array Operations
+
+```typescript
+import { Array as Arr, Order } from "effect"
+
+// Sorting with built-in orderings (accepts any Iterable)
+Arr.sort([3, 1, 2], Order.number)              // [1, 2, 3]
+Arr.sort(["b", "a", "c"], Order.string)        // ["a", "b", "c"]
+Arr.sort(new Set([3n, 1n, 2n]), Order.bigint)  // [1n, 2n, 3n]
+
+// Sort by derived value
+Arr.sortWith(users, (u) => u.age, Order.number)
+
+// Sort by multiple criteria
+Arr.sortBy(
+  users,
+  Order.mapInput(Order.number, (u: User) => u.age),
+  Order.mapInput(Order.string, (u: User) => u.name)
+)
+
+// Built-in orderings: Order.string, Order.number, Order.bigint, Order.boolean, Order.Date
+// Reverse ordering: Order.reverse(Order.number)
+```
+
+### Utility Functions
+
+```typescript
+import { constVoid as noop } from "effect/Function"
+
+// constVoid returns undefined, useful as a no-operation callback
+noop()  // undefined
+
+// Common use cases:
+Effect.tap(effect, noop)              // Ignore value, just run effect
+Promise.catch(noop)                   // Swallow errors
+eventEmitter.on("event", noop)        // Register empty handler
+```
+
+### Deprecations
+
+- **`BigDecimal.fromNumber`** — Use `BigDecimal.unsafeFromNumber` instead (3.11.0+)
+- **`Schema.annotations()`** — Now removes previously set identifier annotations; identifiers are tied to the schema's
+  `ast` reference only (3.17.10)
+
+## Additional Resources
+
+### Local Effect Resources
+
+- **`~/.effect/packages/effect/src/`** — Core Effect modules and implementation
+
+### External Resources
+
+- **Effect-Atom** — https://github.com/tim-smart/effect-atom (open in browser for reactive state management patterns)
+
+### Reference Files
+
+- **`./references/CRITICAL_RULES.md`** — Forbidden patterns and mandatory conventions
+- **`./references/EFFECT_ATOM.md`** — Effect-Atom reactive state management for React
+- **`./references/NEXT_JS.md`** — Effect + Next.js 15+ App Router integration patterns
+- **`./references/OPTION_NULL.md`** — Option vs null boundary patterns
+- **`./references/STREAMS.md`** — Stream patterns and backpressure gotchas
+- **`./references/TESTING.md`** — Vitest deterministic testing patterns
+
+---
+
+Base directory for this skill: /home/felt/.claude/plugins/cache/eni-skills/personal-skills/1.0.0/skills/effect-best-practices
+
+# Effect-TS Best Practices
+
+This skill enforces opinionated, consistent patterns for Effect-TS codebases. These patterns optimize for type safety, testability, observability, and maintainability.
+
+## Quick Reference: Critical Rules
+
+| Category | DO | DON'T |
+|----------|-----|-------|
+| Services | `Effect.Service` with `accessors: true` | `Context.Tag` for business logic |
+| Dependencies | `dependencies: [Dep.Default]` in service | Manual `Layer.provide` at usage sites |
+| Errors | `Schema.TaggedError` with `message` field | Plain classes or generic Error |
+| Error Specificity | `UserNotFoundError`, `SessionExpiredError` | Generic `NotFoundError`, `BadRequestError` |
+| Error Handling | `catchTag`/`catchTags` | `catchAll` or `mapError` |
+| IDs | `Schema.UUID.pipe(Schema.brand("@App/EntityId"))` | Plain `string` for entity IDs |
+| Functions | `Effect.fn("Service.method")` | Anonymous generators |
+| Logging | `Effect.log` with structured data | `console.log` |
+| Config | `Config.*` with validation | `process.env` directly |
+| Options | `Option.match` with both cases | `Option.getOrThrow` |
+| Nullability | `Option<T>` in domain types | `null`/`undefined` |
+| Atoms | `Atom.make` outside components | Creating atoms inside render |
+| Atom State | `Atom.keepAlive` for global state | Forgetting keepAlive for persistent state |
+| Atom Updates | `useAtomSet` in React components | `Atom.update` imperatively from React |
+| Atom Cleanup | `get.addFinalizer()` for side effects | Missing cleanup for event listeners |
+| Atom Results | `Result.builder` with `onErrorTag` | Ignoring loading/error states |
+
+## Service Definition Pattern
+
+**Always use `Effect.Service`** for business logic services. This provides automatic accessors, built-in `Default` layer, and proper dependency declaration.
+
+```typescript
+import { Effect } from "effect"
+
+export class UserService extends Effect.Service<UserService>()("UserService", {
+    accessors: true,
+    dependencies: [UserRepo.Default, CacheService.Default],
+    effect: Effect.gen(function* () {
+        const repo = yield* UserRepo
+        const cache = yield* CacheService
+
+        const findById = Effect.fn("UserService.findById")(function* (id: UserId) {
+            const cached = yield* cache.get(id)
+            if (Option.isSome(cached)) return cached.value
+
+            const user = yield* repo.findById(id)
+            yield* cache.set(id, user)
+            return user
+        })
+
+        const create = Effect.fn("UserService.create")(function* (data: CreateUserInput) {
+            const user = yield* repo.create(data)
+            yield* Effect.log("User created", { userId: user.id })
+            return user
+        })
+
+        return { findById, create }
+    }),
+}) {}
+
+// Usage - dependencies are already wired
+const program = Effect.gen(function* () {
+    const user = yield* UserService.findById(userId)
+    return user
+})
+
+// At app root
+const MainLive = Layer.mergeAll(UserService.Default, OtherService.Default)
+```
+
+**When `Context.Tag` is acceptable:**
+- Infrastructure with runtime injection (Cloudflare KV, worker bindings)
+- Factory patterns where resources are provided externally
+
+See `references/service-patterns.md` for detailed patterns.
+
+## Error Definition Pattern
+
+**Always use `Schema.TaggedError`** for errors. This makes them serializable (required for RPC) and provides consistent structure.
+
+```typescript
+import { Schema } from "effect"
+import { HttpApiSchema } from "@effect/platform"
+
+export class UserNotFoundError extends Schema.TaggedError<UserNotFoundError>()(
+    "UserNotFoundError",
+    {
+        userId: UserId,
+        message: Schema.String,
+    },
+    HttpApiSchema.annotations({ status: 404 }),
+) {}
+
+export class UserCreateError extends Schema.TaggedError<UserCreateError>()(
+    "UserCreateError",
+    {
+        message: Schema.String,
+        cause: Schema.optional(Schema.String),
+    },
+    HttpApiSchema.annotations({ status: 400 }),
+) {}
+```
+
+**Error handling - use `catchTag`/`catchTags`:**
+
+```typescript
+// CORRECT - preserves type information
+yield* repo.findById(id).pipe(
+    Effect.catchTag("DatabaseError", (err) =>
+        Effect.fail(new UserNotFoundError({ userId: id, message: "Lookup failed" }))
+    ),
+    Effect.catchTag("ConnectionError", (err) =>
+        Effect.fail(new ServiceUnavailableError({ message: "Database unreachable" }))
+    ),
+)
+
+// CORRECT - multiple tags at once
+yield* effect.pipe(
+    Effect.catchTags({
+        DatabaseError: (err) => Effect.fail(new UserNotFoundError({ userId: id, message: err.message })),
+        ValidationError: (err) => Effect.fail(new InvalidEmailError({ email: input.email, message: err.message })),
+    }),
+)
+```
+
+### Prefer Explicit Over Generic Errors
+
+**Every distinct failure reason deserves its own error type.** Don't collapse multiple failure modes into generic HTTP errors.
+
+```typescript
+// WRONG - Generic errors lose information
+export class NotFoundError extends Schema.TaggedError<NotFoundError>()(
+    "NotFoundError",
+    { message: Schema.String },
+    HttpApiSchema.annotations({ status: 404 }),
+) {}
+
+// Then mapping everything to it:
+Effect.catchTags({
+    UserNotFoundError: (err) => Effect.fail(new NotFoundError({ message: "Not found" })),
+    ChannelNotFoundError: (err) => Effect.fail(new NotFoundError({ message: "Not found" })),
+    MessageNotFoundError: (err) => Effect.fail(new NotFoundError({ message: "Not found" })),
+})
+// Frontend gets useless: { _tag: "NotFoundError", message: "Not found" }
+// Which resource? User? Channel? Message? Can't tell!
+```
+
+```typescript
+// CORRECT - Explicit domain errors with rich context
+export class UserNotFoundError extends Schema.TaggedError<UserNotFoundError>()(
+    "UserNotFoundError",
+    { userId: UserId, message: Schema.String },
+    HttpApiSchema.annotations({ status: 404 }),
+) {}
+
+export class ChannelNotFoundError extends Schema.TaggedError<ChannelNotFoundError>()(
+    "ChannelNotFoundError",
+    { channelId: ChannelId, message: Schema.String },
+    HttpApiSchema.annotations({ status: 404 }),
+) {}
+
+export class SessionExpiredError extends Schema.TaggedError<SessionExpiredError>()(
+    "SessionExpiredError",
+    { sessionId: SessionId, expiredAt: Schema.DateTimeUtc, message: Schema.String },
+    HttpApiSchema.annotations({ status: 401 }),
+) {}
+
+// Frontend can now show specific UI:
+// - UserNotFoundError → "User doesn't exist"
+// - ChannelNotFoundError → "Channel was deleted"
+// - SessionExpiredError → "Your session expired. Please log in again."
+```
+
+See `references/error-patterns.md` for error remapping and retry patterns.
+
+## Schema & Branded Types Pattern
+
+**Brand all entity IDs** for type safety across service boundaries:
+
+```typescript
+import { Schema } from "effect"
+
+// Entity IDs - always branded
+export const UserId = Schema.UUID.pipe(Schema.brand("@App/UserId"))
+export type UserId = Schema.Schema.Type<typeof UserId>
+
+export const OrganizationId = Schema.UUID.pipe(Schema.brand("@App/OrganizationId"))
+export type OrganizationId = Schema.Schema.Type<typeof OrganizationId>
+
+// Domain types - use Schema.Struct
+export const User = Schema.Struct({
+    id: UserId,
+    email: Schema.String,
+    name: Schema.String,
+    organizationId: OrganizationId,
+    createdAt: Schema.DateTimeUtc,
+})
+export type User = Schema.Schema.Type<typeof User>
+
+// Input types for mutations
+export const CreateUserInput = Schema.Struct({
+    email: Schema.String.pipe(Schema.pattern(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)),
+    name: Schema.String.pipe(Schema.minLength(1)),
+    organizationId: OrganizationId,
+})
+export type CreateUserInput = Schema.Schema.Type<typeof CreateUserInput>
+```
+
+**When NOT to brand:**
+- Simple strings that don't cross service boundaries (URLs, file paths)
+- Primitive config values
+
+See `references/schema-patterns.md` for transforms and advanced patterns.
+
+## Function Pattern with Effect.fn
+
+**Always use `Effect.fn`** for service methods. This provides automatic tracing with proper span names:
+
+```typescript
+// CORRECT - Effect.fn with descriptive name
+const findById = Effect.fn("UserService.findById")(function* (id: UserId) {
+    yield* Effect.annotateCurrentSpan("userId", id)
+    const user = yield* repo.findById(id)
+    return user
+})
+
+// CORRECT - Effect.fn with multiple parameters
+const transfer = Effect.fn("AccountService.transfer")(
+    function* (fromId: AccountId, toId: AccountId, amount: number) {
+        yield* Effect.annotateCurrentSpan("fromId", fromId)
+        yield* Effect.annotateCurrentSpan("toId", toId)
+        yield* Effect.annotateCurrentSpan("amount", amount)
+        // ...
+    }
+)
+```
+
+## Layer Composition
+
+**Declare dependencies in the service**, not at usage sites:
+
+```typescript
+// CORRECT - dependencies in service definition
+export class OrderService extends Effect.Service<OrderService>()("OrderService", {
+    accessors: true,
+    dependencies: [
+        UserService.Default,
+        ProductService.Default,
+        PaymentService.Default,
+    ],
+    effect: Effect.gen(function* () {
+        const users = yield* UserService
+        const products = yield* ProductService
+        const payments = yield* PaymentService
+        // ...
+    }),
+}) {}
+
+// At app root - simple merge
+const AppLive = Layer.mergeAll(
+    OrderService.Default,
+    // Infrastructure layers (intentionally not in dependencies)
+    DatabaseLive,
+    RedisLive,
+)
+```
+
+See `references/layer-patterns.md` for testing layers and config-dependent layers.
+
+## Option Handling
+
+**Never use `Option.getOrThrow`**. Always handle both cases explicitly:
+
+```typescript
+// CORRECT - explicit handling
+yield* Option.match(maybeUser, {
+    onNone: () => Effect.fail(new UserNotFoundError({ userId, message: "Not found" })),
+    onSome: (user) => Effect.succeed(user),
+})
+
+// CORRECT - with getOrElse for defaults
+const name = Option.getOrElse(maybeName, () => "Anonymous")
+
+// CORRECT - Option.map for transformations
+const upperName = Option.map(maybeName, (n) => n.toUpperCase())
+```
+
+## Effect Atom (Frontend State)
+
+Effect Atom provides reactive state management for React with Effect integration.
+
+### Basic Atoms
+
+```typescript
+import { Atom } from "@effect-atom/atom-react"
+
+// Define atoms OUTSIDE components
+const countAtom = Atom.make(0)
+
+// Use keepAlive for global state that should persist
+const userPrefsAtom = Atom.make({ theme: "dark" }).pipe(Atom.keepAlive)
+
+// Atom families for per-entity state
+const modalAtomFamily = Atom.family((type: string) =>
+    Atom.make({ isOpen: false }).pipe(Atom.keepAlive)
+)
+```
+
+### React Integration
+
+```typescript
+import { useAtomValue, useAtomSet, useAtom, useAtomMount } from "@effect-atom/atom-react"
+
+function Counter() {
+    const count = useAtomValue(countAtom)           // Read only
+    const setCount = useAtomSet(countAtom)          // Write only
+    const [value, setValue] = useAtom(countAtom)    // Read + write
+
+    return <button onClick={() => setCount((c) => c + 1)}>{count}</button>
+}
+
+// Mount side-effect atoms without reading value
+function App() {
+    useAtomMount(keyboardShortcutsAtom)
+    return <>{children}</>
+}
+```
+
+### Handling Results with Result.builder
+
+**Use `Result.builder`** for rendering effectful atom results. It provides chainable error handling with `onErrorTag`:
+
+```typescript
+import { Result } from "@effect-atom/atom-react"
+
+function UserProfile() {
+    const userResult = useAtomValue(userAtom) // Result<User, Error>
+
+    return Result.builder(userResult)
+        .onInitial(() => <div>Loading...</div>)
+        .onErrorTag("NotFoundError", () => <div>User not found</div>)
+        .onError((error) => <div>Error: {error.message}</div>)
+        .onSuccess((user) => <div>Hello, {user.name}</div>)
+        .render()
+}
+```
+
+### Atoms with Side Effects
+
+```typescript
+const scrollYAtom = Atom.make((get) => {
+    const onScroll = () => get.setSelf(window.scrollY)
+
+    window.addEventListener("scroll", onScroll)
+    get.addFinalizer(() => window.removeEventListener("scroll", onScroll)) // REQUIRED
+
+    return window.scrollY
+}).pipe(Atom.keepAlive)
+```
+
+See `references/effect-atom-patterns.md` for complete patterns including families, localStorage, and anti-patterns.
+
+## RPC & Cluster Patterns
+
+For RPC contracts and cluster workflows, see:
+- `references/rpc-cluster-patterns.md` - RpcGroup, Workflow.make, Activity patterns
+
+## Anti-Patterns (Forbidden)
+
+These patterns are **never acceptable**:
+
+```typescript
+// FORBIDDEN - runSync/runPromise inside services
+const result = Effect.runSync(someEffect) // Never do this
+
+// FORBIDDEN - throw inside Effect.gen
+yield* Effect.gen(function* () {
+    if (bad) throw new Error("No!") // Use Effect.fail instead
+})
+
+// FORBIDDEN - catchAll losing type info
+yield* effect.pipe(Effect.catchAll(() => Effect.fail(new GenericError())))
+
+// FORBIDDEN - console.log
+console.log("debug") // Use Effect.log
+
+// FORBIDDEN - process.env directly
+const key = process.env.API_KEY // Use Config.string("API_KEY")
+
+// FORBIDDEN - null/undefined in domain types
+type User = { name: string | null } // Use Option<string>
+```
+
+See `references/anti-patterns.md` for the complete list with rationale.
+
+## Observability
+
+```typescript
+// Structured logging
+yield* Effect.log("Processing order", { orderId, userId, amount })
+
+// Metrics
+const orderCounter = Metric.counter("orders_processed")
+yield* Metric.increment(orderCounter)
+
+// Config with validation
+const config = Config.all({
+    port: Config.integer("PORT").pipe(Config.withDefault(3000)),
+    apiKey: Config.secret("API_KEY"),
+    maxRetries: Config.integer("MAX_RETRIES").pipe(
+        Config.validate({ message: "Must be positive", validation: (n) => n > 0 })
+    ),
+})
+```
+
+See `references/observability-patterns.md` for metrics and tracing patterns.
+
+## Reference Files
+
+For detailed patterns, consult these reference files in the `references/` directory:
+
+- `service-patterns.md` - Service definition, Effect.fn, Context.Tag exceptions
+- `error-patterns.md` - Schema.TaggedError, error remapping, retry patterns
+- `schema-patterns.md` - Branded types, transforms, Schema.Class
+- `layer-patterns.md` - Dependency composition, testing layers
+- `rpc-cluster-patterns.md` - RpcGroup, Workflow, Activity patterns
+- `effect-atom-patterns.md` - Atom, families, React hooks, Result handling
+- `anti-patterns.md` - Complete list of forbidden patterns
+- `observability-patterns.md` - Logging, metrics, config patterns
+
+---
+
+Base directory for this skill: /home/felt/.claude/plugins/cache/eni-skills/personal-skills/1.0.0/skills/react-best-practices
+
+# Vercel React Best Practices
+
+Comprehensive performance optimization guide for React and Next.js applications, maintained by Vercel. Contains 57 rules across 8 categories, prioritized by impact to guide automated refactoring and code generation.
+
+## When to Apply
+
+Reference these guidelines when:
+- Writing new React components or Next.js pages
+- Implementing data fetching (client or server-side)
+- Reviewing code for performance issues
+- Refactoring existing React/Next.js code
+- Optimizing bundle size or load times
+
+## Rule Categories by Priority
+
+| Priority | Category | Impact | Prefix |
+|----------|----------|--------|--------|
+| 1 | Eliminating Waterfalls | CRITICAL | `async-` |
+| 2 | Bundle Size Optimization | CRITICAL | `bundle-` |
+| 3 | Server-Side Performance | HIGH | `server-` |
+| 4 | Client-Side Data Fetching | MEDIUM-HIGH | `client-` |
+| 5 | Re-render Optimization | MEDIUM | `rerender-` |
+| 6 | Rendering Performance | MEDIUM | `rendering-` |
+| 7 | JavaScript Performance | LOW-MEDIUM | `js-` |
+| 8 | Advanced Patterns | LOW | `advanced-` |
+
+## Quick Reference
+
+### 1. Eliminating Waterfalls (CRITICAL)
+
+- `async-defer-await` - Move await into branches where actually used
+- `async-parallel` - Use Promise.all() for independent operations
+- `async-dependencies` - Use better-all for partial dependencies
+- `async-api-routes` - Start promises early, await late in API routes
+- `async-suspense-boundaries` - Use Suspense to stream content
+
+### 2. Bundle Size Optimization (CRITICAL)
+
+- `bundle-barrel-imports` - Import directly, avoid barrel files
+- `bundle-dynamic-imports` - Use next/dynamic for heavy components
+- `bundle-defer-third-party` - Load analytics/logging after hydration
+- `bundle-conditional` - Load modules only when feature is activated
+- `bundle-preload` - Preload on hover/focus for perceived speed
+
+### 3. Server-Side Performance (HIGH)
+
+- `server-auth-actions` - Authenticate server actions like API routes
+- `server-cache-react` - Use React.cache() for per-request deduplication
+- `server-cache-lru` - Use LRU cache for cross-request caching
+- `server-dedup-props` - Avoid duplicate serialization in RSC props
+- `server-serialization` - Minimize data passed to client components
+- `server-parallel-fetching` - Restructure components to parallelize fetches
+- `server-after-nonblocking` - Use after() for non-blocking operations
+
+### 4. Client-Side Data Fetching (MEDIUM-HIGH)
+
+- `client-swr-dedup` - Use SWR for automatic request deduplication
+- `client-event-listeners` - Deduplicate global event listeners
+- `client-passive-event-listeners` - Use passive listeners for scroll
+- `client-localstorage-schema` - Version and minimize localStorage data
+
+### 5. Re-render Optimization (MEDIUM)
+
+- `rerender-defer-reads` - Don't subscribe to state only used in callbacks
+- `rerender-memo` - Extract expensive work into memoized components
+- `rerender-memo-with-default-value` - Hoist default non-primitive props
+- `rerender-dependencies` - Use primitive dependencies in effects
+- `rerender-derived-state` - Subscribe to derived booleans, not raw values
+- `rerender-derived-state-no-effect` - Derive state during render, not effects
+- `rerender-functional-setstate` - Use functional setState for stable callbacks
+- `rerender-lazy-state-init` - Pass function to useState for expensive values
+- `rerender-simple-expression-in-memo` - Avoid memo for simple primitives
+- `rerender-move-effect-to-event` - Put interaction logic in event handlers
+- `rerender-transitions` - Use startTransition for non-urgent updates
+- `rerender-use-ref-transient-values` - Use refs for transient frequent values
+
+### 6. Rendering Performance (MEDIUM)
+
+- `rendering-animate-svg-wrapper` - Animate div wrapper, not SVG element
+- `rendering-content-visibility` - Use content-visibility for long lists
+- `rendering-hoist-jsx` - Extract static JSX outside components
+- `rendering-svg-precision` - Reduce SVG coordinate precision
+- `rendering-hydration-no-flicker` - Use inline script for client-only data
+- `rendering-hydration-suppress-warning` - Suppress expected mismatches
+- `rendering-activity` - Use Activity component for show/hide
+- `rendering-conditional-render` - Use ternary, not && for conditionals
+- `rendering-usetransition-loading` - Prefer useTransition for loading state
+
+### 7. JavaScript Performance (LOW-MEDIUM)
+
+- `js-batch-dom-css` - Group CSS changes via classes or cssText
+- `js-index-maps` - Build Map for repeated lookups
+- `js-cache-property-access` - Cache object properties in loops
+- `js-cache-function-results` - Cache function results in module-level Map
+- `js-cache-storage` - Cache localStorage/sessionStorage reads
+- `js-combine-iterations` - Combine multiple filter/map into one loop
+- `js-length-check-first` - Check array length before expensive comparison
+- `js-early-exit` - Return early from functions
+- `js-hoist-regexp` - Hoist RegExp creation outside loops
+- `js-min-max-loop` - Use loop for min/max instead of sort
+- `js-set-map-lookups` - Use Set/Map for O(1) lookups
+- `js-tosorted-immutable` - Use toSorted() for immutability
+
+### 8. Advanced Patterns (LOW)
+
+- `advanced-event-handler-refs` - Store event handlers in refs
+- `advanced-init-once` - Initialize app once per app load
+- `advanced-use-latest` - useLatest for stable callback refs
+
+## How to Use
+
+Read individual rule files for detailed explanations and code examples:
+
+```
+rules/async-parallel.md
+rules/bundle-barrel-imports.md
+```
+
+Each rule file contains:
+- Brief explanation of why it matters
+- Incorrect code example with explanation
+- Correct code example with explanation
+- Additional context and references
+
+## Full Compiled Document
+
+For the complete guide with all rules expanded: `AGENTS.md`
+
+---
+
+Base directory for this skill: /home/felt/.claude/plugins/cache/claude-plugins-official/superpowers/4.3.1/skills/writing-plans
+
+# Writing Plans
+
+## Overview
+
+Write comprehensive implementation plans assuming the engineer has zero context for our codebase and questionable taste. Document everything they need to know: which files to touch for each task, code, testing, docs they might need to check, how to test it. Give them the whole plan as bite-sized tasks. DRY. YAGNI. TDD. Frequent commits.
+
+Assume they are a skilled developer, but know almost nothing about our toolset or problem domain. Assume they don't know good test design very well.
+
+**Announce at start:** "I'm using the writing-plans skill to create the implementation plan."
+
+**Context:** This should be run in a dedicated worktree (created by brainstorming skill).
+
+**Save plans to:** `docs/plans/YYYY-MM-DD-<feature-name>.md`
+
+## Bite-Sized Task Granularity
+
+**Each step is one action (2-5 minutes):**
+- "Write the failing test" - step
+- "Run it to make sure it fails" - step
+- "Implement the minimal code to make the test pass" - step
+- "Run the tests and make sure they pass" - step
+- "Commit" - step
+
+## Plan Document Header
+
+**Every plan MUST start with this header:**
+
+```markdown
+# [Feature Name] Implementation Plan
+
+> **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
+
+**Goal:** [One sentence describing what this builds]
+
+**Architecture:** [2-3 sentences about approach]
+
+**Tech Stack:** [Key technologies/libraries]
+
+---
+```
+
+## Task Structure
+
+````markdown
+### Task N: [Component Name]
+
+**Files:**
+- Create: `exact/path/to/file.py`
+- Modify: `exact/path/to/existing.py:123-145`
+- Test: `tests/exact/path/to/test.py`
+
+**Step 1: Write the failing test**
+
+```python
+def test_specific_behavior():
+    result = function(input)
+    assert result == expected
+```
+
+**Step 2: Run test to verify it fails**
+
+Run: `pytest tests/path/test.py::test_name -v`
+Expected: FAIL with "function not defined"
+
+**Step 3: Write minimal implementation**
+
+```python
+def function(input):
+    return expected
+```
+
+**Step 4: Run test to verify it passes**
+
+Run: `pytest tests/path/test.py::test_name -v`
+Expected: PASS
+
+**Step 5: Commit**
+
+```bash
+git add tests/path/test.py src/path/file.py
+git commit -m "feat: add specific feature"
+```
+````
+
+## Remember
+- Exact file paths always
+- Complete code in plan (not "add validation")
+- Exact commands with expected output
+- Reference relevant skills with @ syntax
+- DRY, YAGNI, TDD, frequent commits
+
+## Execution Handoff
+
+After saving the plan, offer execution choice:
+
+**"Plan complete and saved to `docs/plans/<filename>.md`. Two execution options:**
+
+**1. Subagent-Driven (this session)** - I dispatch fresh subagent per task, review between tasks, fast iteration
+
+**2. Parallel Session (separate)** - Open new session with executing-plans, batch execution with checkpoints
+
+**Which approach?"**
+
+**If Subagent-Driven chosen:**
+- **REQUIRED SUB-SKILL:** Use superpowers:subagent-driven-development
+- Stay in this session
+- Fresh subagent per task + code review
+
+**If Parallel Session chosen:**
+- Guide them to open new session in worktree
+- **REQUIRED SUB-SKILL:** New session uses superpowers:executing-plans
+
+---
+
+We want to create a PRD for Super-ralph
+
+---
+
+yes, initialize super-ralph
+
+---
+
+[Request interrupted by user]
+
+---
+
+jj installed. Can use it now.
+
+---
+
+How Do i handle agent management (which model for which task, and routing if error (limit cap reached)
+
+---
+
+Base directory for this skill: /home/felt/.claude/plugins/cache/eni-skills/personal-skills/1.0.0/skills/super-ralph
+
+# Super-Ralph Workflow
+
+Ticket-driven development with multi-agent review loops. Wraps the Smithers engine
+with a full pipeline: discover → research → plan → implement → test → review → land.
+
+Runtime: Bun >= 1.3. VCS: jj-colocated git. State: SQLite (resumable).
+
+## Init
+
+```bash
+uv run <skill-path>/scripts/init_super_ralph.py <target-dir> --root <relative-to-repo-root>
+```
+
+Options: `--name "My Project"`, `--id my-project`, `--no-install`, `--no-jj`.
+
+This copies the template, patches placeholders, runs `bun install`, and initializes jj.
+
+## Post-Init Customization (3 files)
+
+### 1. `components/focuses.ts` — Domain Areas
+
+Replace placeholder focuses with 6–15 areas matching your project's architecture.
+Each focus drives CategoryReview audits, IntegrationTest suites, and ticket discovery.
+Remove completed focuses to save agent time.
+
+```ts
+export const focuses = [
+  { id: "auth", name: "Authentication (JWT, OAuth, sessions)" },
+  { id: "api",  name: "REST API routes and middleware" },
+  // ...
+] as const;
+```
+
+### 2. `components/workflow.tsx` — Workflow Configuration
+
+Fill in all `TODO` sections:
+
+**Agent prompts** — project-specific instructions for each role (planning, implementation, testing, reviewing, reporting). Include architecture rules, security invariants, framework patterns, spec file paths.
+
+**SuperRalph props:**
+
+```tsx
+specsPath="docs/specs/"                         // where spec docs live
+referenceFiles={["SPEC.md", "src/", "test/"]}   // context for agents
+buildCmds={{ ts: "pnpm run typecheck" }}        // must pass for build-verify
+testCmds={{ unit: "pnpm test" }}                // must pass for test-verify
+codeStyle="TypeScript strict, camelCase..."      // style guide for reviewers
+reviewChecklist={["Spec compliance", ...]}       // violations → major/critical
+```
+
+**Agents** — adjust models per role, add fallback chains:
+
+```tsx
+agents={{
+  planning: [
+    new ClaudeCodeAgent({ model: "claude-opus-4-6", ... }),
+    new GeminiAgent({ model: "gemini-2.5-pro", ... }),  // fallback
+  ],
+  implementation: new CodexAgent({ model: "gpt-5.3-codex", yolo: true, ... }),
+  // ...
+}}
+```
+
+### 3. `components/focuses.ts` — (optional) focusTestSuites / focusDirs
+
+For per-focus test and directory hints, add `focusTestSuites.ts` and `focusDirs.ts`
+then pass them as props to SuperRalph.
+
+## Run
+
+```bash
+cd <target-dir> && bun run index.ts
+```
+
+The run manager shows all past runs with resume/cancel/delete options.
+
+**Phase skipping:** `SKIPTO_PHASE=TICKETS bun run index.ts`
+**Concurrency:** `WORKFLOW_MAX_CONCURRENCY=4 bun run index.ts`
+
+## Pipeline Per Ticket
+
+```
+Research → Plan → [Implement → Test → BuildVerify → (SpecReview ∥ CodeReview) → ReviewFix?] → Report → MergeQueue
+                  └──────────────── ValidationLoop (reruns if reviews fail) ────────────────┘
+```
+
+Global tasks run every Ralph iteration in parallel: UpdateProgress, CategoryReview (per focus),
+Discover (3–5 new tickets), IntegrationTest (per focus).
+
+## Key Requirements
+
+- **jj** must be installed (`brew install jj`) — all VCS operations use jj, not raw git
+- **bunfig.toml** with `preload = ["./preload.ts"]` is critical — without it, MDX prompts fail with `[object Object]` errors. This is the top-level preload (NOT `[run]` section)
+- Agent `cwd` must point to the repo root (not the workflow directory)
+- `delete process.env.CLAUDECODE` in index.ts allows Claude Code sub-processes inside a Claude Code session
+
+## Resources
+
+See [references/customization.md](references/customization.md) for the full SuperRalph props
+reference, agent types, fallback chains, focus design guidelines, focusTestSuites/focusDirs
+configuration, custom step overrides, and merge queue tuning.
+
+---
+
+we have gemini-3.1-pro-preview available

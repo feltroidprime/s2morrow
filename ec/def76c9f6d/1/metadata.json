@@ -1,0 +1,44 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "ecdef76c9f6d",
+  "session_id": "157fe051-b4f3-4e0b-8701-6de018d8bef5",
+  "strategy": "manual-commit",
+  "created_at": "2026-02-25T12:07:31.831089354Z",
+  "branch": "frontend",
+  "checkpoints_count": 2,
+  "files_touched": [
+    ".claude/settings.local.json",
+    ".demo.pid",
+    "apps/demo/src/__tests__/account-deploy/account-deploy-pipeline.test.ts",
+    "apps/demo/src/__tests__/account-deploy/account-deploy-view.test.tsx",
+    "apps/demo/src/__tests__/verify-playground/atoms.test.ts",
+    "apps/demo/src/__tests__/verify-playground/falcon-service.test.ts",
+    "apps/demo/src/__tests__/verify-playground/verification-playground.test.tsx",
+    "apps/demo/src/__tests__/verify-playground/verification-utils.test.ts",
+    "apps/demo/src/components/interactive/PipelineSection.tsx",
+    "apps/demo/src/components/interactive/PipelineVisualizer.tsx",
+    "apps/demo/src/services/FalconService.ts",
+    "apps/demo/src/services/__tests__/WasmRuntime.test.ts",
+    "apps/demo/tsconfig.tsbuildinfo",
+    "docs/plans/2026-02-24-falcon-demo-remaining.md",
+    "packages/falcon/.claude/settings.local.json"
+  ],
+  "agent": "Claude Code",
+  "token_usage": {
+    "input_tokens": 48,
+    "cache_creation_tokens": 60008,
+    "cache_read_tokens": 2165790,
+    "output_tokens": 3652,
+    "api_call_count": 43
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-02-25T12:07:31.581613776Z",
+    "agent_lines": 0,
+    "human_added": 0,
+    "human_modified": 42,
+    "human_removed": 1092,
+    "total_committed": 37,
+    "agent_percentage": 0
+  },
+  "transcript_path": ".claude/projects/-home-felt-PycharmProjects-s2morrow/157fe051-b4f3-4e0b-8701-6de018d8bef5.jsonl"
+}

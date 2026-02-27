@@ -1,0 +1,106 @@
+IMPORTANT: After completing the task below, you MUST output a JSON object in a ```json code fence at the very end of your response. Do NOT forget this — the workflow fails without it.
+
+SPEC COMPLIANCE REVIEW — Ticket: VP-003
+
+Title: Create FalconService with Effect.fn methods wrapping WASM
+Category: verify-playground
+
+You are reviewing this ticket&#x27;s implementation for **spec compliance only**.
+You are NOT reviewing code quality — that&#x27;s a separate review.
+
+## Files to Review
+
+Created:
+- /home/felt/PycharmProjects/s2morrow/docs/context/VP-003.md
+Modified:
+- /home/felt/PycharmProjects/s2morrow/apps/demo/src/__tests__/verify-playground/falcon-service.test.ts
+## Test Results
+
+- Tests: PASS
+
+## Review Checklist
+
+READ every file modified/created. For each, verify:
+
+### 1. Code Style
+- TypeScript strict mode, no any/never assertions
+Effect-TS patterns: Effect.Service with accessors, Schema.TaggedError, Effect.fn for tracing
+React: RSC for static content, client components via next/dynamic with ssr: false
+Tailwind CSS v4 CSS-first config, custom falcon-* color tokens
+Bun as package manager, never npm/yarn
+Import directly from modules, never from barrel files
+
+### 2. Review Checklist
+- Spec compliance — implementation matches PRD requirements
+- Effect patterns — Effect.Service, Schema.TaggedError, Effect.fn, no forbidden patterns
+- React performance — RSC where possible, lazy client components, no unnecessary re-renders
+- Type safety — branded IDs, proper Option handling, no type assertions
+- Security — no secret key exposure, no hardcoded credentials
+- Accessibility — semantic HTML, aria-labels on interactive elements
+- Responsive layout — single column mobile, grid desktop
+### TDD Compliance
+
+- Tests were written BEFORE implementation (reject if tests came after)
+
+- Unit tests exist for new code
+
+- Integration tests exist for new user-facing features
+
+- Test quality: edge cases, error paths, not just happy path
+
+Flag ALL spec compliance issues. Be thorough.
+
+Severity levels:
+
+- &quot;critical&quot; — Spec violation that breaks core architecture or project identity
+
+- &quot;major&quot; — Missing spec requirement or architectural deviation
+
+- &quot;minor&quot; — Non-critical deviation (naming mismatch, missing docs)
+
+- &quot;none&quot; — Perfect spec compliance
+
+Use severity &quot;none&quot; only if there are absolutely no spec compliance issues.
+
+
+**REQUIRED OUTPUT** — You MUST end your response with a JSON object in a code fence matching this schema:
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "severity": {
+      "type": "string",
+      "enum": [
+        "none",
+        "minor",
+        "major",
+        "critical"
+      ]
+    },
+    "feedback": {
+      "type": "string"
+    },
+    "issues": {
+      "anyOf": [
+        {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "required": [
+    "severity",
+    "feedback",
+    "issues"
+  ],
+  "additionalProperties": false
+}
+```
+Output the JSON at the END of your response. The workflow will fail without it.

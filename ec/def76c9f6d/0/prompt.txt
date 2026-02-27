@@ -1,0 +1,19 @@
+Go to http://localhost:3000 and manually test the Falcon demo website.                     
+                                                                                             
+  For each page/section you find:                                                            
+  1. Take a screenshot                                                                       
+  2. Click every button, link, and interactive element                                       
+  3. Take screenshots of the results (loading states, success, errors)                       
+  4. Try the full user flows end-to-end
+
+  Write a detailed report to apps/demo/findings.md with:
+  - What pages/sections exist
+  - What works (with description of behavior)
+  - What's broken or missing (with screenshots/descriptions)
+  - UI/UX issues (layout, responsiveness, copy)
+  - Comparison against the PRD at docs/plans/ if one exists
+
+  Format the report so it can be turned into an implementation plan with actionable tickets.
+
+  Make sure the dev server is running first (bun dev or whatever the start script is in
+  apps/demo/).
