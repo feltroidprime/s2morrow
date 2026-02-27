@@ -390,7 +390,7 @@ export function AccountDeployFlow(): React.JSX.Element {
     <section id="deploy" className="px-8 py-32 lg:px-8">
       <div className="mx-auto max-w-6xl">
         <h2 className="text-4xl font-semibold tracking-[-0.02em] text-falcon-text">Deploy your own quantum-safe account</h2>
-        <p className="mt-4 text-sm leading-relaxed text-falcon-text/50">
+        <p className="mt-4 text-sm leading-relaxed text-falcon-text/70">
           Deploy a Falcon-powered account to Starknet {networkConfig.name} &mdash; takes about 60 seconds.
           Uses the same keypair from the playground above.
         </p>
@@ -415,16 +415,39 @@ export function AccountDeployFlow(): React.JSX.Element {
           </div>
         )}
 
+        {/* Progress dots */}
+        {!autoRestoring && (
+          <div className="mt-10 flex items-center gap-3">
+            <div className="flex items-center gap-1.5">
+              {DEPLOY_STEPS.map((s) => (
+                <div
+                  key={s.number}
+                  className={`h-2 w-2 rounded-full transition-all duration-300 ${
+                    s.complete
+                      ? "bg-falcon-success/70"
+                      : s.active
+                        ? "bg-falcon-primary/70 animate-pulse"
+                        : "bg-falcon-muted/20"
+                  }`}
+                />
+              ))}
+            </div>
+            <span className="text-[11px] tabular-nums text-falcon-text/45">
+              {DEPLOY_STEPS.filter((s) => s.complete).length} of {DEPLOY_STEPS.length} complete
+            </span>
+          </div>
+        )}
+
         {/* Vertical progress line with step cards */}
         {!autoRestoring && (
-          <div className="relative mt-10 space-y-0">
+          <div className="relative mt-6 space-y-0">
             {/* Vertical energy conduit */}
             <div
               className="absolute left-[19px] top-4 bottom-4 energy-conduit"
             />
 
             {DEPLOY_STEPS.map((s) => (
-              <div key={s.number} className="relative flex items-start gap-5 py-3">
+              <div key={s.number} className={`relative flex items-start gap-5 py-3 transition-opacity duration-300 ${!s.active && !s.complete ? "opacity-50" : ""}`}>
                 {/* Step dot/check on the line */}
                 <div className="relative z-10 flex h-10 w-10 shrink-0 items-center justify-center">
                   <div
@@ -448,13 +471,13 @@ export function AccountDeployFlow(): React.JSX.Element {
                   }`}>
                     {s.title}
                   </h3>
-                  <p className="mt-0.5 text-xs text-falcon-text/25">{s.description}</p>
+                  <p className="mt-0.5 text-xs text-falcon-text/45">{s.description}</p>
 
                   {/* Fund Account expanded content */}
                   {s.number === 4 && deployStep.step === "awaiting-funds" && (
                     <div className="mt-4 space-y-3">
                       <div className="glass-card-static rounded-xl p-4">
-                        <p className="text-[10px] font-medium tracking-widest text-falcon-text/20 uppercase">Send STRK to</p>
+                        <p className="text-[10px] font-medium tracking-widest text-falcon-text/45 uppercase">Send STRK to</p>
                         <AddressDisplay
                           address={deployStep.address}
                           explorerBaseUrl={networkConfig.explorerBaseUrl}
@@ -472,7 +495,7 @@ export function AccountDeployFlow(): React.JSX.Element {
                         </a>
                       )}
                       {balance !== null && (
-                        <div className="flex items-center gap-2 text-xs text-falcon-text/30">
+                        <div className="flex items-center gap-2 text-xs text-falcon-text/50">
                           <span>Balance:</span>
                           <TokenAmount amount={balance} className={balance > 0n ? "text-falcon-success/80" : "text-falcon-text/30"} />
                           {balance > 0n && (
@@ -507,7 +530,7 @@ export function AccountDeployFlow(): React.JSX.Element {
           <div className="mt-8 space-y-3">
             {networkConfig.isDevnet && devnetAccounts.length > 0 ? (
               <div>
-                <label htmlFor="devnet-account" className="block text-xs font-medium text-falcon-text/30">
+                <label htmlFor="devnet-account" className="block text-xs font-medium text-falcon-text/50">
                   Deployer Account
                 </label>
                 <select
@@ -576,6 +599,9 @@ export function AccountDeployFlow(): React.JSX.Element {
                   <h3 className="text-sm font-semibold text-falcon-success/80">
                     {isAlreadyDeployed ? "Quantum Account Already Deployed" : "Quantum Account Deployed"}
                   </h3>
+                  {isAlreadyDeployed && (
+                    <p className="mt-0.5 text-xs text-falcon-text/45">Restored from your saved keypair</p>
+                  )}
                   <span className="status-dot-protected" />
                 </div>
                 <AddressDisplay

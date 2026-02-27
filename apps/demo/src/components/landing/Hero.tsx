@@ -1,7 +1,7 @@
 const HERO_STATS = [
-  { value: "65%", label: "Less gas than secp256r1", unit: "savings" },
-  { value: "62", label: "17x calldata compression", unit: "felts" },
-  { value: "29", label: "Fits one contract", unit: "slots" },
+  { value: "65%", label: "Less gas than secp256r1", unit: "savings", tooltip: "Falcon-512 costs ~9.5M L2 gas vs ~27.4M for secp256r1 ECDSA" },
+  { value: "62", label: "17x calldata compression", unit: "felts", tooltip: "512 polynomial coefficients packed from 1,030 to 62 felt252 values" },
+  { value: "29", label: "Fits one contract", unit: "slots", tooltip: "Entire public key stored in 29 contract storage slots" },
 ] as const
 
 export function Hero(): React.JSX.Element {
@@ -10,16 +10,16 @@ export function Hero(): React.JSX.Element {
       <div className="lattice-grid" aria-hidden="true" />
       <div className="relative mx-auto max-w-6xl text-center">
         <p className="terminal-whisper text-falcon-success/50 text-glow">
-          Live on Starknet Sepolia
+          Live on Starknet
         </p>
         <h1
           id="hero-heading"
-          className="mt-8 font-[family-name:var(--font-display)] text-4xl font-bold tracking-[0.05em] uppercase text-falcon-text/80 sm:text-6xl"
+          className="mt-8 font-[family-name:var(--font-display)] text-4xl font-bold tracking-[0.05em] uppercase text-falcon-text/90 sm:text-6xl"
         >
           Quantum-proof wallets.{" "}
           <span className="text-falcon-accent/90 text-glow">No hard fork required.</span>
         </h1>
-        <p className="mx-auto mt-8 max-w-2xl text-sm leading-relaxed text-falcon-text/45 sm:text-base">
+        <p className="mx-auto mt-8 max-w-2xl text-sm leading-relaxed text-falcon-text/70 sm:text-base">
           Starknet&apos;s account abstraction lets you upgrade to post-quantum signatures today.
           This is a working demo &mdash; generate keys, sign, verify, and deploy. All in your browser.
         </p>
@@ -41,12 +41,12 @@ export function Hero(): React.JSX.Element {
 
         <dl className="mx-auto mt-20 grid max-w-3xl grid-cols-1 gap-6 sm:grid-cols-3">
           {HERO_STATS.map((stat) => (
-            <div key={stat.label} className="glass-card corner-brackets p-8">
+            <div key={stat.label} className="glass-card corner-brackets p-8" title={stat.tooltip}>
               <dd className="flex items-baseline gap-1.5">
                 <span className="tabular-nums text-3xl font-bold tracking-tight text-falcon-accent/70 text-glow">
                   {stat.value}
                 </span>
-                <span className="text-[10px] tracking-wider uppercase text-falcon-text/40">
+                <span className="text-[10px] tracking-wider uppercase text-falcon-text/60">
                   {stat.unit}
                 </span>
               </dd>

@@ -42,4 +42,4 @@ export const NETWORKS: Record<NetworkId, NetworkConfig> = {
   },
 }
 
-export const DEFAULT_NETWORK: NetworkId = "devnet"
+export const DEFAULT_NETWORK: NetworkId = "sepolia"

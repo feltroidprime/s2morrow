@@ -46,13 +46,13 @@ export function PerformanceStats(): React.JSX.Element {
               <table className="w-full text-left text-sm">
                 <thead>
                   <tr className="border-b border-falcon-accent/6">
-                    <th scope="col" className="px-8 py-5 text-[10px] font-medium tracking-[0.15em] text-falcon-text/65 uppercase">
+                    <th scope="col" className="px-8 py-5 text-[10px] font-medium tracking-[0.15em] text-falcon-text/75 uppercase">
                       Operation
                     </th>
-                    <th scope="col" className="px-8 py-5 text-right text-[10px] font-medium tracking-[0.15em] text-falcon-text/65 uppercase">
+                    <th scope="col" className="px-8 py-5 text-right text-[10px] font-medium tracking-[0.15em] text-falcon-text/75 uppercase">
                       Steps
                     </th>
-                    <th scope="col" className="px-8 py-5 text-right text-[10px] font-medium tracking-[0.15em] text-falcon-text/65 uppercase">
+                    <th scope="col" className="px-8 py-5 text-right text-[10px] font-medium tracking-[0.15em] text-falcon-text/75 uppercase">
                       L2 Gas
                     </th>
                   </tr>
@@ -63,7 +63,7 @@ export function PerformanceStats(): React.JSX.Element {
                       key={row.operation}
                       className={i < PERFORMANCE_ROWS.length - 1 ? "border-b border-falcon-accent/4" : undefined}
                     >
-                      <td className="px-8 py-5 text-xs text-falcon-accent/40">{row.operation}</td>
+                      <td className="px-8 py-5 text-xs text-falcon-accent/60">{row.operation}</td>
                       <td className="px-8 py-5 text-right tabular-nums text-sm text-falcon-text/65">{row.steps}</td>
                       <td className="px-8 py-5 text-right text-xs tabular-nums text-falcon-text/65">{row.gas}</td>
                     </tr>

@@ -78,8 +78,9 @@ export function SendTransaction({
     return () => { cancelled = true }
   }, [deployRuntime, deployedAddress])
 
-  // Address validation
+  // Address validation — validate while typing after 4+ chars
   const recipientValid = /^0x[0-9a-fA-F]{1,64}$/.test(recipient)
+  const showRecipientError = (recipientTouched || recipient.length >= 4) && !recipientValid && recipient.length > 0
   const isSelf = (deployedAddress as string) === recipient
 
   // Amount validation
@@ -244,13 +245,13 @@ export function SendTransaction({
         <QuantumShield size="sm" />
         Test Your Quantum-Safe Account
       </h3>
-      <p className="mt-1.5 text-xs text-falcon-text/30">
+      <p className="mt-1.5 text-xs text-falcon-text/50">
         Send a small amount of STRK to yourself to verify your post-quantum account works correctly.
       </p>
 
       <div className="mt-5 space-y-4">
         <div>
-          <label htmlFor="tx-recipient" className="block text-xs font-medium text-falcon-text/30">
+          <label htmlFor="tx-recipient" className="block text-xs font-medium text-falcon-text/50">
             Recipient
             {isSelf && (
               <span className="ml-2 inline-flex items-center rounded-md bg-falcon-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-falcon-primary/70">
@@ -266,10 +267,10 @@ export function SendTransaction({
               onChange={(e) => setRecipient(e.target.value)}
               onBlur={() => setRecipientTouched(true)}
               className={`glass-input w-full px-4 py-3 pr-10 font-mono text-sm text-falcon-text/80 ${
-                recipientTouched && !recipientValid ? "!border-falcon-error/30" : ""
+                showRecipientError ? "!border-falcon-error/30" : ""
               }`}
             />
-            {recipientTouched && recipient.length > 0 && (
+            {(recipientTouched || recipient.length >= 4) && recipient.length > 0 && (
               <span className={`absolute right-3 top-1/2 -translate-y-1/2 text-sm font-semibold ${
                 recipientValid ? "text-falcon-success/70" : "text-falcon-error/70"
               }`}>
@@ -277,7 +278,7 @@ export function SendTransaction({
               </span>
             )}
           </div>
-          {recipientTouched && !recipientValid && recipient.length > 0 && (
+          {showRecipientError && (
             <p className="mt-1 text-[11px] text-falcon-error/60">
               Must be a hex address starting with 0x (up to 66 characters)
             </p>
@@ -285,11 +286,26 @@ export function SendTransaction({
         </div>
 
         <div>
-          <label htmlFor="tx-amount" className="flex items-baseline gap-2 text-xs font-medium text-falcon-text/30">
+          <label htmlFor="tx-amount" className="flex items-baseline gap-2 text-xs font-medium text-falcon-text/50">
             <span>Amount (STRK)</span>
             {accountBalance != null && (
-              <span className="ml-auto text-[10px] text-falcon-text/20 tabular-nums">
+              <span className="ml-auto flex items-center gap-2 text-[10px] text-falcon-text/45 tabular-nums">
                 Available: {formatStrk(accountBalance)}
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (accountBalance == null) return
+                    const reserve = 10n ** 16n // ~0.01 STRK for gas
+                    const max = accountBalance > reserve ? accountBalance - reserve : 0n
+                    const whole = max / 10n ** 18n
+                    const frac = max % 10n ** 18n
+                    const fracStr = frac.toString().padStart(18, "0").slice(0, 4)
+                    setAmount(`${whole}.${fracStr}`)
+                  }}
+                  className="rounded bg-falcon-accent/10 px-1.5 py-0.5 text-[10px] font-medium text-falcon-accent/70 transition-colors hover:bg-falcon-accent/20"
+                >
+                  Max
+                </button>
               </span>
             )}
           </label>
@@ -302,8 +318,10 @@ export function SendTransaction({
               exceedsBalance ? "!border-falcon-error/30" : ""
             }`}
           />
-          {exceedsBalance && (
-            <p className="mt-1 text-[11px] text-falcon-error/60">Insufficient balance</p>
+          {exceedsBalance && accountBalance != null && (
+            <p className="mt-1 text-[11px] text-falcon-error/60">
+              Insufficient balance &mdash; need {formatStrk(amountWei - accountBalance)} more
+            </p>
           )}
           {overHalf && (
             <p className="mt-1 text-[11px] text-amber-400/60">This is more than half your balance</p>
@@ -347,7 +365,20 @@ export function SendTransaction({
 
       {txPhase.phase === "error" && (
         <div className="glass-card-static glass-card-error mt-5 rounded-2xl p-5 animate-fade-in">
-          <p className="text-sm text-falcon-error/80">{txPhase.message}</p>
+          <div className="flex items-start gap-3">
+            <div className="flex-1">
+              <p className="text-sm text-falcon-error/80">{txPhase.message}</p>
+              {txPhase.message.toLowerCase().includes("wasm") && (
+                <p className="mt-1 text-xs text-falcon-text/35">Try refreshing the page.</p>
+              )}
+            </div>
+            <button
+              onClick={() => setTxPhase({ phase: "idle" })}
+              className="glass-btn shrink-0 rounded-lg px-3 py-1 text-xs text-falcon-text/40 hover:text-falcon-text/70"
+            >
+              Dismiss
+            </button>
+          </div>
         </div>
       )}
     </div>

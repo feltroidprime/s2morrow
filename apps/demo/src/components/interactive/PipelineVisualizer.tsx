@@ -197,6 +197,27 @@ export function PipelineVisualizer(): React.JSX.Element {
           </button>
         </div>
 
+        {/* Progress dots */}
+        <div className="mt-4 flex items-center gap-3">
+          <div className="flex items-center gap-1.5">
+            {steps.map((s) => (
+              <div
+                key={s.id}
+                className={`h-2 w-2 rounded-full transition-all duration-300 ${
+                  s.status === "complete"
+                    ? "bg-falcon-success/70"
+                    : s.status === "active"
+                      ? "bg-falcon-accent/70 animate-pulse"
+                      : "bg-falcon-muted/20"
+                }`}
+              />
+            ))}
+          </div>
+          <span className="text-[11px] tabular-nums text-falcon-text/45">
+            {steps.filter((s) => s.status === "complete").length}/{steps.length}
+          </span>
+        </div>
+
         {/* Vertical pipeline flow */}
         <div className="relative mt-10 space-y-0">
           {/* Vertical line */}
@@ -222,6 +243,19 @@ export function PipelineVisualizer(): React.JSX.Element {
             )
           })}
         </div>
+
+        {/* CTA bridge to deploy */}
+        {allComplete && (
+          <div className="mt-10 flex items-center gap-4 animate-fade-in">
+            <span className="text-sm text-falcon-text/60">Ready to see this in action?</span>
+            <a
+              href="#deploy"
+              className="inline-flex border border-falcon-accent/25 bg-falcon-accent/8 px-5 py-2 text-[11px] font-semibold tracking-wider uppercase text-falcon-accent/80 transition-all duration-300 hover:bg-falcon-accent/12 hover:border-falcon-accent/40"
+            >
+              Deploy Your Account &darr;
+            </a>
+          </div>
+        )}
       </div>
     </section>
   )
@@ -270,7 +304,7 @@ function PipelineStepCard({ step, index }: { step: PipelineStep; index: number }
             </span>
           )}
         </div>
-        <p className="mt-1 text-xs leading-relaxed text-falcon-text/55">{step.description}</p>
+        <p className="mt-1 text-xs leading-relaxed text-falcon-text/70">{step.description}</p>
 
         {/* Insight — shown when active or complete */}
         {(isActive || isComplete) && step.insight && (
@@ -290,11 +324,11 @@ function PipelineStepCard({ step, index }: { step: PipelineStep; index: number }
           <div className="mt-4 space-y-2 border-t border-falcon-accent/6 pt-3">
             <div className="text-xs">
               <span className="text-[10px] text-falcon-text/65">In: </span>
-              <span className="text-falcon-text/45">{step.input}</span>
+              <span className="text-falcon-text/60">{step.input}</span>
             </div>
             <div className="text-xs">
               <span className="text-[10px] text-falcon-text/65">Out: </span>
-              <span className="text-falcon-text/45">{step.output}</span>
+              <span className="text-falcon-text/60">{step.output}</span>
             </div>
           </div>
         )}

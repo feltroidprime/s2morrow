@@ -366,10 +366,12 @@ export function KeyManagementPanel(): React.JSX.Element {
           <button
             onClick={handleExport}
             disabled={!hasKeypair || !hasPacked}
-            className={`glass-btn rounded-xl px-5 py-2.5 text-sm font-medium transition-all duration-200 hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-40 ${
+            className={`rounded-xl px-5 py-2.5 text-sm font-medium transition-all duration-200 hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-40 ${
               exportSuccess
-                ? "text-falcon-success/80"
-                : "text-falcon-text/60 hover:text-falcon-text/80"
+                ? "glass-btn text-falcon-success/80"
+                : hasKeypair && !hasExported
+                  ? "border border-amber-500/30 bg-amber-500/10 text-amber-300/90 hover:bg-amber-500/15"
+                  : "glass-btn text-falcon-text/60 hover:text-falcon-text/80"
             }`}
           >
             {exportSuccess ? "\u2713 Exported" : "Export"}
@@ -415,7 +417,7 @@ export function KeyManagementPanel(): React.JSX.Element {
                   )
                 )}
                 {onChainBalance != null && (
-                  <TokenAmount amount={onChainBalance} className="text-xs text-falcon-text/40" />
+                  <TokenAmount amount={onChainBalance} className="text-xs text-falcon-text/55" />
                 )}
               </div>
             </>

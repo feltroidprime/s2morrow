@@ -101,7 +101,7 @@ export function SignVerifyPanel(): React.JSX.Element {
       <div>
         <label
           htmlFor="message-input"
-          className="block text-xs font-medium text-falcon-text/30"
+          className="block text-xs font-medium text-falcon-text/50"
         >
           Message
         </label>
@@ -112,7 +112,7 @@ export function SignVerifyPanel(): React.JSX.Element {
           onChange={(e) => setMessage(e.target.value)}
           disabled={isBusy}
           placeholder="Enter a message to sign..."
-          className="glass-input mt-2 w-full px-4 py-3 font-mono text-sm text-falcon-text/80 placeholder-falcon-text/20"
+          className="glass-input mt-2 w-full px-4 py-3 font-mono text-sm text-falcon-text/80 placeholder-falcon-text/35"
         />
       </div>
 
@@ -135,6 +135,16 @@ export function SignVerifyPanel(): React.JSX.Element {
           "Quantum-Sign & Verify"
         )}
       </button>
+
+      {!canSign && step.step !== "signing" && (
+        <p className="text-xs text-falcon-text/40">
+          {!Option.isSome(keypair)
+            ? "Generate a keypair first to enable signing."
+            : message.trim().length === 0
+              ? "Enter a message above to sign."
+              : null}
+        </p>
+      )}
 
       {signatureHex !== null && step.step === "complete" && (
         <div className="space-y-3">
@@ -166,7 +176,7 @@ export function SignVerifyPanel(): React.JSX.Element {
             <span className="text-sm font-medium text-falcon-text/80">
               {step.valid ? "Quantum-safe signature verified" : "Signature invalid"}
             </span>
-            <span className="ml-auto font-mono tabular-nums text-xs text-falcon-text/30">{step.durationMs}ms</span>
+            <span className="ml-auto font-mono tabular-nums text-xs text-falcon-text/50">{step.durationMs}ms</span>
           </div>
         </div>
       )}
@@ -181,13 +191,16 @@ export function SignVerifyPanel(): React.JSX.Element {
             <span className="text-lg font-semibold text-falcon-error">{"\u2717"}</span>
             <div className="flex-1">
               <p className="text-sm font-medium text-falcon-error/80">Error</p>
-              <p className="mt-1 break-all text-xs text-falcon-text/30">{step.message}</p>
+              <p className="mt-1 break-all text-xs text-falcon-text/50">{step.message}</p>
+              {step.message.toLowerCase().includes("wasm") && (
+                <p className="mt-1 text-xs text-falcon-text/35">Try refreshing the page.</p>
+              )}
             </div>
             <button
               onClick={() => setStep({ step: "idle" })}
               className="glass-btn ml-auto rounded-lg px-3 py-1 text-xs text-falcon-text/40 hover:text-falcon-text/70"
             >
-              Try Again
+              Dismiss
             </button>
           </div>
         </div>

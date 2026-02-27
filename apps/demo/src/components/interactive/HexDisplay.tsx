@@ -22,7 +22,7 @@ export function HexDisplay(props: HexDisplayProps): React.JSX.Element {
     return (
       <div>
         {label && (
-          <span className="block text-xs font-medium text-falcon-text/30">
+          <span className="block text-xs font-medium text-falcon-text/50">
             {label}
           </span>
         )}

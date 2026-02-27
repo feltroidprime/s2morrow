@@ -36,7 +36,7 @@ export function ComparisonChart(): React.JSX.Element {
         <div key={bar.label} className="flex items-center gap-4">
           <span
             className={`w-36 shrink-0 text-right text-[11px] tracking-wide sm:w-44 ${
-              bar.accent ? "font-semibold text-falcon-accent/50 text-glow" : "text-falcon-text/65"
+              bar.accent ? "font-semibold text-falcon-accent/70 text-glow" : "text-falcon-text/70"
             }`}
           >
             {bar.label}
@@ -61,7 +61,7 @@ export function ComparisonChart(): React.JSX.Element {
           </span>
         </div>
       ))}
-      <p className="pt-3 text-center text-[10px] tracking-wider uppercase text-falcon-text/55">
+      <p className="pt-3 text-center text-[10px] tracking-wider uppercase text-falcon-text/70">
         L2 gas &mdash; signature verification (lower is better)
       </p>
     </div>

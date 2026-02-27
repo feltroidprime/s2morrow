@@ -27,11 +27,20 @@ export function ScrollReveal({ children, className = "" }: ScrollRevealProps) {
           observer.unobserve(el)
         }
       },
-      { threshold: 0.1, rootMargin: "0px 0px -40px 0px" },
+      { threshold: 0.05, rootMargin: "0px 0px -20px 0px" },
     )
 
     observer.observe(el)
-    return () => observer.disconnect()
+
+    // Fallback: ensure visibility after 2s even if observer never fires
+    const fallback = setTimeout(() => {
+      el.classList.add("visible")
+    }, 2000)
+
+    return () => {
+      observer.disconnect()
+      clearTimeout(fallback)
+    }
   }, [])
 
   return (
