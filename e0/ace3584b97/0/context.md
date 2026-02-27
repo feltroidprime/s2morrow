@@ -22,3 +22,7 @@ cool but sign & verify in the playground shows a 190ms but signing before tx tak
 
 commit this and push
 
+### Prompt 4
+
+still takes 200 ms which is weird.
+

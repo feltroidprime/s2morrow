@@ -3,7 +3,7 @@
   "checkpoint_id": "e0ace3584b97",
   "strategy": "manual-commit",
   "branch": "frontend",
-  "checkpoints_count": 2,
+  "checkpoints_count": 1,
   "files_touched": [
     "apps/demo/src/app/globals.css",
     "apps/demo/src/components/interactive/AccountDeployFlow.tsx",
@@ -26,10 +26,10 @@
     }
   ],
   "token_usage": {
-    "input_tokens": 85,
-    "cache_creation_tokens": 79846,
-    "cache_read_tokens": 5910258,
-    "output_tokens": 23499,
-    "api_call_count": 79
+    "input_tokens": 14,
+    "cache_creation_tokens": 10291,
+    "cache_read_tokens": 1058664,
+    "output_tokens": 4104,
+    "api_call_count": 10
   }
 }

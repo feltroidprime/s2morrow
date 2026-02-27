@@ -3,9 +3,9 @@
   "checkpoint_id": "e0ace3584b97",
   "session_id": "50fe34f8-d96d-41f8-ab7f-44e6962e5d7e",
   "strategy": "manual-commit",
-  "created_at": "2026-02-27T15:46:03.585001322Z",
+  "created_at": "2026-02-27T15:49:30.988314809Z",
   "branch": "frontend",
-  "checkpoints_count": 2,
+  "checkpoints_count": 1,
   "files_touched": [
     "apps/demo/src/app/globals.css",
     "apps/demo/src/components/interactive/AccountDeployFlow.tsx",
@@ -19,20 +19,23 @@
     "apps/demo/src/components/ui/TransactionPhases.tsx"
   ],
   "agent": "Claude Code",
+  "transcript_identifier_at_start": "2d294919-5b4b-4175-8516-08aa3f7d43ec",
+  "checkpoint_transcript_start": 298,
+  "transcript_lines_at_start": 298,
   "token_usage": {
-    "input_tokens": 85,
-    "cache_creation_tokens": 79846,
-    "cache_read_tokens": 5910258,
-    "output_tokens": 23499,
-    "api_call_count": 79
+    "input_tokens": 14,
+    "cache_creation_tokens": 10291,
+    "cache_read_tokens": 1058664,
+    "output_tokens": 4104,
+    "api_call_count": 10
   },
   "initial_attribution": {
-    "calculated_at": "2026-02-27T15:46:03.508803538Z",
-    "agent_lines": 623,
+    "calculated_at": "2026-02-27T15:49:30.901186424Z",
+    "agent_lines": 0,
     "human_added": 0,
-    "human_modified": 0,
-    "human_removed": 0,
-    "total_committed": 623,
-    "agent_percentage": 100
+    "human_modified": 22,
+    "human_removed": 30,
+    "total_committed": 0,
+    "agent_percentage": 0
   }
 }
