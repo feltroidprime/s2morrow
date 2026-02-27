@@ -73,6 +73,8 @@ html {
 
 body {
   background: var(--mesh-gradient), var(--color-falcon-bg);
+  background-size: 200% 200%, 200% 200%, 200% 200%, auto;
+  animation: aurora-shift 30s ease-in-out infinite;
   min-height: 100vh;
 }
 
@@ -362,20 +364,158 @@ body > main {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  body {
+    animation: none;
+  }
+
   .animate-fade-in,
   .animate-scale-in,
   .animate-slide-up,
   .animate-pulse-glow,
   .animate-spin-ring,
   .animate-progress-indeterminate,
-  .animate-text-breathe {
+  .animate-text-breathe,
+  .shield-protected,
+  .animate-node-complete,
+  .animate-pop-in,
+  .animate-shield-draw,
+  .animate-check-draw,
+  .status-dot-protected {
     animation: none;
+  }
+
+  .energy-conduit {
+    animation: none;
+    background: var(--color-falcon-success);
+  }
+
+  .quantum-scan-line {
+    display: none;
   }
 
   .animate-success-shimmer::after {
     animation: none;
   }
 }
+
+/* ─── Aurora background drift ─────────────────────────────────────── */
+@keyframes aurora-shift {
+  0%   { background-position: 0% 50%, 100% 50%, 50% 100%; }
+  50%  { background-position: 100% 30%, 0% 70%, 50% 0%; }
+  100% { background-position: 0% 50%, 100% 50%, 50% 100%; }
+}
+
+/* ─── Shield breathing (deployed idle state) ─────────────────────── */
+@keyframes shield-breathe {
+  0%, 100% {
+    border-color: rgba(16, 185, 129, 0.08);
+    box-shadow: var(--glass-shadow), 0 0 20px -5px rgba(16, 185, 129, 0.05);
+  }
+  50% {
+    border-color: rgba(16, 185, 129, 0.2);
+    box-shadow: var(--glass-shadow), 0 0 30px -5px rgba(16, 185, 129, 0.15);
+  }
+}
+
+.shield-protected { animation: shield-breathe 4s ease-in-out infinite; }
+
+/* ─── Node completion burst (step dots) ──────────────────────────── */
+@keyframes node-complete {
+  0%  { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+  70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+  100% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+}
+
+.animate-node-complete { animation: node-complete 0.6s ease-out; }
+
+/* ─── Energy flow (deploy pipeline line) ─────────────────────────── */
+@keyframes energy-flow {
+  0%   { background-position: 0% 0%; }
+  100% { background-position: 0% 200%; }
+}
+
+.energy-conduit {
+  width: 2px;
+  background: linear-gradient(
+    180deg,
+    var(--color-falcon-success) 0%,
+    var(--color-falcon-primary) 40%,
+    rgba(99, 102, 241, 0.1) 60%,
+    transparent 100%
+  );
+  background-size: 100% 200%;
+  animation: energy-flow 3s linear infinite;
+}
+
+/* ─── Quantum scan line (active step indicator) ──────────────────── */
+@keyframes quantum-scan {
+  0%, 100% { left: -30%; opacity: 0; }
+  10%      { opacity: 0.8; }
+  50%      { left: 100%; }
+  90%      { opacity: 0.8; }
+}
+
+.quantum-scan-line {
+  position: absolute;
+  width: 30%;
+  height: 1px;
+  top: 50%;
+  background: linear-gradient(90deg, transparent, var(--color-falcon-accent), transparent);
+  animation: quantum-scan 2.5s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* ─── Lattice dot activation (keygen visualization) ──────────────── */
+@keyframes dot-activate {
+  0%   { background: rgba(99, 102, 241, 0.05); transform: scale(0.5); }
+  50%  { background: rgba(99, 102, 241, 0.8); transform: scale(1.4); }
+  100% { background: rgba(99, 102, 241, 0.3); transform: scale(1); }
+}
+
+/* ─── Status pulse dot (quantum-safe indicator) ──────────────────── */
+@keyframes status-pulse {
+  0%, 100% { opacity: 0.4; box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+  50%      { opacity: 1;   box-shadow: 0 0 0 4px rgba(16, 185, 129, 0); }
+}
+
+.status-dot-protected {
+  display: inline-block;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--color-falcon-success);
+  animation: status-pulse 3s ease-in-out infinite;
+}
+
+/* ─── Shield draw (SVG stroke animation) ─────────────────────────── */
+@keyframes shield-draw {
+  from { stroke-dashoffset: 80; }
+  to   { stroke-dashoffset: 0; }
+}
+
+.animate-shield-draw {
+  stroke-dasharray: 80;
+  animation: shield-draw 0.8s cubic-bezier(0.32, 0.72, 0, 1) forwards;
+}
+
+/* ─── Check draw (animated checkmark) ────────────────────────────── */
+@keyframes check-draw {
+  from { stroke-dashoffset: 20; }
+  to   { stroke-dashoffset: 0; }
+}
+
+.animate-check-draw {
+  stroke-dasharray: 20;
+  animation: check-draw 0.4s cubic-bezier(0.32, 0.72, 0, 1) forwards;
+}
+
+/* ─── Pop-in (micro-bounce for step completions) ─────────────────── */
+@keyframes pop-in {
+  0%   { transform: scale(0); opacity: 0; }
+  60%  { transform: scale(1.15); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.animate-pop-in { animation: pop-in 0.3s cubic-bezier(0.32, 0.72, 0, 1) both; }
 
 /* ─── Custom scrollbar ─────────────────────────────────────────────── */
 ::-webkit-scrollbar {

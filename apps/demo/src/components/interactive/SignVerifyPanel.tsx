@@ -14,6 +14,7 @@ import {
 } from "@/atoms/falcon"
 import { HexDisplay } from "./HexDisplay"
 import { bytesToHex, getVerificationDisabledState } from "./verification-utils"
+import { QuantumShield } from "@/components/ui/QuantumShield"
 
 const appRuntime = ManagedRuntime.make(
   FalconService.Default.pipe(Layer.provide(WasmRuntimeLive)),
@@ -43,13 +44,15 @@ export function SignVerifyPanel(): React.JSX.Element {
     })
     if (!kp) return
 
-    const startTime = Date.now()
     const messageBytes = new TextEncoder().encode(message)
+    let computeMs = 0
 
     setStep({ step: "signing" })
+    let t0 = performance.now()
     const signExit = await appRuntime.runPromiseExit(
       FalconService.sign(kp.secretKey, messageBytes),
     )
+    computeMs += performance.now() - t0
 
     if (Exit.isFailure(signExit)) {
       const errOpt = Cause.failureOption(signExit.cause)
@@ -69,9 +72,11 @@ export function SignVerifyPanel(): React.JSX.Element {
     for (let i = 0; i < kp.publicKeyNtt.length; i++) {
       pkNtt16[i] = kp.publicKeyNtt[i]
     }
+    t0 = performance.now()
     const packExit = await appRuntime.runPromiseExit(
       FalconService.packPublicKey(pkNtt16),
     )
+    computeMs += performance.now() - t0
 
     if (Exit.isFailure(packExit)) {
       const errOpt = Cause.failureOption(packExit.cause)
@@ -86,9 +91,11 @@ export function SignVerifyPanel(): React.JSX.Element {
     setPackedKey(Option.some(packExit.value))
 
     setStep({ step: "verifying", substep: "verify" })
+    t0 = performance.now()
     const verifyExit = await appRuntime.runPromiseExit(
       FalconService.verify(kp.verifyingKey, messageBytes, sigResult.signature),
     )
+    computeMs += performance.now() - t0
 
     if (Exit.isFailure(verifyExit)) {
       const errOpt = Cause.failureOption(verifyExit.cause)
@@ -100,7 +107,7 @@ export function SignVerifyPanel(): React.JSX.Element {
       return
     }
 
-    const durationMs = Date.now() - startTime
+    const durationMs = Math.round(computeMs)
     setStep({ step: "complete", valid: verifyExit.value, durationMs })
   }, [keypair, message, setPackedKey, setSignature, setStep])
 
@@ -116,7 +123,10 @@ export function SignVerifyPanel(): React.JSX.Element {
 
   return (
     <div className="space-y-5">
-      <h3 className="text-base font-semibold tracking-tight text-falcon-text/90">Sign & Verify</h3>
+      <h3 className="flex items-center gap-2 text-base font-semibold tracking-tight text-falcon-text/90">
+        <QuantumShield size="sm" />
+        Quantum Sign & Verify
+      </h3>
 
       <div>
         <label
@@ -147,11 +157,12 @@ export function SignVerifyPanel(): React.JSX.Element {
             <svg className="animate-spin-ring" width="20" height="20" viewBox="0 0 20 20" fill="none">
               <circle cx="10" cy="10" r="7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="opacity-20" />
               <circle cx="10" cy="10" r="7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeDasharray="33" strokeDashoffset="23" />
+              <circle cx="10" cy="10" r="9" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeDasharray="40" strokeDashoffset="30" className="opacity-30" style={{ animation: "spin-ring 1.8s cubic-bezier(0.5, 0, 0.5, 1) infinite reverse" }} />
             </svg>
-            {step.step === "signing" ? "Signing..." : step.step === "packing" ? "Packing..." : "Verifying..."}
+            {step.step === "signing" ? "Quantum-signing..." : step.step === "packing" ? "Packing..." : "Verifying..."}
           </>
         ) : (
-          "Sign & Verify"
+          "Quantum-Sign & Verify"
         )}
       </button>
 
@@ -176,14 +187,14 @@ export function SignVerifyPanel(): React.JSX.Element {
         <div
           role="status"
           aria-live="polite"
-          className={`glass-card-static rounded-2xl p-5 animate-fade-in ${step.valid ? "glass-card-success" : "glass-card-error"}`}
+          className={`glass-card-static rounded-2xl p-5 animate-fade-in ${step.valid ? "glass-card-success shield-protected" : "glass-card-error"}`}
         >
           <div className="flex items-center gap-3">
             <span className={`text-lg font-semibold ${step.valid ? "text-falcon-success" : "text-falcon-error"}`}>
               {step.valid ? "\u2713" : "\u2717"}
             </span>
             <span className="text-sm font-medium text-falcon-text/80">
-              {step.valid ? "Signature valid" : "Signature invalid"}
+              {step.valid ? "Quantum-safe signature verified" : "Signature invalid"}
             </span>
             <span className="ml-auto font-mono tabular-nums text-xs text-falcon-text/30">{step.durationMs}ms</span>
           </div>

@@ -14,6 +14,8 @@ import { FalconSigner } from "@/services/FalconSigner"
 import { extractUserMessage } from "@/services/error-messages"
 import { ExplorerLink } from "@/components/ui/ExplorerLink"
 import { TransactionPhases } from "@/components/ui/TransactionPhases"
+import { QuantumShield } from "@/components/ui/QuantumShield"
+import { ParticleBurst } from "@/components/ui/ParticleBurst"
 import type { ContractAddress } from "@/services/types"
 import type { ManagedRuntime } from "effect"
 import type { FalconService } from "@/services/FalconService"
@@ -238,7 +240,10 @@ export function SendTransaction({
 
   return (
     <div className="glass-card-static mt-8 rounded-2xl p-6">
-      <h3 className="text-base font-semibold tracking-tight text-falcon-text/90">Test Your Falcon Account</h3>
+      <h3 className="flex items-center gap-2 text-base font-semibold tracking-tight text-falcon-text/90">
+        <QuantumShield size="sm" />
+        Test Your Quantum-Safe Account
+      </h3>
       <p className="mt-1.5 text-xs text-falcon-text/30">
         Send a small amount of STRK to yourself to verify your post-quantum account works correctly.
       </p>
@@ -310,7 +315,7 @@ export function SendTransaction({
           disabled={isBusy || !Option.isSome(keypair) || !recipientValid || exceedsBalance}
           className="rounded-xl bg-gradient-to-b from-falcon-accent to-falcon-accent/80 px-7 py-3 text-sm font-semibold text-white shadow-md shadow-falcon-accent/15 transition-all duration-200 hover:scale-[1.02] hover:shadow-lg hover:shadow-falcon-accent/20 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-falcon-accent/40 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:scale-100"
         >
-          {txPhase.phase === "prefetching" ? "Preparing..." : isBusy ? "Sending..." : "Send STRK"}
+          {txPhase.phase === "prefetching" ? "Preparing..." : isBusy ? "Quantum-signing..." : "Quantum-Sign & Send"}
         </button>
       </div>
 
@@ -322,8 +327,9 @@ export function SendTransaction({
       )}
 
       {txPhase.phase === "done" && (
-        <div className="glass-card-static glass-card-success mt-5 rounded-2xl p-5 animate-fade-in animate-success-shimmer">
-          <p className="text-sm font-medium text-falcon-success/80">Transaction Confirmed</p>
+        <div className="glass-card-static glass-card-success shield-protected relative mt-5 overflow-hidden rounded-2xl p-5 animate-fade-in animate-success-shimmer">
+          <ParticleBurst trigger={txPhase.phase === "done"} />
+          <p className="relative z-10 text-sm font-medium text-falcon-success/80">Quantum-Safe Transaction Confirmed</p>
           <div className="mt-3 flex flex-wrap gap-3">
             <span className="inline-flex items-center gap-1.5 rounded-lg bg-falcon-success/10 px-2.5 py-1 text-xs font-medium tabular-nums text-falcon-success/80">
               Signed in {formatMs(txPhase.signMs)}

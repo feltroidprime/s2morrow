@@ -23,6 +23,8 @@ import { AddressDisplay } from "@/components/ui/AddressDisplay"
 import { ExplorerLink } from "@/components/ui/ExplorerLink"
 import { TokenAmount } from "@/components/ui/TokenAmount"
 import { TransactionPending } from "@/components/ui/TransactionPending"
+import { QuantumShield } from "@/components/ui/QuantumShield"
+import { ParticleBurst } from "@/components/ui/ParticleBurst"
 import type { PreparedAccountDeploy } from "./accountDeployPipeline"
 import {
   deployAccountEffect,
@@ -71,6 +73,7 @@ export function AccountDeployFlow(): React.JSX.Element {
   const [deployStartTime, setDeployStartTime] = useState<number | null>(null)
   const [lastChecked, setLastChecked] = useState<number | null>(null)
   const [isRefreshing, setIsRefreshing] = useState(false)
+  const [justDeployed, setJustDeployed] = useState(false)
 
   // ── Auto-restore: if keypair+packedKey exist in localStorage, restore flow state ──
   const autoRestoreRan = useRef(false)
@@ -134,6 +137,17 @@ export function AccountDeployFlow(): React.JSX.Element {
     autoRestoreRan.current = false
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [networkId])
+
+  // Reset on keypair change (wallet import/generate)
+  const packedKeyValue = Option.getOrUndefined(packedKey)
+  useEffect(() => {
+    if (!packedKeyValue) return
+    setDeployStep({ step: "idle" })
+    setPreparedDeploy(Option.none())
+    setBalance(null)
+    autoRestoreRan.current = false
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [packedKeyValue])
 
   useEffect(() => {
     if (!networkConfig.isDevnet) {
@@ -278,6 +292,7 @@ export function AccountDeployFlow(): React.JSX.Element {
       address: deployExit.value.address,
     })
     setDeployStartTime(null)
+    setJustDeployed(true)
 
     // Fetch remaining balance after deploy
     const balExit = await deployRuntimeRef.current.runPromiseExit(
@@ -345,7 +360,7 @@ export function AccountDeployFlow(): React.JSX.Element {
       case "idle":
         return "Account deploy flow is idle."
       case "generating-keypair":
-        return "Generating Falcon keypair."
+        return "Generating quantum-safe Falcon keypair."
       case "packing":
         return "Packing Falcon public key."
       case "computing-address":
@@ -353,9 +368,9 @@ export function AccountDeployFlow(): React.JSX.Element {
       case "awaiting-funds":
         return `Waiting for funds at ${deployStep.address}.`
       case "deploying":
-        return "Deploying account transaction."
+        return "Deploying quantum-safe account."
       case "deployed":
-        return `Account deployed with transaction hash ${deployStep.txHash}.`
+        return `Quantum account deployed with transaction hash ${deployStep.txHash}.`
       case "error":
         return deployStep.message
     }
@@ -394,17 +409,18 @@ export function AccountDeployFlow(): React.JSX.Element {
         {/* Auto-restore loading state */}
         {autoRestoring && (
           <div className="mt-8 flex items-center gap-3 text-sm text-falcon-text/40">
+            <QuantumShield size="sm" />
             <div className="h-4 w-4 animate-spin rounded-full border-2 border-falcon-primary/30 border-t-falcon-primary" />
-            Restoring your wallet...
+            Restoring your quantum-safe wallet...
           </div>
         )}
 
         {/* Vertical progress line with step cards */}
         {!autoRestoring && (
           <div className="relative mt-10 space-y-0">
-            {/* Vertical line */}
+            {/* Vertical energy conduit */}
             <div
-              className="absolute left-[19px] top-4 bottom-4 w-px bg-falcon-muted/15"
+              className="absolute left-[19px] top-4 bottom-4 energy-conduit"
             />
 
             {DEPLOY_STEPS.map((s) => (
@@ -414,7 +430,7 @@ export function AccountDeployFlow(): React.JSX.Element {
                   <div
                     className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold transition-all duration-300 ${
                       s.complete
-                        ? "bg-falcon-success/15 text-falcon-success"
+                        ? "bg-falcon-success/15 text-falcon-success animate-node-complete animate-pop-in"
                         : s.active
                           ? "bg-falcon-primary/15 text-falcon-primary shadow-[0_0_12px_rgba(99,102,241,0.3)]"
                           : "text-falcon-text/40 bg-falcon-muted/10 border border-falcon-muted/20"
@@ -422,6 +438,7 @@ export function AccountDeployFlow(): React.JSX.Element {
                   >
                     {s.complete ? "\u2713" : s.number}
                   </div>
+                  {s.active && <span className="quantum-scan-line" />}
                 </div>
 
                 {/* Step content */}
@@ -538,10 +555,10 @@ export function AccountDeployFlow(): React.JSX.Element {
 
         {deployStep.step === "deploying" && (
           <TransactionPending
-            title="Deploying account..."
-            subtitle={`Signing with Falcon-512 and submitting to ${networkConfig.name}`}
+            title="Deploying quantum-safe account..."
+            subtitle="Falcon-512 post-quantum signature in progress..."
             startTime={deployStartTime ?? undefined}
-            hint="Falcon verification takes ~30-60 seconds on testnet"
+            hint="Quantum-safe verification takes ~30-60s on testnet"
           />
         )}
 
@@ -550,31 +567,39 @@ export function AccountDeployFlow(): React.JSX.Element {
             <div
               role="status"
               aria-live="polite"
-              className="glass-card-static glass-card-success mt-8 rounded-2xl p-6 animate-fade-in animate-success-shimmer"
+              className="glass-card-static glass-card-success shield-protected relative mt-8 overflow-hidden rounded-2xl p-6 animate-fade-in animate-success-shimmer"
             >
-              <h3 className="text-sm font-semibold text-falcon-success/80">
-                {isAlreadyDeployed ? "Account Already Deployed" : "Account Deployed"}
-              </h3>
-              <AddressDisplay
-                label="Address"
-                address={deployStep.address}
-                explorerBaseUrl={networkConfig.explorerBaseUrl}
-                className="mt-3"
-              />
-              {!isAlreadyDeployed && (
-                <>
-                  <p className="mt-2 break-all font-mono tabular-nums text-xs text-falcon-text/50">
-                    Tx: {deployStep.txHash}
-                  </p>
-                  <ExplorerLink baseUrl={networkConfig.explorerBaseUrl} txHash={deployStep.txHash} className="mt-3" />
-                </>
-              )}
-              {postDeployBalance != null && (
-                <div className="mt-3 flex items-center gap-2 text-xs text-falcon-text/30">
-                  <span>Remaining balance:</span>
-                  <TokenAmount amount={postDeployBalance} className="text-falcon-text/50" />
+              <ParticleBurst trigger={justDeployed} />
+              <div className="relative z-10">
+                <div className="flex items-center gap-2">
+                  <QuantumShield animate={!isAlreadyDeployed} />
+                  <h3 className="text-sm font-semibold text-falcon-success/80">
+                    {isAlreadyDeployed ? "Quantum Account Already Deployed" : "Quantum Account Deployed"}
+                  </h3>
+                  <span className="status-dot-protected" />
                 </div>
-              )}
+                <AddressDisplay
+                  label="Address"
+                  address={deployStep.address}
+                  explorerBaseUrl={networkConfig.explorerBaseUrl}
+                  full
+                  className="mt-3"
+                />
+                {!isAlreadyDeployed && (
+                  <>
+                    <p className="mt-2 break-all font-mono tabular-nums text-xs text-falcon-text/50">
+                      Tx: {deployStep.txHash}
+                    </p>
+                    <ExplorerLink baseUrl={networkConfig.explorerBaseUrl} txHash={deployStep.txHash} className="mt-3" />
+                  </>
+                )}
+                {postDeployBalance != null && (
+                  <div className="mt-3 flex items-center gap-2 text-xs text-falcon-text/30">
+                    <span>Remaining balance:</span>
+                    <TokenAmount amount={postDeployBalance} className="text-falcon-text/50" />
+                  </div>
+                )}
+              </div>
             </div>
             <div id="send-section">
               <SendTransaction

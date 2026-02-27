@@ -22,10 +22,25 @@ import { exportKeyFile, parseKeyFile } from "@/services/keyfile"
 import type { PackedPublicKey } from "@/services/types"
 import { HexDisplay } from "./HexDisplay"
 import { bytesToHex } from "./verification-utils"
+import { QuantumShield } from "@/components/ui/QuantumShield"
+import { LatticeGrid } from "@/components/ui/LatticeGrid"
+import { EntropyStrip } from "@/components/ui/EntropyStrip"
+import { AddressDisplay } from "@/components/ui/AddressDisplay"
+import { StarknetService } from "@/services/StarknetService"
+import { TokenAmount } from "@/components/ui/TokenAmount"
 
 const appRuntime = ManagedRuntime.make(
   FalconService.Default.pipe(Layer.provide(WasmRuntimeLive)),
 )
+
+function createStarknetRuntime(rpcUrl: string, classHash: string) {
+  return ManagedRuntime.make(
+    Layer.mergeAll(
+      FalconService.Default.pipe(Layer.provide(WasmRuntimeLive)),
+      StarknetService.make(rpcUrl, classHash),
+    ),
+  )
+}
 
 function deriveAddress(packedPk: PackedPublicKey, classHash: string): string {
   const constructorCalldata = [...packedPk.slots]
@@ -48,8 +63,6 @@ export function KeyManagementPanel(): React.JSX.Element {
   const networkId = useAtomValue(networkAtom)
   const networkConfig = NETWORKS[networkId]
 
-  const [showNtt, setShowNtt] = useState(false)
-  const [showPacked, setShowPacked] = useState(false)
   const [hasExported, setHasExported] = useState(getExportedFlag)
   const [confirmReplace, setConfirmReplace] = useState<{
     currentAddr: string
@@ -58,6 +71,8 @@ export function KeyManagementPanel(): React.JSX.Element {
   } | null>(null)
   const [confirmGenerate, setConfirmGenerate] = useState(false)
   const [exportSuccess, setExportSuccess] = useState(false)
+  const [isDeployedOnChain, setIsDeployedOnChain] = useState<boolean | null>(null)
+  const [onChainBalance, setOnChainBalance] = useState<bigint | null>(null)
 
   // Sync exported flag from localStorage when keypair changes
   useEffect(() => {
@@ -74,6 +89,28 @@ export function KeyManagementPanel(): React.JSX.Element {
       return deriveAddress(pk, networkConfig.classHash)
     },
   })
+
+  // Query on-chain deployed status + balance
+  useEffect(() => {
+    if (!currentAddress) {
+      setIsDeployedOnChain(null)
+      setOnChainBalance(null)
+      return
+    }
+    let cancelled = false
+    const rt = createStarknetRuntime(networkConfig.rpcUrl, networkConfig.classHash)
+    const check = async () => {
+      const [depExit, balExit] = await Promise.all([
+        rt.runPromiseExit(StarknetService.isDeployed(currentAddress)),
+        rt.runPromiseExit(StarknetService.getBalance(currentAddress)),
+      ])
+      if (cancelled) return
+      if (Exit.isSuccess(depExit)) setIsDeployedOnChain(depExit.value)
+      if (Exit.isSuccess(balExit)) setOnChainBalance(balExit.value)
+    }
+    check()
+    return () => { cancelled = true }
+  }, [currentAddress, networkConfig.rpcUrl, networkConfig.classHash])
 
   const packPublicKey = useCallback(
     async (pkNtt: Int32Array) => {
@@ -225,19 +262,12 @@ export function KeyManagementPanel(): React.JSX.Element {
     onSome: (kp) => "0x" + bytesToHex(kp.verifyingKey),
   })
 
-  const nttCoeffs = Option.match(keypair, {
-    onNone: () => null,
-    onSome: (kp) => Array.from(kp.publicKeyNtt),
-  })
-
-  const packedSlots = Option.match(packedKey, {
-    onNone: () => null,
-    onSome: (pk) => pk.slots,
-  })
-
   return (
     <div className="space-y-5">
-      <h3 className="text-base font-semibold tracking-tight text-falcon-text/90">Key Management</h3>
+      <h3 className="flex items-center gap-2 text-base font-semibold tracking-tight text-falcon-text/90">
+        <QuantumShield size="sm" />
+        Quantum Key Vault
+      </h3>
 
       {/* Backup warning */}
       {hasKeypair && !hasExported && (
@@ -264,7 +294,7 @@ export function KeyManagementPanel(): React.JSX.Element {
       {confirmGenerate && currentAddress && (
         <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-4 space-y-3 animate-fade-in">
           <p className="text-xs font-medium text-amber-300/90">
-            Replace existing wallet?
+            Replace existing quantum wallet?
           </p>
           <p className="text-xs text-amber-300/60">
             You already have a wallet at <span className="font-mono text-amber-300/80">{truncateAddress(currentAddress)}</span>.
@@ -317,90 +347,78 @@ export function KeyManagementPanel(): React.JSX.Element {
         </div>
       )}
 
-      <div className="flex flex-wrap gap-2">
-        <button
-          onClick={handleGenerate}
-          disabled={isBusy}
-          className="rounded-xl bg-gradient-to-b from-falcon-primary to-falcon-primary/80 px-5 py-2.5 text-sm font-semibold text-white shadow-md shadow-falcon-primary/15 transition-all duration-200 hover:scale-[1.02] hover:shadow-lg hover:shadow-falcon-primary/20 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:scale-100"
-        >
-          {isBusy ? "Generating..." : "Generate"}
-        </button>
-        <button
-          onClick={handleImport}
-          disabled={isBusy}
-          className="glass-btn rounded-xl px-5 py-2.5 text-sm font-medium text-falcon-text/60 transition-all duration-200 hover:scale-[1.02] hover:text-falcon-text/80 disabled:cursor-not-allowed disabled:opacity-40"
-        >
-          Import
-        </button>
-        <button
-          onClick={handleExport}
-          disabled={!hasKeypair || !hasPacked}
-          className={`glass-btn rounded-xl px-5 py-2.5 text-sm font-medium transition-all duration-200 hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-40 ${
-            exportSuccess
-              ? "text-falcon-success/80"
-              : "text-falcon-text/60 hover:text-falcon-text/80"
-          }`}
-        >
-          {exportSuccess ? "\u2713 Exported" : "Export"}
-        </button>
+      <div className="relative">
+        <div className="flex flex-wrap gap-2">
+          <button
+            onClick={handleGenerate}
+            disabled={isBusy}
+            className="rounded-xl bg-gradient-to-b from-falcon-primary to-falcon-primary/80 px-5 py-2.5 text-sm font-semibold text-white shadow-md shadow-falcon-primary/15 transition-all duration-200 hover:scale-[1.02] hover:shadow-lg hover:shadow-falcon-primary/20 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:scale-100"
+          >
+            {isBusy ? "Generating..." : "Generate"}
+          </button>
+          <button
+            onClick={handleImport}
+            disabled={isBusy}
+            className="glass-btn rounded-xl px-5 py-2.5 text-sm font-medium text-falcon-text/60 transition-all duration-200 hover:scale-[1.02] hover:text-falcon-text/80 disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            Import
+          </button>
+          <button
+            onClick={handleExport}
+            disabled={!hasKeypair || !hasPacked}
+            className={`glass-btn rounded-xl px-5 py-2.5 text-sm font-medium transition-all duration-200 hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-40 ${
+              exportSuccess
+                ? "text-falcon-success/80"
+                : "text-falcon-text/60 hover:text-falcon-text/80"
+            }`}
+          >
+            {exportSuccess ? "\u2713 Exported" : "Export"}
+          </button>
+        </div>
+        {isBusy && (
+          <div className="mt-3 space-y-2">
+            <LatticeGrid active={isBusy} />
+            <EntropyStrip active={isBusy} />
+          </div>
+        )}
       </div>
 
       {keypairHex !== null && (
         <div className="space-y-4">
           <HexDisplay
-            label="Verifying Key (896-byte h polynomial)"
+            label="Quantum-Resistant Verifying Key"
             value={keypairHex}
             truncate={{ head: 18, tail: 8 }}
           />
 
-          {/* Address display — always show when key exists */}
           {currentAddress && (
-            <div className="glass-card-static rounded-xl p-3">
-              <p className="text-[10px] font-medium tracking-widest text-falcon-text/20 uppercase">
-                Your Starknet Address
-              </p>
-              <p className="mt-1 break-all font-mono text-xs text-falcon-accent/70">
-                {currentAddress}
-              </p>
-            </div>
-          )}
+            <>
+              <AddressDisplay
+                address={currentAddress}
+                full
+                label="Your Quantum-Protected Address"
+                explorerBaseUrl={networkConfig.explorerBaseUrl}
+              />
 
-          {nttCoeffs !== null && (
-            <div>
-              <button
-                onClick={() => setShowNtt(!showNtt)}
-                className="flex items-center gap-1.5 text-xs font-medium text-falcon-text/30 transition-colors duration-200 hover:text-falcon-text/60"
-              >
-                <span className="text-[10px]">{showNtt ? "\u25BC" : "\u25B6"}</span>
-                NTT Coefficients ({nttCoeffs.length})
-              </button>
-              {showNtt && (
-                <div className="glass-display mt-2 max-h-32 overflow-y-auto rounded-lg px-3 py-2 font-mono text-xs text-falcon-accent/50">
-                  [{nttCoeffs.slice(0, 20).join(", ")}
-                  {nttCoeffs.length > 20 && `, ... ${nttCoeffs.length - 20} more`}]
-                </div>
-              )}
-            </div>
-          )}
-
-          {packedSlots !== null && (
-            <div>
-              <button
-                onClick={() => setShowPacked(!showPacked)}
-                className="flex items-center gap-1.5 text-xs font-medium text-falcon-text/30 transition-colors duration-200 hover:text-falcon-text/60"
-              >
-                <span className="text-[10px]">{showPacked ? "\u25BC" : "\u25B6"}</span>
-                Packed Public Key ({packedSlots.length} felt252 slots)
-              </button>
-              {showPacked && (
-                <HexDisplay
-                  label=""
-                  value={packedSlots}
-                  maxRows={29}
-                  truncate={{ head: 18, tail: 8 }}
-                />
-              )}
-            </div>
+              {/* Deployed + balance status */}
+              <div className="flex flex-wrap items-center gap-3">
+                {isDeployedOnChain != null && (
+                  isDeployedOnChain ? (
+                    <span className="inline-flex items-center gap-1.5 rounded-lg bg-falcon-success/10 px-2.5 py-1 text-xs font-medium text-falcon-success/80">
+                      <span className="status-dot-protected" />
+                      Deployed
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1.5 rounded-lg bg-falcon-muted/10 px-2.5 py-1 text-xs font-medium text-falcon-text/40">
+                      Not deployed
+                    </span>
+                  )
+                )}
+                {onChainBalance != null && (
+                  <TokenAmount amount={onChainBalance} className="text-xs text-falcon-text/40" />
+                )}
+              </div>
+            </>
           )}
         </div>
       )}

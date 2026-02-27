@@ -8,7 +8,7 @@ interface TransactionPhasesProps {
 }
 
 const PHASES = [
-  { key: "signing", label: "Falcon-512 Signing", activeLabel: "signing..." },
+  { key: "signing", label: "Quantum Signing (Falcon-512)", activeLabel: "quantum-signing..." },
   { key: "submitting", label: "Submitting to Network", activeLabel: "broadcasting..." },
   { key: "confirming", label: "Awaiting Confirmation", activeLabel: "waiting..." },
 ] as const
