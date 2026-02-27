@@ -1,0 +1,114 @@
+Implement the following plan:
+
+# UX Polish: 10 Enhancements for Production-Grade Demo
+
+## Context
+
+The Falcon-512 demo is functionally complete on Sepolia — keygen, persistence, deploy, send all work. But the fine details still say "hackathon." This plan targets 10 small, high-leverage changes that build trust, reduce confusion, and make the flow feel like a product someone would put real money into.
+
+Each enhancement is scoped to ~15-30 min of work. No new dependencies or architectural changes.
+
+---
+
+## Enhancements
+
+### 1. Replace `window.confirm()` with inline confirmation card
+**File:** `KeyManagementPanel.tsx:96`
+**Current:** `window.confirm("You already have a wallet...")` — browser-native, ugly, breaks the glass aesthetic
+**Change:** Reuse the same `confirmReplace` state pattern already used for import mismatch (line ~261). Add a `confirmGenerate` state that shows an inline glass card with "Replace Wallet" / "Cancel" buttons.
+**Why:** Native dialogs scream "prototype." A cohesive in-app confirmation builds trust.
+
+### 2. Export success toast instead of silent download
+**File:** `KeyManagementPanel.tsx:handleExport`
+**Current:** File downloads silently — user may not notice
+**Change:** After `URL.revokeObjectURL`, show a brief success state (green text on the Export button itself: "Exported ✓" for 2s, then revert to "Export"). Same pattern as `CopyButton.tsx:copied` state.
+**Why:** Confirms the action completed. Reduces "did I actually export?" anxiety.
+
+### 3. Elapsed timer on deploy pending state
+**File:** `AccountDeployFlow.tsx` + `TransactionPending.tsx`
+**Current:** "Deploying account..." with a spinner — no indication of elapsed time. Sepolia deploys take ~30-60s, feels like it might be stuck.
+**Change:** Add `startTime` ref when deploying starts. Pass it to `TransactionPending` which displays `"Deploying account... (12s)"` that ticks up every second. Add subtitle hint: `"Falcon verification takes ~30-60 seconds on testnet"`.
+**Why:** A running timer proves the app isn't frozen. Expected-time hint sets correct expectations.
+
+### 4. "Check Balance" manual refresh button
+**File:** `AccountDeployFlow.tsx:158-180` (balance polling block)
+**Current:** Silent 5s polling with no user control or timestamp
+**Change:** Add a small "Refresh" button next to the balance display that triggers an immediate re-fetch (with spinner). Show "Last checked Xs ago" next to balance that ticks up between polls.
+**Why:** Users waiting for faucet STRK need to feel they can check on demand, not stare at a number wondering if it's stale.
+
+### 5. Input validation on recipient address
+**File:** `SendTransaction.tsx:229-249`
+**Current:** Free-text input with no validation — user can paste garbage and discover the error only after signing (~134ms wait)
+**Change:** On blur, validate: must start with `0x`, must be 66 chars, must be hex. Show inline ✓ (green) or ✗ (red) badge after the input. Disable "Send STRK" if invalid. If address matches `deployedAddress`, show the "You" badge.
+**Why:** Catches paste errors before an expensive Falcon signature. Matches Revolut-level input polish.
+
+### 6. Amount guard: warn if sending more than 50% of balance
+**File:** `SendTransaction.tsx`
+**Current:** No balance awareness in send form
+**Change:** Fetch balance on mount (one call, reuse the deployRuntime). If `amount > balance * 0.5`, show an amber warning: "This is more than half your balance." If `amount > balance`, disable send with red text: "Insufficient balance." Show available balance next to the amount input.
+**Why:** Prevents accidental drain. Shows the app understands the user's financial context.
+
+### 7. Smooth scroll to next step on deploy success
+**File:** `AccountDeployFlow.tsx:198-202` (deploy success handler)
+**Current:** After deploy, success card + SendTransaction appear below. User may not see them without scrolling.
+**Change:** After `setDeployStep({ step: "deployed", ... })`, add `setTimeout(() => document.getElementById('send-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 300)`. Add `id="send-section"` to the SendTransaction wrapper div.
+**Why:** Guides the user through the happy path. They don't wonder "now what?" — the app shows them.
+
+### 8. Signing phase spinner on Sign & Verify button
+**File:** `SignVerifyPanel.tsx:139-148`
+**Current:** Button says "Running..." — no visual indicator
+**Change:** Replace "Running..." with an inline spinner SVG (same 20x20 ring spinner from `TransactionPhases.tsx`) + "Signing..." text. Also show phased progress: "Signing..." → "Packing..." → "Verifying..." to match the `step` state.
+**Why:** The sign & verify playground is the first interaction. A polished loading state sets the tone for the whole experience.
+
+### 9. Success confetti / celebration micro-animation on deploy
+**File:** `AccountDeployFlow.tsx` (deployed state block)
+**Current:** Green success card appears with `animate-fade-in` — clean but unremarkable
+**Change:** Add a CSS-only "shimmer" effect that sweeps across the success card once on mount (keyframe: translate a gradient overlay from left to right over 0.8s). Add to `globals.css` as `animate-success-shimmer`. Apply to the deployed card and the tx-confirmed card.
+**Why:** A brief celebration moment rewards the user. It says "this was a big deal and you did it." The shimmer is subtle enough to feel premium, not cheesy.
+
+### 10. Show deploy cost / remaining balance after deploy
+**File:** `AccountDeployFlow.tsx` (deployed state) + `SendTransaction.tsx` (on mount)
+**Current:** After deploy, user has no idea how much STRK was spent or remains
+**Change:** In the deployed success card, show "Remaining balance: 0.XXXX STRK". Fetch balance once after deploy confirms. In SendTransaction, show "Available: X.XXXX STRK" below the amount field.
+**Why:** Financial transparency. The user needs to know if they have enough for the test transaction. Removes the "will this work?" uncertainty.
+
+---
+
+## Files to Modify
+
+| File | Enhancements |
+|------|-------------|
+| `apps/demo/src/components/interactive/KeyManagementPanel.tsx` | #1, #2 |
+| `apps/demo/src/components/interactive/AccountDeployFlow.tsx` | #3, #4, #7, #9, #10 |
+| `apps/demo/src/components/interactive/SendTransaction.tsx` | #5, #6, #10 |
+| `apps/demo/src/components/interactive/SignVerifyPanel.tsx` | #8 |
+| `apps/demo/src/components/ui/TransactionPending.tsx` | #3 |
+| `apps/demo/src/app/globals.css` | #9 |
+
+## Verification
+
+1. `npx next build` — must pass with no new errors
+2. Surf test on localhost:
+   - Generate key → verify inline confirmation on re-generate (not browser dialog)
+   - Export → verify "Exported ✓" button state
+   - Deploy → verify elapsed timer ticking, success shimmer animation
+   - Fund step → verify manual "Refresh" button works
+   - Send → verify address validation (paste bad address, see red ✗), amount guard, balance display
+   - Sign & Verify → verify phased spinner text
+   - After deploy → verify auto-scroll to send section, remaining balance shown
+3. Reload page → verify auto-restore still works correctly
+
+
+If you need specific details from before exiting plan mode (like exact code snippets, error messages, or content you generated), read the full transcript at: /home/felt/.REDACTED.jsonl
+
+---
+
+merge with upstream (git pull); i pushed some commits from another pc
+
+---
+
+push
+
+---
+
+commit and push

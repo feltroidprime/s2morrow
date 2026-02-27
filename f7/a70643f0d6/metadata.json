@@ -1,0 +1,31 @@
+{
+  "cli_version": "0.4.2",
+  "checkpoint_id": "f7a70643f0d6",
+  "strategy": "manual-commit",
+  "branch": "frontend",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/demo/src/app/globals.css",
+    "apps/demo/src/components/interactive/AccountDeployFlow.tsx",
+    "apps/demo/src/components/interactive/KeyManagementPanel.tsx",
+    "apps/demo/src/components/interactive/SendTransaction.tsx",
+    "apps/demo/src/components/interactive/SignVerifyPanel.tsx",
+    "apps/demo/src/components/ui/TransactionPending.tsx"
+  ],
+  "sessions": [
+    {
+      "metadata": "/f7/a70643f0d6/0/metadata.json",
+      "transcript": "/f7/a70643f0d6/0/full.jsonl",
+      "context": "/f7/a70643f0d6/0/context.md",
+      "content_hash": "/f7/a70643f0d6/0/content_hash.txt",
+      "prompt": "/f7/a70643f0d6/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 52,
+    "cache_creation_tokens": 60339,
+    "cache_read_tokens": 3015315,
+    "output_tokens": 12114,
+    "api_call_count": 44
+  }
+}
