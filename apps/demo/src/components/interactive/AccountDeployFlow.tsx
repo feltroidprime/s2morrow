@@ -280,10 +280,10 @@ export function AccountDeployFlow(): React.JSX.Element {
   return (
     <section id="deploy" className="px-8 py-32 lg:px-8">
       <div className="mx-auto max-w-6xl">
-        <h2 className="text-4xl font-semibold tracking-[-0.02em] text-falcon-text">Account Deploy Flow</h2>
-        <p className="mt-4 text-sm leading-relaxed text-falcon-text/40">
-          Deploy a Falcon-powered account to Starknet {networkConfig.name} with the same keypair used in
-          the verification playground.
+        <h2 className="text-4xl font-semibold tracking-[-0.02em] text-falcon-text">Deploy your own quantum-safe account</h2>
+        <p className="mt-4 text-sm leading-relaxed text-falcon-text/50">
+          Deploy a Falcon-powered account to Starknet {networkConfig.name} &mdash; takes about 60 seconds.
+          Uses the same keypair from the playground above.
         </p>
         {networkConfig.classHash === "0x0" && (
           <div className="glass-card-static glass-card-warning mt-6 rounded-2xl p-5">
