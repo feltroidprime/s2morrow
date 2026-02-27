@@ -58,13 +58,13 @@ wasm-build:
 DEMO_PORT = 3737
 
 demo-serve:
-	@if lsof -ti :$(DEMO_PORT) >/dev/null 2>&1; then \
-		echo "Port $(DEMO_PORT) already in use"; exit 1; \
+	@if fuser $(DEMO_PORT)/tcp >/dev/null 2>&1; then \
+		echo "Port $(DEMO_PORT) already in use — run 'make demo-stop' first"; exit 1; \
 	fi
 	cd apps/demo && npx next dev --turbopack -H 0.0.0.0 -p $(DEMO_PORT)
 
 demo-stop:
-	@lsof -ti :$(DEMO_PORT) | xargs -r kill && echo "Demo stopped" || echo "Nothing on port $(DEMO_PORT)"
+	@fuser -k $(DEMO_PORT)/tcp 2>/dev/null && echo "Demo stopped" || echo "Nothing on port $(DEMO_PORT)"
 
 # --- E2E & Deployment ---
 
