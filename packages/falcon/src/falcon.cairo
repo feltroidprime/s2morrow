@@ -16,7 +16,6 @@ type ZqLow = BoundedInt<0, 6144>;
 const Q_felt252: felt252 = 12289;
 
 /// Compute the squared centered norm of a single Zq element.
-#[inline(always)]
 fn center_and_square(coeff: Zq) -> felt252 {
     match downcast::<Zq, ZqLow>(coeff) {
         Option::Some(low) => {
@@ -40,7 +39,8 @@ const SIG_BOUND_512: u64 = 34034726;
 pub fn verify<H, +HashToPoint<H>, +Drop<H>>(
     pk: @FalconPublicKey, sig_with_hint: FalconSignatureWithHint, message: Span<felt252>,
 ) -> bool {
-    let msg_point = HashToPoint::<H>::hash_to_point(message, sig_with_hint.signature.salt.span());
+    let salt_span = sig_with_hint.signature.salt.span();
+    let msg_point = HashToPoint::<H>::hash_to_point(message, salt_span);
     verify_with_msg_point(pk, sig_with_hint, msg_point.span())
 }
 

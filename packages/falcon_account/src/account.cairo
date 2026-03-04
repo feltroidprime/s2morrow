@@ -111,23 +111,6 @@ pub mod FalconAccountComponent {
         }
     }
 
-    #[embeddable_as(DeployableImpl)]
-    impl Deployable<
-        TContractState,
-        +HasComponent<TContractState>,
-        +SRC5Component::HasComponent<TContractState>,
-        +Drop<TContractState>,
-    > of interface::IDeployable<ComponentState<TContractState>> {
-        fn __validate_deploy__(
-            self: @ComponentState<TContractState>,
-            class_hash: felt252,
-            contract_address_salt: felt252,
-            public_key: felt252,
-        ) -> felt252 {
-            self.validate_transaction()
-        }
-    }
-
     //
     // Internal
     //

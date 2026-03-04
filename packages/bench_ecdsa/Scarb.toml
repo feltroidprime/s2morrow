@@ -1,0 +1,12 @@
+[package]
+name = "bench_ecdsa"
+version = "0.1.0"
+edition = "2023_10"
+
+[lib]
+
+[dependencies]
+garaga = "1.0.1"
+
+[dev-dependencies]
+snforge_std = "0.53.0"

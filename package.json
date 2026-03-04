@@ -1,0 +1,9 @@
+{
+  "dependencies": {
+    "@ai-sdk/anthropic": "^3.0.46",
+    "ai": "^6.0.97",
+    "smithers-orchestrator": "^0.8.5",
+    "super-ralph": "^0.2.7",
+    "zod": "^4.3.6"
+  }
+}

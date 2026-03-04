@@ -1,0 +1,214 @@
+import { Effect } from "effect"
+import { WasmRuntime } from "./WasmRuntime"
+import {
+  KeygenError,
+  SigningError,
+  HintGenerationError,
+  PackingError,
+  VerificationError,
+} from "./errors"
+import type {
+  FalconKeypair,
+  FalconSignatureResult,
+  PackedPublicKey,
+} from "./types"
+
+// ---------------------------------------------------------------------------
+// VK byte deserialization
+// ---------------------------------------------------------------------------
+
+/**
+ * Deserialize a Falcon-512 verifying key (896 bytes) into 512 time-domain
+ * coefficients stored as an Int32Array.
+ *
+ * NOTE: The VerifyingKey stores h in the TIME domain. Callers must NTT-transform
+ * the result (via wasm.ntt_public_key) before using it for verification or signing.
+ *
+ * Format (falcon-rs, PUBLIC_KEY_LEN = 896, no header):
+ *   - 512 coefficients x 14 bits each, packed LSB-first
+ *
+ * Algorithm: maintains a bit-buffer, loading bytes from the input one at a
+ * time and extracting 14-bit windows.
+ *
+ * Throws on invalid input (too few bytes, or any coefficient >= Q=12289).
+ */
+function parsePublicKeyTimeBytes(vkBytes: Uint8Array): Int32Array {
+  const Q = 12289
+  const N = 512
+  const BITS_PER_COEFF = 14
+  const DATA_BYTES = (N * BITS_PER_COEFF) / 8 // 896
+
+  if (vkBytes.length < DATA_BYTES) {
+    throw new Error(
+      `VK too short: expected at least ${DATA_BYTES} bytes, got ${vkBytes.length}`,
+    )
+  }
+
+  const coeffs = new Int32Array(N)
+  const mask = (1 << BITS_PER_COEFF) - 1 // 0x3FFF
+
+  let bitBuffer = 0
+  let bitsInBuffer = 0
+  let byteIndex = 0
+
+  for (let i = 0; i < N; i++) {
+    while (bitsInBuffer < BITS_PER_COEFF) {
+      bitBuffer |= vkBytes[byteIndex++] << bitsInBuffer
+      bitsInBuffer += 8
+    }
+    const coeff = bitBuffer & mask
+    bitBuffer >>= BITS_PER_COEFF
+    bitsInBuffer -= BITS_PER_COEFF
+
+    if (coeff >= Q) {
+      throw new Error(
+        `Invalid VK coefficient ${coeff} at index ${i} (must be < ${Q})`,
+      )
+    }
+    coeffs[i] = coeff
+  }
+
+  return coeffs
+}
+
+// ---------------------------------------------------------------------------
+// FalconService
+// ---------------------------------------------------------------------------
+
+export class FalconService extends Effect.Service<FalconService>()(
+  "FalconService",
+  {
+    accessors: true,
+    // No pre-bundled dependencies: callers must provide WasmRuntime via Layer.
+    // This enables unit tests to inject a mock WasmRuntime without the live
+    // loader trying to fetch /wasm/falcon_rs.js at import time.
+    effect: Effect.gen(function* () {
+      const wasm = yield* WasmRuntime
+
+      const generateKeypair = Effect.fn("Falcon.generateKeypair")(
+        function* (seed?: Uint8Array) {
+          const s =
+            seed ?? crypto.getRandomValues(new Uint8Array(32))
+          const result = yield* Effect.try({
+            try: () => wasm.keygen(s),
+            catch: (error) =>
+              new KeygenError({ message: String(error) }),
+          })
+          const publicKeyTime = yield* Effect.try({
+            try: () => parsePublicKeyTimeBytes(result.vk),
+            catch: (error) =>
+              new KeygenError({ message: String(error) }),
+          })
+          // Transform to NTT domain — required for Cairo verification and hint generation
+          const publicKeyNtt = yield* Effect.try({
+            try: () => new Int32Array(wasm.ntt_public_key(publicKeyTime)),
+            catch: (error) =>
+              new KeygenError({ message: `NTT transform failed: ${String(error)}` }),
+          })
+          return {
+            secretKey: result.sk,
+            verifyingKey: result.vk,
+            publicKeyNtt,
+          } satisfies FalconKeypair
+        },
+      )
+
+      const sign = Effect.fn("Falcon.sign")(
+        function* (
+          secretKey: Uint8Array,
+          message: Uint8Array,
+        ) {
+          const result = yield* Effect.try({
+            try: () =>
+              wasm.sign(secretKey, message, crypto.getRandomValues(new Uint8Array(40))),
+            catch: (error) =>
+              new SigningError({ message: String(error) }),
+          })
+          return result satisfies FalconSignatureResult
+        },
+      )
+
+      const verify = Effect.fn("Falcon.verify")(
+        function* (
+          verifyingKey: Uint8Array,
+          message: Uint8Array,
+          signature: Uint8Array,
+        ) {
+          return yield* Effect.try({
+            try: () => wasm.verify(verifyingKey, message, signature),
+            catch: (error) =>
+              new VerificationError({
+                message: String(error),
+                step: "verify",
+              }),
+          })
+        },
+      )
+
+      const createHint = Effect.fn("Falcon.createHint")(
+        function* (
+          s1: Int32Array,
+          pkNtt: Int32Array,
+        ) {
+          return yield* Effect.try({
+            try: () => wasm.create_verification_hint(s1, pkNtt),
+            catch: (error) =>
+              new HintGenerationError({ message: String(error) }),
+          })
+        },
+      )
+
+      const packPublicKey = Effect.fn("Falcon.packPublicKey")(
+        function* (
+          pkNtt: Uint16Array,
+        ) {
+          const slots = yield* Effect.try({
+            try: () => wasm.pack_public_key_wasm(pkNtt),
+            catch: (error) =>
+              new PackingError({ message: String(error) }),
+          })
+          return { slots } satisfies PackedPublicKey
+        },
+      )
+
+      const deserializePublicKeyNtt = Effect.fn(
+        "Falcon.deserializePublicKeyNtt",
+      )(function* (vkBytes: Uint8Array) {
+        const pkTime = yield* Effect.try({
+          try: () => parsePublicKeyTimeBytes(vkBytes),
+          catch: (error) =>
+            new KeygenError({ message: String(error) }),
+        })
+        return yield* Effect.try({
+          try: () => new Int32Array(wasm.ntt_public_key(pkTime)),
+          catch: (error) =>
+            new KeygenError({ message: `NTT transform failed: ${String(error)}` }),
+        })
+      })
+
+      const signForStarknet = Effect.fn("Falcon.signForStarknet")(
+        function* (
+          secretKey: Uint8Array,
+          txHash: string,
+          pkNtt: Int32Array,
+        ) {
+          return yield* Effect.try({
+            try: () => wasm.sign_for_starknet(secretKey, txHash, pkNtt),
+            catch: (error) =>
+              new SigningError({ message: String(error) }),
+          })
+        },
+      )
+
+      return {
+        generateKeypair,
+        sign,
+        verify,
+        createHint,
+        packPublicKey,
+        deserializePublicKeyNtt,
+        signForStarknet,
+      }
+    }),
+  },
+) {}

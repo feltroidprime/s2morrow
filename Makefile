@@ -42,3 +42,43 @@ regenerate-intt:
 
 regenerate-all:
 	python3 -m cairo_gen.circuits.regenerate all --n 512
+
+FALCON_RS_DIR = ../falcon-rs
+WASM_OUT_DIR = apps/demo/public/wasm
+
+wasm-build:
+	cd $(FALCON_RS_DIR) && wasm-pack build --target web --features wasm --no-default-features
+	cp $(FALCON_RS_DIR)/pkg/falcon_rs_bg.wasm $(WASM_OUT_DIR)/falcon_rs_bg.wasm
+	cp $(FALCON_RS_DIR)/pkg/falcon_rs.js $(WASM_OUT_DIR)/falcon_rs.js
+	cp $(FALCON_RS_DIR)/pkg/falcon_rs.d.ts $(WASM_OUT_DIR)/falcon_rs.d.ts
+	cp $(FALCON_RS_DIR)/pkg/falcon_rs_bg.wasm.d.ts $(WASM_OUT_DIR)/falcon_rs_bg.wasm.d.ts
+	@echo "WASM built and copied to $(WASM_OUT_DIR)"
+	@ls -lh $(WASM_OUT_DIR)/falcon_rs_bg.wasm
+
+DEMO_PORT = 3737
+
+demo-serve:
+	@if fuser $(DEMO_PORT)/tcp >/dev/null 2>&1; then \
+		echo "Port $(DEMO_PORT) already in use — run 'make demo-stop' first"; exit 1; \
+	fi
+	cd apps/demo && npx next dev --turbopack -H 0.0.0.0 -p $(DEMO_PORT)
+
+demo-stop:
+	@fuser -k $(DEMO_PORT)/tcp 2>/dev/null && echo "Demo stopped" || echo "Nothing on port $(DEMO_PORT)"
+
+# --- E2E & Deployment ---
+
+build-account:
+	scarb build --package falcon_account
+
+e2e-devnet:
+	./bin/e2e-devnet.sh
+
+declare-devnet: build-account
+	./bin/declare.sh devnet
+
+declare-sepolia: build-account
+	./bin/declare.sh sepolia
+
+deploy: wasm-build
+	cd apps/demo && vercel --prod

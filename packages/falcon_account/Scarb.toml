@@ -17,7 +17,7 @@ assert_macros = "2.15.1"
 [[target.starknet-contract]]
 allowed-libfuncs-list.name = "experimental"
 sierra = true
-casm = false
+casm = true
 
 [target-defaults.test]
 build-external-contracts = [

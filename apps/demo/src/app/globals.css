@@ -1,0 +1,607 @@
+@import "tailwindcss";
+
+@theme {
+  /* Brand colors */
+  --color-falcon-primary: #6366f1;
+  --color-falcon-accent: #06b6d4;
+  --color-falcon-success: #10b981;
+  --color-falcon-error: #ef4444;
+
+  /* Dark theme defaults */
+  --color-falcon-bg: #0f172a;
+  --color-falcon-surface: #1e293b;
+  --color-falcon-text: #f8fafc;
+  --color-falcon-muted: #94a3b8;
+}
+
+/* ─── Dark mode ─────────────────────────────────────────────────────── */
+.dark {
+  --color-falcon-bg: #0f172a;
+  --color-falcon-surface: #1e293b;
+  --color-falcon-text: #f8fafc;
+  --color-falcon-muted: #94a3b8;
+
+  /* Glass tokens — dark */
+  --glass-bg: rgba(255, 255, 255, 0.04);
+  --glass-bg-heavy: rgba(15, 23, 42, 0.85);
+  --glass-border: rgba(255, 255, 255, 0.06);
+  --glass-border-hover: rgba(255, 255, 255, 0.1);
+  --glass-shadow: 0 8px 40px -12px rgba(0, 0, 0, 0.5);
+  --glass-shadow-glow: 0 0 30px -5px rgba(99, 102, 241, 0.15);
+  --glass-shadow-success: 0 0 30px -5px rgba(16, 185, 129, 0.15);
+  --glass-shadow-error: 0 0 30px -5px rgba(239, 68, 68, 0.15);
+
+  --mesh-gradient:
+    radial-gradient(ellipse at 20% 50%, rgba(99, 102, 241, 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgba(6, 182, 212, 0.06) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 100%, rgba(16, 185, 129, 0.04) 0%, transparent 50%);
+}
+
+/* ─── Light mode ────────────────────────────────────────────────────── */
+.light {
+  --color-falcon-bg: #fafbfd;
+  --color-falcon-surface: #f1f5f9;
+  --color-falcon-text: #0f172a;
+  --color-falcon-muted: #64748b;
+
+  /* Glass tokens — light */
+  --glass-bg: rgba(255, 255, 255, 0.60);
+  --glass-bg-heavy: rgba(255, 255, 255, 0.75);
+  --glass-border: rgba(0, 0, 0, 0.06);
+  --glass-border-hover: rgba(0, 0, 0, 0.10);
+  --glass-shadow: 0 8px 40px -12px rgba(0, 0, 0, 0.08);
+  --glass-shadow-glow: 0 0 30px -5px rgba(99, 102, 241, 0.12);
+  --glass-shadow-success: 0 0 30px -5px rgba(16, 185, 129, 0.12);
+  --glass-shadow-error: 0 0 30px -5px rgba(239, 68, 68, 0.12);
+
+  --mesh-gradient:
+    radial-gradient(ellipse at 20% 50%, rgba(99, 102, 241, 0.06) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgba(6, 182, 212, 0.05) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 100%, rgba(16, 185, 129, 0.04) 0%, transparent 50%);
+}
+
+/* ─── Base ──────────────────────────────────────────────────────────── */
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+body {
+  background: var(--mesh-gradient), var(--color-falcon-bg);
+  background-size: 200% 200%, 200% 200%, 200% 200%, auto;
+  animation: aurora-shift 30s ease-in-out infinite;
+  min-height: 100vh;
+}
+
+/* Subtle grain texture overlay */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.025;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 256px 256px;
+}
+
+body > main {
+  position: relative;
+  z-index: 1;
+}
+
+/* Selection highlight */
+::selection {
+  background-color: rgba(99, 102, 241, 0.20);
+}
+
+/* ─── Glass card utility classes ────────────────────────────────────── */
+.glass-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  border-radius: 1rem;
+  box-shadow: var(--glass-shadow);
+  transition: all 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.glass-card:hover {
+  background: var(--glass-bg-heavy);
+  border-color: var(--glass-border-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--glass-shadow), var(--glass-shadow-glow);
+}
+
+.glass-card-static {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  border-radius: 1rem;
+  box-shadow: var(--glass-shadow);
+}
+
+.glass-nav {
+  background: var(--glass-bg-heavy);
+  backdrop-filter: blur(40px);
+  -webkit-backdrop-filter: blur(40px);
+  border-bottom: 1px solid var(--glass-border);
+}
+
+/* ─── Glass form controls ──────────────────────────────────────────── */
+.glass-input {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 0.75rem;
+  transition: all 0.2s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.glass-input:focus {
+  outline: none;
+  border-color: var(--glass-border-hover);
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.15);
+}
+
+.glass-input:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+.glass-select {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 0.75rem;
+  transition: all 0.2s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.glass-select:focus {
+  outline: none;
+  border-color: var(--glass-border-hover);
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.15);
+}
+
+.glass-display {
+  background: var(--glass-bg);
+  border-radius: 0.5rem;
+}
+
+.glass-btn {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  transition: all 0.2s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.glass-btn:hover {
+  background: var(--glass-bg-heavy);
+  border-color: var(--glass-border-hover);
+}
+
+/* ─── Glass card status modifiers ──────────────────────────────────── */
+.glass-card-success {
+  box-shadow: var(--glass-shadow), var(--glass-shadow-success);
+  border-color: rgba(16, 185, 129, 0.15);
+}
+
+.glass-card-error {
+  box-shadow: var(--glass-shadow), var(--glass-shadow-error);
+  border-color: rgba(239, 68, 68, 0.15);
+}
+
+.glass-card-active {
+  box-shadow: var(--glass-shadow), var(--glass-shadow-glow);
+  border-color: rgba(99, 102, 241, 0.2);
+}
+
+.glass-card-warning {
+  box-shadow: 0 0 30px -5px rgba(234, 179, 8, 0.1);
+  border-color: rgba(234, 179, 8, 0.15);
+}
+
+/* ─── Scroll-triggered entrance animations ──────────────────────────── */
+.fade-in-section {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.7s cubic-bezier(0.32, 0.72, 0, 1),
+              transform 0.7s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.fade-in-section.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Staggered children */
+.fade-in-section.visible .stagger-child {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.stagger-child {
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 0.5s cubic-bezier(0.32, 0.72, 0, 1),
+              transform 0.5s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.stagger-child:nth-child(1) { transition-delay: 0ms; }
+.stagger-child:nth-child(2) { transition-delay: 60ms; }
+.stagger-child:nth-child(3) { transition-delay: 120ms; }
+.stagger-child:nth-child(4) { transition-delay: 180ms; }
+.stagger-child:nth-child(5) { transition-delay: 240ms; }
+.stagger-child:nth-child(6) { transition-delay: 300ms; }
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .fade-in-section,
+  .stagger-child {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+/* ─── Skeleton shimmer for loading states ───────────────────────────── */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    var(--glass-bg) 25%,
+    var(--glass-bg-heavy) 50%,
+    var(--glass-bg) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 2s ease-in-out infinite;
+  border-radius: 0.75rem;
+}
+
+/* ─── Success shimmer sweep ────────────────────────────────────────── */
+@keyframes success-shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.animate-success-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.animate-success-shimmer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(16, 185, 129, 0.08) 45%,
+    rgba(16, 185, 129, 0.15) 50%,
+    rgba(16, 185, 129, 0.08) 55%,
+    transparent 100%
+  );
+  animation: success-shimmer 0.8s cubic-bezier(0.32, 0.72, 0, 1) 0.2s both;
+  pointer-events: none;
+}
+
+/* ─── Micro-interaction animations ─────────────────────────────────── */
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 8px rgba(99, 102, 241, 0.3); }
+  50% { box-shadow: 0 0 16px rgba(99, 102, 241, 0.5); }
+}
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s cubic-bezier(0.32, 0.72, 0, 1) both;
+}
+
+.animate-scale-in {
+  animation: scale-in 0.2s cubic-bezier(0.32, 0.72, 0, 1) both;
+}
+
+.animate-slide-up {
+  animation: slide-up 0.4s cubic-bezier(0.32, 0.72, 0, 1) both;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.stagger-delay-1 { animation-delay: 50ms; }
+.stagger-delay-2 { animation-delay: 100ms; }
+.stagger-delay-3 { animation-delay: 150ms; }
+.stagger-delay-4 { animation-delay: 200ms; }
+.stagger-delay-5 { animation-delay: 250ms; }
+
+/* ─── Transaction pending animations ──────────────────────────────── */
+@keyframes spin-ring {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes progress-indeterminate {
+  0% { transform: translateX(-100%); }
+  50% { transform: translateX(0%); }
+  100% { transform: translateX(200%); }
+}
+
+@keyframes text-breathe {
+  0%, 100% { opacity: 0.8; }
+  50% { opacity: 0.4; }
+}
+
+.animate-spin-ring {
+  animation: spin-ring 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+}
+
+.animate-progress-indeterminate {
+  animation: progress-indeterminate 2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+.animate-text-breathe {
+  animation: text-breathe 2.4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body {
+    animation: none;
+  }
+
+  .animate-fade-in,
+  .animate-scale-in,
+  .animate-slide-up,
+  .animate-pulse-glow,
+  .animate-spin-ring,
+  .animate-progress-indeterminate,
+  .animate-text-breathe,
+  .shield-protected,
+  .animate-node-complete,
+  .animate-pop-in,
+  .animate-shield-draw,
+  .animate-check-draw,
+  .status-dot-protected {
+    animation: none;
+  }
+
+  .energy-conduit {
+    animation: none;
+    background: var(--color-falcon-success);
+  }
+
+  .quantum-scan-line {
+    display: none;
+  }
+
+  .animate-success-shimmer::after {
+    animation: none;
+  }
+}
+
+/* ─── Aurora background drift ─────────────────────────────────────── */
+@keyframes aurora-shift {
+  0%   { background-position: 0% 50%, 100% 50%, 50% 100%; }
+  50%  { background-position: 100% 30%, 0% 70%, 50% 0%; }
+  100% { background-position: 0% 50%, 100% 50%, 50% 100%; }
+}
+
+/* ─── Shield breathing (deployed idle state) ─────────────────────── */
+@keyframes shield-breathe {
+  0%, 100% {
+    border-color: rgba(16, 185, 129, 0.08);
+    box-shadow: var(--glass-shadow), 0 0 20px -5px rgba(16, 185, 129, 0.05);
+  }
+  50% {
+    border-color: rgba(16, 185, 129, 0.2);
+    box-shadow: var(--glass-shadow), 0 0 30px -5px rgba(16, 185, 129, 0.15);
+  }
+}
+
+.shield-protected { animation: shield-breathe 4s ease-in-out infinite; }
+
+/* ─── Node completion burst (step dots) ──────────────────────────── */
+@keyframes node-complete {
+  0%  { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+  70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+  100% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+}
+
+.animate-node-complete { animation: node-complete 0.6s ease-out; }
+
+/* ─── Energy flow (deploy pipeline line) ─────────────────────────── */
+@keyframes energy-flow {
+  0%   { background-position: 0% 0%; }
+  100% { background-position: 0% 200%; }
+}
+
+.energy-conduit {
+  width: 2px;
+  background: linear-gradient(
+    180deg,
+    var(--color-falcon-success) 0%,
+    var(--color-falcon-primary) 40%,
+    rgba(99, 102, 241, 0.1) 60%,
+    transparent 100%
+  );
+  background-size: 100% 200%;
+  animation: energy-flow 3s linear infinite;
+}
+
+/* ─── Quantum scan line (active step indicator) ──────────────────── */
+@keyframes quantum-scan {
+  0%, 100% { left: -30%; opacity: 0; }
+  10%      { opacity: 0.8; }
+  50%      { left: 100%; }
+  90%      { opacity: 0.8; }
+}
+
+.quantum-scan-line {
+  position: absolute;
+  width: 30%;
+  height: 1px;
+  top: 50%;
+  background: linear-gradient(90deg, transparent, var(--color-falcon-accent), transparent);
+  animation: quantum-scan 2.5s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* ─── Lattice dot activation (keygen visualization) ──────────────── */
+@keyframes dot-activate {
+  0%   { background: rgba(99, 102, 241, 0.05); transform: scale(0.5); }
+  50%  { background: rgba(99, 102, 241, 0.8); transform: scale(1.4); }
+  100% { background: rgba(99, 102, 241, 0.3); transform: scale(1); }
+}
+
+/* ─── Status pulse dot (quantum-safe indicator) ──────────────────── */
+@keyframes status-pulse {
+  0%, 100% { opacity: 0.4; box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+  50%      { opacity: 1;   box-shadow: 0 0 0 4px rgba(16, 185, 129, 0); }
+}
+
+.status-dot-protected {
+  display: inline-block;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--color-falcon-success);
+  animation: status-pulse 3s ease-in-out infinite;
+}
+
+/* ─── Shield draw (SVG stroke animation) ─────────────────────────── */
+@keyframes shield-draw {
+  from { stroke-dashoffset: 80; }
+  to   { stroke-dashoffset: 0; }
+}
+
+.animate-shield-draw {
+  stroke-dasharray: 80;
+  animation: shield-draw 0.8s cubic-bezier(0.32, 0.72, 0, 1) forwards;
+}
+
+/* ─── Check draw (animated checkmark) ────────────────────────────── */
+@keyframes check-draw {
+  from { stroke-dashoffset: 20; }
+  to   { stroke-dashoffset: 0; }
+}
+
+.animate-check-draw {
+  stroke-dasharray: 20;
+  animation: check-draw 0.4s cubic-bezier(0.32, 0.72, 0, 1) forwards;
+}
+
+/* ─── Pop-in (micro-bounce for step completions) ─────────────────── */
+@keyframes pop-in {
+  0%   { transform: scale(0); opacity: 0; }
+  60%  { transform: scale(1.15); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.animate-pop-in { animation: pop-in 0.3s cubic-bezier(0.32, 0.72, 0, 1) both; }
+
+/* ─── Custom scrollbar ─────────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--glass-border-hover);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.light ::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.15);
+}
+
+/* ─── Lattice grid animation (hero background) ────────────────────── */
+@keyframes lattice-drift {
+  0% { transform: translate(0, 0); }
+  50% { transform: translate(-8px, 6px); }
+  100% { transform: translate(0, 0); }
+}
+
+.lattice-grid {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  opacity: 0.15;
+}
+
+.lattice-grid::before {
+  content: "";
+  position: absolute;
+  inset: -20px;
+  background-image:
+    radial-gradient(circle, var(--color-falcon-accent) 1px, transparent 1px),
+    radial-gradient(circle, var(--color-falcon-primary) 0.5px, transparent 0.5px);
+  background-size: 60px 60px, 60px 60px;
+  background-position: 0 0, 30px 30px;
+  animation: lattice-drift 20s ease-in-out infinite;
+}
+
+.lattice-grid::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, transparent 30%, var(--color-falcon-bg) 70%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lattice-grid::before {
+    animation: none;
+  }
+}
+
+/* ─── Comparison bar chart ─────────────────────────────────────────── */
+.comparison-bar {
+  height: 2.5rem;
+  border-radius: 0.75rem;
+  transition: width 1.2s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.comparison-bar[data-visible="false"] {
+  width: 0 !important;
+}
+
+/* ─── Starknet pitch section ──────────────────────────────────────── */
+.starknet-section {
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(99, 102, 241, 0.08) 0%, transparent 60%),
+    var(--glass-bg);
+  border-top: 1px solid rgba(99, 102, 241, 0.1);
+  border-bottom: 1px solid rgba(99, 102, 241, 0.1);
+}
+
+.light .starknet-section {
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(99, 102, 241, 0.06) 0%, transparent 60%),
+    var(--glass-bg);
+}

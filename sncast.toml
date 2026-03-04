@@ -1,0 +1,13 @@
+[default]
+url = "http://localhost:5050"
+accounts-file = "~/.starknet_accounts/starknet_open_zeppelin_accounts.json"
+wait = true
+
+[profile.devnet]
+url = "http://localhost:5050"
+
+[profile.sepolia]
+url = "https://api.zan.top/public/starknet-sepolia/rpc/v0_10"
+
+[profile.mainnet]
+url = "https://api.zan.top/node/v1/starknet/mainnet/30623d06317c4234ac2934876f2fd542"

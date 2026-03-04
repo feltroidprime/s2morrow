@@ -19,9 +19,20 @@ pub mod FalconAccount {
     #[abi(embed_v0)]
     impl DeclarerImpl = FalconAccountComponent::DeclarerImpl<ContractState>;
 
-    // Deployable (__validate_deploy__)
-    #[abi(embed_v0)]
-    impl DeployableImpl = FalconAccountComponent::DeployableImpl<ContractState>;
+    // Deployable (__validate_deploy__) — custom impl to match constructor signature
+    #[abi(per_item)]
+    #[generate_trait]
+    impl DeployableImpl of DeployableTrait {
+        #[external(v0)]
+        fn __validate_deploy__(
+            self: @ContractState,
+            class_hash: felt252,
+            contract_address_salt: felt252,
+            pk_packed: PackedPolynomial512,
+        ) -> felt252 {
+            self.account.validate_transaction()
+        }
+    }
 
     // SRC5 (supports_interface)
     #[abi(embed_v0)]

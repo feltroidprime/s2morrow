@@ -1,5 +1,6 @@
 target/
 *.txt
+.entire/
 
 # Python
 __pycache__/
@@ -54,3 +55,15 @@ profiles/*.log
 scripts/
 snfoundry_trace
 .snfoundry_cache
+node_modules
+
+# Entire workflow
+.entire/
+
+# Next.js
+.next/
+apps/demo/.env.local
+.vercel
+.accounts.json
+accounts.json
+bin/.wasm-nodejs/
