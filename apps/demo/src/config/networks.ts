@@ -35,7 +35,7 @@ export const NETWORKS: Record<NetworkId, NetworkConfig> = {
     id: "mainnet",
     name: "Mainnet",
     rpcUrl: "https://api.zan.top/node/v1/starknet/mainnet/30623d06317c4234ac2934876f2fd542",
-    classHash: "0x0",
+    classHash: "0x37c7626b50ba517835c9556b53bce57cb6633704bb702f8c2f13a44cf151d5",
     explorerBaseUrl: "https://voyager.online",
     isTestnet: false,
     isDevnet: false,

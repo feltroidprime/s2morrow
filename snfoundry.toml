@@ -5,3 +5,6 @@ accounts-file = "accounts.json"
 
 [sncast.sepolia]
 account = "sepolia-deployer"
+
+[sncast.mainnet]
+account = "mainnet-deployer"

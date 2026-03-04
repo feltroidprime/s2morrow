@@ -1,9 +1,9 @@
 "use client"
 
-import React, { useCallback, useEffect, useState } from "react"
-import { useAtomValue, useAtomSet } from "@effect-atom/atom-react"
+import React, { useCallback, useState, useEffect } from "react"
+import { useAtomSet } from "@effect-atom/atom-react"
 import { networkAtom, NETWORK_STORAGE_KEY } from "@/atoms/starknet"
-import { NETWORKS } from "@/config/networks"
+import { DEFAULT_NETWORK, NETWORKS } from "@/config/networks"
 import type { NetworkId } from "@/config/networks"
 import { ThemeToggle } from "@/components/ThemeToggle"
 
@@ -15,31 +15,39 @@ const NAV_LINKS = [
 ] as const
 
 export function NavHeader(): React.JSX.Element {
-  const networkId = useAtomValue(networkAtom)
-  const setNetwork = useAtomSet(networkAtom)
+  // Start with the static default so server and client render identically
+  // (avoids hydration mismatch — localStorage isn't available during SSR).
+  // The useEffect below hydrates from localStorage after mount.
+  const [networkId, setLocalNetwork] = useState<NetworkId>(DEFAULT_NETWORK)
+  const setAtomNetwork = useAtomSet(networkAtom)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
+  // Hydrate from localStorage after mount (client-only)
   useEffect(() => {
     try {
       const stored = localStorage.getItem(NETWORK_STORAGE_KEY)
       if (stored === "mainnet" || stored === "sepolia" || stored === "devnet") {
-        setNetwork(stored)
+        setLocalNetwork(stored)
+        setAtomNetwork(stored)
+        return
       }
     } catch {
       // localStorage unavailable
     }
-  }, [setNetwork])
+    setAtomNetwork(DEFAULT_NETWORK)
+  }, [setAtomNetwork])
 
   const handleNetworkChange = useCallback(
     (id: NetworkId) => {
-      setNetwork(id)
+      setLocalNetwork(id)
+      setAtomNetwork(id)
       try {
         localStorage.setItem(NETWORK_STORAGE_KEY, id)
       } catch {
         // localStorage unavailable
       }
     },
-    [setNetwork],
+    [setAtomNetwork],
   )
 
   return (
@@ -97,8 +105,8 @@ export function NavHeader(): React.JSX.Element {
                   title={id === "devnet" ? "Requires local starknet-devnet on port 5050" : undefined}
                   className={`rounded-full px-2 py-0.5 text-[10px] font-medium transition-all duration-200 sm:px-3 sm:py-1 sm:text-xs ${
                     isActive
-                      ? "bg-falcon-accent/15 text-falcon-accent"
-                      : "text-falcon-text/50 hover:text-falcon-text/70"
+                      ? "bg-falcon-accent/20 text-falcon-accent shadow-[inset_0_0_0_1px_rgba(6,182,212,0.3)]"
+                      : "text-falcon-text/40 hover:text-falcon-text/70"
                   }`}
                 >
                   {NETWORKS[id].name}
