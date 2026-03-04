@@ -1,0 +1,21 @@
+./bin/declare.sh mainnet .
+
+---
+
+yes i want to declare on mainnet
+
+---
+
+add a mainnet profile with account mainnet-deployer
+
+---
+
+Make it work until you need an address to be funded (i'll do it)
+
+---
+
+done
+
+---
+
+done
