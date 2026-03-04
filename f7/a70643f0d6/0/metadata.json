@@ -1,0 +1,34 @@
+{
+  "cli_version": "0.4.2",
+  "checkpoint_id": "f7a70643f0d6",
+  "session_id": "4abfe8cb-067e-49f9-85d2-1d0dc91ab709",
+  "strategy": "manual-commit",
+  "created_at": "2026-02-27T15:05:40.751224013Z",
+  "branch": "frontend",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/demo/src/app/globals.css",
+    "apps/demo/src/components/interactive/AccountDeployFlow.tsx",
+    "apps/demo/src/components/interactive/KeyManagementPanel.tsx",
+    "apps/demo/src/components/interactive/SendTransaction.tsx",
+    "apps/demo/src/components/interactive/SignVerifyPanel.tsx",
+    "apps/demo/src/components/ui/TransactionPending.tsx"
+  ],
+  "agent": "Claude Code",
+  "token_usage": {
+    "input_tokens": 52,
+    "cache_creation_tokens": 60339,
+    "cache_read_tokens": 3015315,
+    "output_tokens": 12114,
+    "api_call_count": 44
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-02-27T15:05:40.676974441Z",
+    "agent_lines": 284,
+    "human_added": 321,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 605,
+    "agent_percentage": 46.942148760330575
+  }
+}

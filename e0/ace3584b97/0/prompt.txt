@@ -1,0 +1,410 @@
+Implement the following plan:
+
+# Plan: Full Quantum Experience — Key Sync Fix + Emotion Polish + Visual Overhaul
+
+## Context
+The demo app works but feels generic. Three categories of changes transform it into something that makes users *feel* quantum protection at every touchpoint:
+1. **Bug fix**: Importing a wallet doesn't reset the deploy flow
+2. **UI cleanup**: Copyable address, remove technical noise, show deployed/balance status
+3. **Full quantum experience**: Text + visual animations that reinforce quantum safety at every interaction — from ambient background to celebratory particles
+
+**Current animation stack**: Pure CSS (no libraries). 15+ keyframes in `globals.css`, glass morphism system, `prefers-reduced-motion` support. No canvas or particle effects yet.
+
+---
+
+## Phase 1: CSS Foundation (`globals.css`)
+
+Add all new keyframes and utility classes to `apps/demo/src/app/globals.css`. These are the building blocks every component will use.
+
+### 1a. Background Aurora
+Animate the existing `--mesh-gradient` with a 30s slow drift. Glass cards' `backdrop-filter: blur(20px)` diffuses movement into ambient light leaks.
+
+```css
+@keyframes aurora-shift {
+  0%   { background-position: 0% 50%, 100% 50%, 50% 100%; }
+  50%  { background-position: 100% 30%, 0% 70%, 50% 0%; }
+  100% { background-position: 0% 50%, 100% 50%, 50% 100%; }
+}
+
+/* Update body rule to add background-size + animation */
+body {
+  background: var(--mesh-gradient), var(--color-falcon-bg);
+  background-size: 200% 200%, 200% 200%, 200% 200%, auto;
+  animation: aurora-shift 30s ease-in-out infinite;
+}
+```
+
+### 1b. Shield Breathing (deployed idle state)
+Slow 4s emerald glow pulse — the "heartbeat" of a protected account.
+
+```css
+@keyframes shield-breathe {
+  0%, 100% {
+    border-color: rgba(16, 185, 129, 0.08);
+    box-shadow: var(--glass-shadow), 0 0 20px -5px rgba(16, 185, 129, 0.05);
+  }
+  50% {
+    border-color: rgba(16, 185, 129, 0.2);
+    box-shadow: var(--glass-shadow), 0 0 30px -5px rgba(16, 185, 129, 0.15);
+  }
+}
+
+.shield-protected { animation: shield-breathe 4s ease-in-out infinite; }
+```
+
+### 1c. Node Completion Burst (step dots)
+Sonar ping when a step completes — `box-shadow` ring expands and fades.
+
+```css
+@keyframes node-complete {
+  0%  { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+  70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+  100% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+}
+
+.animate-node-complete { animation: node-complete 0.6s ease-out; }
+```
+
+### 1d. Energy Flow (deploy pipeline line)
+Flowing gradient on the vertical pipeline connector.
+
+```css
+@keyframes energy-flow {
+  0%   { background-position: 0% 0%; }
+  100% { background-position: 0% 200%; }
+}
+
+.energy-conduit {
+  width: 2px;
+  background: linear-gradient(
+    180deg,
+    var(--color-falcon-success) 0%,
+    var(--color-falcon-primary) 40%,
+    rgba(99, 102, 241, 0.1) 60%,
+    transparent 100%
+  );
+  background-size: 100% 200%;
+  animation: energy-flow 3s linear infinite;
+}
+```
+
+### 1e. Quantum Scan Line (active step indicator)
+Thin cyan glow line sweeps back and forth during active operations.
+
+```css
+@keyframes quantum-scan {
+  0%, 100% { left: -30%; opacity: 0; }
+  10%      { opacity: 0.8; }
+  50%      { left: 100%; }
+  90%      { opacity: 0.8; }
+}
+
+.quantum-scan-line {
+  position: absolute;
+  width: 30%;
+  height: 1px;
+  top: 50%;
+  background: linear-gradient(90deg, transparent, var(--color-falcon-accent), transparent);
+  animation: quantum-scan 2.5s ease-in-out infinite;
+  pointer-events: none;
+}
+```
+
+### 1f. Lattice Dot Activation (keygen visualization)
+
+```css
+@keyframes dot-activate {
+  0%   { background: rgba(99, 102, 241, 0.05); transform: scale(0.5); }
+  50%  { background: rgba(99, 102, 241, 0.8); transform: scale(1.4); }
+  100% { background: rgba(99, 102, 241, 0.3); transform: scale(1); }
+}
+```
+
+### 1g. Status Pulse Dot (quantum-safe indicator)
+
+```css
+@keyframes status-pulse {
+  0%, 100% { opacity: 0.4; box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+  50%      { opacity: 1;   box-shadow: 0 0 0 4px rgba(16, 185, 129, 0); }
+}
+
+.status-dot-protected {
+  display: inline-block;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--color-falcon-success);
+  animation: status-pulse 3s ease-in-out infinite;
+}
+```
+
+### 1h. Shield Draw (SVG stroke animation)
+
+```css
+@keyframes shield-draw {
+  from { stroke-dashoffset: 80; }
+  to   { stroke-dashoffset: 0; }
+}
+
+.animate-shield-draw {
+  stroke-dasharray: 80;
+  animation: shield-draw 0.8s cubic-bezier(0.32, 0.72, 0, 1) forwards;
+}
+```
+
+### 1i. Check Draw (animated checkmark)
+
+```css
+@keyframes check-draw {
+  from { stroke-dashoffset: 20; }
+  to   { stroke-dashoffset: 0; }
+}
+
+.animate-check-draw {
+  stroke-dasharray: 20;
+  animation: check-draw 0.4s cubic-bezier(0.32, 0.72, 0, 1) forwards;
+}
+```
+
+### 1j. Pop-In (micro-bounce for step completions)
+
+```css
+@keyframes pop-in {
+  0%   { transform: scale(0); opacity: 0; }
+  60%  { transform: scale(1.15); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.animate-pop-in { animation: pop-in 0.3s cubic-bezier(0.32, 0.72, 0, 1) both; }
+```
+
+### 1k. Reduced Motion
+Add all new animation classes to the existing `@media (prefers-reduced-motion: reduce)` block.
+
+---
+
+## Phase 2: Shield SVG Component
+
+**New file**: `apps/demo/src/components/ui/QuantumShield.tsx`
+
+A reusable SVG shield with lattice dot pattern interior. Three sizes (`sm`, `md`, `lg`). Two modes:
+- **`animate`**: Shield draws itself shut via `stroke-dashoffset`, then lattice dots fade in from center outward
+- **`static`**: Always visible, optional slow subtle rotation (`60s linear infinite`)
+
+Used in: deployed success card header, send section header, key vault header.
+
+The shield SVG structure:
+- `<path>` for shield outline with `animate-shield-draw` class
+- `<pattern>` with hex-grid dots (3 dots per cell, offset for honeycomb effect)
+- Interior `<rect>` filled with the pattern, fading in after shield draws
+
+---
+
+## Phase 3: Particle Convergence Component
+
+**New file**: `apps/demo/src/components/ui/ParticleBurst.tsx`
+
+Lightweight canvas-based celebration for deploy success. ~80 lines of code.
+
+**API**: `<ParticleBurst trigger={boolean} colors={string[]} />`
+
+When `trigger` flips to `true`:
+1. Spawn ~50 small square particles (2-4px) at random positions within 300px radius
+2. Particles converge inward toward center over 600ms (cubic ease-in)
+3. Brief 100ms hold at center
+4. Burst outward over 500ms with fade-out (cubic ease-out)
+5. Canvas auto-removes after animation
+
+Colors default to `['#6366f1', '#06b6d4', '#10b981']` (primary, accent, success).
+
+---
+
+## Phase 4: Keygen Lattice Visualization Component
+
+**New file**: `apps/demo/src/components/ui/LatticeGrid.tsx`
+
+A 22x24 CSS grid of tiny dots (~528 dots, ≈512 Falcon coefficients) that light up in concentric waves during key generation.
+
+**API**: `<LatticeGrid active={boolean} />`
+
+When `active`:
+- Dots light up from center outward in hexagonal rings
+- Each ring activates 40ms after the previous one
+- Dot transitions: `falcon-muted/5` → brief `falcon-primary` flash → settle at `falcon-primary/30`
+- Total wave duration: ~800ms, then loops
+
+When `!active`:
+- All dots dim to baseline `falcon-muted/5`
+
+**Implementation**: CSS `transition-delay` calculated per-dot based on distance from center. No JS animation loop — pure CSS transitions triggered by class toggle.
+
+---
+
+## Phase 5: Entropy Visualization Component
+
+**New file**: `apps/demo/src/components/ui/EntropyStrip.tsx`
+
+A small monospace strip showing rapidly-cycling random hex during keygen.
+
+**API**: `<EntropyStrip active={boolean} />`
+
+When `active`:
+- Shows `0xA3F1...B7C2` style random hex, updating every 60ms via `setInterval`
+- Subtle monospace styling, low opacity (`text-falcon-accent/30`)
+
+When `!active`: hidden.
+
+---
+
+## Phase 6: Bug Fix + Component Changes
+
+### 6a. Fix deploy ↔ key sync (`AccountDeployFlow.tsx`)
+
+Add `useEffect` watching `packedKey`. When it changes, reset deploy to idle + clear `autoRestoreRan`:
+
+```tsx
+// Reset on keypair change (wallet import/generate)
+const packedKeyValue = Option.getOrUndefined(packedKey)
+useEffect(() => {
+  // Skip initial mount
+  if (!packedKeyValue) return
+  setDeployStep({ step: "idle" })
+  setPreparedDeploy(Option.none())
+  setBalance(null)
+  autoRestoreRan.current = false
+}, [packedKeyValue]) // eslint-disable-line react-hooks/exhaustive-deps
+```
+
+Note: This must be positioned after the network-change reset effect but before auto-restore, so the auto-restore can re-run with the new key.
+
+### 6b. AccountDeployFlow.tsx — Visual + Text Changes
+
+**Text updates** (quantum emotion):
+- "Restoring your wallet..." → "Restoring your quantum-safe wallet..."
+- `title="Deploying account..."` → `title="Deploying quantum-safe account..."`
+- `subtitle=...` → `subtitle="Falcon-512 post-quantum signature in progress..."`
+- `hint=...` → `hint="Quantum-safe verification takes ~30-60s on testnet"`
+- "Account Already Deployed" → "Quantum Account Already Deployed"
+- "Account Deployed" → "Quantum Account Deployed"
+- SR-only liveStatus: "Generating Falcon keypair." → "Generating quantum-safe Falcon keypair."
+- SR-only liveStatus: "Deploying account transaction." → "Deploying quantum-safe account."
+- SR-only liveStatus: "Account deployed with transaction hash..." → "Quantum account deployed..."
+- Add `full` prop to deployed `<AddressDisplay />`
+
+**Visual upgrades**:
+
+1. **Pipeline vertical line** → Replace static `w-px bg-falcon-muted/15` div with `energy-conduit` class. Only animate the portion up to the current active/completed step (use dynamic height or clip).
+
+2. **Step dots** → When a step transitions to complete, apply `animate-node-complete` + `animate-pop-in` to the checkmark circle. Active step dot gets a scan-line overlay inside its container.
+
+3. **Deployed success card** → Add `shield-protected` class for breathing glow. Add `<QuantumShield animate />` in the header. Add `<ParticleBurst trigger={justDeployed} />` overlay. Add `<span className="status-dot-protected" />` next to the address.
+
+4. **Auto-restore spinner** → Add `<QuantumShield size="sm" />` next to "Restoring your quantum-safe wallet..."
+
+### 6c. KeyManagementPanel.tsx — Cleanup + Visual
+
+**Structural changes**:
+- Replace title "Key Management" → "Quantum Key Vault" with `<QuantumShield size="sm" />` inline
+- Replace inline address `<p>` (lines 357-365) with `<AddressDisplay address={currentAddress} full label="Your Quantum-Protected Address" />`
+- Delete NTT Coefficients section (lines 368-384) entirely
+- Delete Packed Public Key section (lines 386-404) entirely
+- Remove `showNtt`/`showPacked` state variables and `nttCoeffs`/`packedSlots` computed values
+- "Replace existing wallet?" → "Replace existing quantum wallet?"
+- "Verifying Key (896-byte h polynomial)" → "Quantum-Resistant Verifying Key"
+
+**Deployed/balance indicators**:
+When `currentAddress` exists, create a `StarknetService` runtime (same pattern as `AccountDeployFlow`) and query `isDeployed` + `getBalance`. Show:
+- Green badge "Deployed" with `status-dot-protected` or gray "Not deployed"
+- STRK balance via `<TokenAmount />`
+
+**Visual**:
+- Add `<LatticeGrid active={isBusy} />` behind the generate button area during keygen
+- Add `<EntropyStrip active={isBusy} />` below the generate button during keygen
+
+### 6d. SignVerifyPanel.tsx — Quantum Labels + Visual
+
+**Text updates**:
+- "Sign & Verify" (title) → "Quantum Sign & Verify"
+- Button label "Sign & Verify" → "Quantum-Sign & Verify"
+- "Signing..." → "Quantum-signing..."
+- "Signature valid" → "Quantum-safe signature verified"
+
+**Visual**:
+- Add `<QuantumShield size="sm" />` in the title
+- Success result card: add `shield-protected` class for breathing glow
+- The signing spinner: keep existing `animate-spin-ring` but add an outer ring (second `<circle>` rotating the opposite direction at 1.8s) for an orbital/quantum feel
+
+### 6e. SendTransaction.tsx — Quantum Labels + Visual
+
+**Text updates**:
+- "Test Your Falcon Account" → "Test Your Quantum-Safe Account"
+- "Send STRK" button → "Quantum-Sign & Send"
+- "Transaction Confirmed" → "Quantum-Safe Transaction Confirmed"
+- "Sending..." button state → "Quantum-signing..."
+
+**Visual**:
+- Add `<QuantumShield size="sm" />` in section title
+- Success card: add `shield-protected` class + `<ParticleBurst trigger />` on confirmation
+
+### 6f. TransactionPhases.tsx — Quantum Labels
+
+- "Falcon-512 Signing" → "Quantum Signing (Falcon-512)"
+- "signing..." → "quantum-signing..."
+
+---
+
+## Files to Modify/Create
+
+| File | Action |
+|------|--------|
+| `apps/demo/src/app/globals.css` | Add ~80 lines of new keyframes + utility classes |
+| `apps/demo/src/components/ui/QuantumShield.tsx` | **New** — Reusable shield SVG with lattice interior |
+| `apps/demo/src/components/ui/ParticleBurst.tsx` | **New** — Canvas particle convergence celebration |
+| `apps/demo/src/components/ui/LatticeGrid.tsx` | **New** — CSS grid dot visualization for keygen |
+| `apps/demo/src/components/ui/EntropyStrip.tsx` | **New** — Random hex cycling strip |
+| `apps/demo/src/components/interactive/AccountDeployFlow.tsx` | Bug fix + text + visual upgrades |
+| `apps/demo/src/components/interactive/KeyManagementPanel.tsx` | Cleanup + status + text + visual |
+| `apps/demo/src/components/interactive/SignVerifyPanel.tsx` | Text + visual |
+| `apps/demo/src/components/interactive/SendTransaction.tsx` | Text + visual |
+| `apps/demo/src/components/ui/TransactionPhases.tsx` | Quantum labels |
+
+## Execution Order
+
+1. `globals.css` — CSS foundation (all other changes depend on these classes)
+2. `QuantumShield.tsx` — Shared component used everywhere
+3. `ParticleBurst.tsx` — Used in deploy success + send success
+4. `LatticeGrid.tsx` + `EntropyStrip.tsx` — Used in keygen
+5. `AccountDeployFlow.tsx` — Bug fix + largest visual overhaul
+6. `KeyManagementPanel.tsx` — Cleanup + status indicators
+7. `SignVerifyPanel.tsx` — Text + visual polish
+8. `SendTransaction.tsx` + `TransactionPhases.tsx` — Text + visual polish
+
+## Verification
+1. Background aurora: slow gradient drift visible behind glass cards
+2. Generate wallet → lattice grid lights up, entropy strip cycles, shield icon appears on completion
+3. Import wallet B → deploy resets to idle, shows wallet B's address (bug fix confirmed)
+4. Address is copyable, NTT/packed sections gone, deployed/balance status shown
+5. Deploy pipeline: energy conduit flows, step dots pop + burst on completion
+6. Deploy success: particles converge + burst, shield draws itself, card breathes with emerald glow
+7. Sign & Verify: orbital spinner during signing, shield-breathing success card
+8. Send STRK: "Quantum-Sign & Send", particle burst on confirmation
+9. All text says "quantum" at every touchpoint
+10. `prefers-reduced-motion: reduce` disables all new animations gracefully
+
+
+If you need specific details from before exiting plan mode (like exact code snippets, error messages, or content you generated), read the full transcript at: /home/felt/.REDACTED.jsonl
+
+---
+
+cool but sign & verify in the playground shows a 190ms but signing before tx takes 10ms . Something added to the time to sign. Make sure the time in Sign & verify is the actual compute time, not taking into account animation rendering
+
+---
+
+commit this and push
+
+---
+
+still takes 200 ms which is weird.
+
+---
+
+Add this skil to this project :   /home/felt/Downloads/ux-review-skill

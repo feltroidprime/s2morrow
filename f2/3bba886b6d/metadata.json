@@ -3,7 +3,7 @@
   "checkpoint_id": "f23bba886b6d",
   "strategy": "manual-commit",
   "branch": "frontend",
-  "checkpoints_count": 13,
+  "checkpoints_count": 10,
   "files_touched": [
     "Makefile",
     "Scarb.toml",
@@ -61,8 +61,7 @@
     "packages/bench_ecdsa/Scarb.toml",
     "packages/bench_ecdsa/src/lib.cairo",
     "packages/bench_ecdsa/tests/bench.cairo",
-    "sncast.toml",
-    "snfoundry.toml"
+    "sncast.toml"
   ],
   "sessions": [
     {
@@ -127,27 +126,13 @@
       "context": "/f2/3bba886b6d/8/context.md",
       "content_hash": "/f2/3bba886b6d/8/content_hash.txt",
       "prompt": "/f2/3bba886b6d/8/prompt.txt"
-    },
-    {
-      "metadata": "/f2/3bba886b6d/9/metadata.json",
-      "transcript": "/f2/3bba886b6d/9/full.jsonl",
-      "context": "/f2/3bba886b6d/9/context.md",
-      "content_hash": "/f2/3bba886b6d/9/content_hash.txt",
-      "prompt": "/f2/3bba886b6d/9/prompt.txt"
-    },
-    {
-      "metadata": "/f2/3bba886b6d/10/metadata.json",
-      "transcript": "/f2/3bba886b6d/10/full.jsonl",
-      "context": "/f2/3bba886b6d/10/context.md",
-      "content_hash": "/f2/3bba886b6d/10/content_hash.txt",
-      "prompt": "/f2/3bba886b6d/10/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 3633,
-    "cache_creation_tokens": 1982449,
-    "cache_read_tokens": 100414762,
-    "output_tokens": 272364,
-    "api_call_count": 1053
+    "input_tokens": 3549,
+    "cache_creation_tokens": 1877326,
+    "cache_read_tokens": 96155819,
+    "output_tokens": 225455,
+    "api_call_count": 987
   }
 }
