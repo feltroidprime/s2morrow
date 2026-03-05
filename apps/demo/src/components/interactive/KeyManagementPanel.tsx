@@ -139,10 +139,10 @@ export function KeyManagementPanel(): React.JSX.Element {
       FalconService.generateKeypair(seed),
     )
 
-    // Ensure lattice animation plays for at least 1s
+    // Ensure lattice animation plays fully (ripple delay 800ms + transition 500ms)
     const elapsed = Date.now() - startTime
-    if (elapsed < 1000) {
-      await new Promise(resolve => setTimeout(resolve, 1000 - elapsed))
+    if (elapsed < 1400) {
+      await new Promise(resolve => setTimeout(resolve, 1400 - elapsed))
     }
 
     if (Exit.isSuccess(exit)) {
