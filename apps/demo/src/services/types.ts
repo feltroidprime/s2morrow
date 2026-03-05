@@ -52,6 +52,7 @@ export interface FalconKeyFile {
   readonly verifyingKey: string     // 0x hex
   readonly publicKeyNtt: number[]   // 512 integers in [0, 12289)
   readonly packedPublicKey: string[] // 29 hex felt252
+  readonly address?: string         // deterministic contract address
 }
 
 export interface DevnetAccount {

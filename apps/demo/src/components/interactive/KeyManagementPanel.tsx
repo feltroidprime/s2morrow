@@ -134,9 +134,16 @@ export function KeyManagementPanel(): React.JSX.Element {
     persistPackedKey(Option.none())
     const seed = crypto.getRandomValues(new Uint8Array(32))
 
+    const startTime = Date.now()
     const exit = await appRuntime.runPromiseExit(
       FalconService.generateKeypair(seed),
     )
+
+    // Ensure lattice animation plays for at least 1s
+    const elapsed = Date.now() - startTime
+    if (elapsed < 1000) {
+      await new Promise(resolve => setTimeout(resolve, 1000 - elapsed))
+    }
 
     if (Exit.isSuccess(exit)) {
       const kpOption = Option.some(exit.value)
@@ -240,7 +247,7 @@ export function KeyManagementPanel(): React.JSX.Element {
     const pk = Option.match(packedKey, { onNone: () => null, onSome: (p) => p })
     if (!kp || !pk) return
 
-    const json = exportKeyFile(kp, pk)
+    const json = exportKeyFile(kp, pk, currentAddress)
     const blob = new Blob([json], { type: "application/json" })
     const url = URL.createObjectURL(blob)
     const a = document.createElement("a")
@@ -252,7 +259,7 @@ export function KeyManagementPanel(): React.JSX.Element {
     setHasExported(true)
     setExportSuccess(true)
     setTimeout(() => setExportSuccess(false), 2000)
-  }, [keypair, packedKey])
+  }, [keypair, packedKey, currentAddress])
 
   const hasKeypair = Option.isSome(keypair)
   const hasPacked = Option.isSome(packedKey)

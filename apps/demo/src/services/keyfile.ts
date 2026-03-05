@@ -26,6 +26,7 @@ function hexToBytes(hex: string): Uint8Array {
 export function exportKeyFile(
   keypair: FalconKeypair,
   packedPublicKey: PackedPublicKey,
+  address?: string | null,
 ): string {
   const file: FalconKeyFile = {
     version: 1,
@@ -34,6 +35,7 @@ export function exportKeyFile(
     verifyingKey: "0x" + bytesToHex(keypair.verifyingKey),
     publicKeyNtt: Array.from(keypair.publicKeyNtt),
     packedPublicKey: Array.from(packedPublicKey.slots),
+    ...(address ? { address } : {}),
   }
   return JSON.stringify(file, null, 2)
 }
